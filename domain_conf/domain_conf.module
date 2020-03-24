@@ -40,11 +40,9 @@ function domain_conf_domain_bootstrap_full($domain) {
 
       // Language handling is a special case.
       if ($key == 'language_default') {
-        $table = domain_get_primary_table('system');
-        $language = (bool) db_query("SELECT status FROM $table WHERE name = 'locale' AND type = 'module'")->fetchField();
+        $language = (bool) db_query("SELECT status FROM {system} WHERE name = 'locale' AND type = 'module'")->fetchField();
         if ($language) {
-          $table = domain_get_primary_table('languages');
-          $temp = db_query("SELECT * FROM $table WHERE language = :language", array(':language' => $value))->fetchObject();
+          $temp = db_query('SELECT * FROM {languages} WHERE language = :language', array(':language' => $value))->fetchObject();
           if (!empty($temp)) {
             $value = $temp;
             $GLOBALS['language'] = $temp;
@@ -52,8 +50,7 @@ function domain_conf_domain_bootstrap_full($domain) {
           }
           // Ensure we store the default language in case of reset.
           // See domain_conf_js_maintain().
-          $table = domain_get_primary_table('variable');
-          $result = db_query("SELECT value FROM $table WHERE name = :name", array(':name' => $key))->fetchField();
+          $result = db_query('SELECT value FROM {variable} WHERE name = :name', array(':name' => $key))->fetchField();
           if (!empty($result)) {
             domain_conf_default_language(unserialize($result));
           }

@@ -113,15 +113,7 @@ function _domain_bootstrap($phase) {
 
       // If the Domain Access module has been disabled, or if we're unable to interact with the database, stop loading.
       if (function_exists('db_query')) {
-        $table = domain_get_primary_table('system');
-        $query = db_select($table, 'c')
-          ->fields('c', array('status'))
-          ->condition('name', 'domain')
-          ->condition('type', 'module')
-          ->execute()
-          ->fetchAssoc();
-        
-        $check = (bool) $query['status'];
+        $check = (bool) db_query("SELECT status FROM {system} WHERE name = 'domain' AND type = 'module'")->fetchField();
         if (empty($check)) {
           return NULL;
         }
@@ -208,8 +200,7 @@ function _domain_bootstrap_modules_load() {
 function _domain_bootstrap_modules_get() {
   global $conf;
   $key = 'domain_bootstrap_modules';
-  $table = domain_get_primary_table('variable');
-  $result = db_query("SELECT value FROM $table WHERE name = :name", array(':name' => $key))->fetchField();
+  $result = db_query('SELECT value FROM {variable} WHERE name = :name', array(':name' => $key))->fetchField();
   if (!empty($result)) {
     $conf[$key] = unserialize($result);
   }
@@ -250,40 +241,6 @@ function _domain_bootstrap_invoke_all() {
     }
   }
   return $return;
-}
-
-/**
- * Escape the names of the default tables for variable lookups.
- *
- * There are a few cases where we must directly query data from the
- * primary site's database. Due to table prefixing and Domain Prefix, we
- * must ensure that we are querying the correct table.
- *
- * When using this function, you should insert the $table result directly
- * into your query string, or use token replacement syntax. Do not
- * enclose the table name in brackets {}, as that defeats the purpose of
- * this function.
- *
- * @see _domain_conf_load_primary()
- *
- * @param $table
- *   The name of the base table to lookup.
- * @return
- *   A query-safe table name pointing to the primary domain and default
- *   database..
- */
-function domain_get_primary_table($table) {
-  global $databases;
-  $db_prefix = isset($databases['default']['default']['prefix']) ? $databases['default']['default']['prefix'] : '';
-  if (is_string($db_prefix)) {
-    $table = $db_prefix . $table;
-  }
-  elseif (is_array($db_prefix)) {
-    $table = $db_prefix['default'] . $table;
-  }
-  // db_escape_table() relies on a database connection, so we mirror that public
-  // method here. See DatabaseConnection::escapeTable.
-  return preg_replace('/[^A-Za-z0-9_.]+/', '', $table);
 }
 
 /**
