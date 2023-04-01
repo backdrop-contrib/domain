@@ -10,6 +10,7 @@
  */
 function domain_token_info() {
   // Domain token types.
+
   $info['types']['domain'] = array(
     'name' => t('Domains'),
     'description' => t('Tokens related to domains.'),
@@ -27,6 +28,7 @@ function domain_token_info() {
   );
 
   // Domain tokens.
+
   $info['tokens']['domain']['id'] = array(
     'name' => t('Domain id'),
     'description' => t('The domain ID.'),
@@ -73,10 +75,12 @@ function domain_tokens($type, $tokens, array $data = array(), array $options = a
   $replacements = array();
 
   // Base token handling.
+
   if ($type == 'domain' && !empty($data['domain'])) {
     $domain = $data['domain'];
 
     // Loop through the tokens and replace the elements.
+
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'id':
@@ -87,7 +91,7 @@ function domain_tokens($type, $tokens, array $data = array(), array $options = a
           $replacements[$original] = $domain['machine_name'];
           break;
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($domain['sitename']) : $domain['sitename'];
+          $replacements[$original] = $sanitize?check_plain($domain['sitename']) : $domain['sitename'];
           break;
         case 'path':
           if (!isset($domain['path'])) {
@@ -97,7 +101,7 @@ function domain_tokens($type, $tokens, array $data = array(), array $options = a
           break;
         case 'url':
           $url = domain_url_encode($domain['subdomain']);
-          $replacements[$original] = $sanitize ? check_plain($url) : $url;
+          $replacements[$original] = $sanitize?check_plain($url) : $url;
           break;
         case 'subdomain':
           $subdomain_elements = explode('.', $domain['subdomain']);
@@ -108,17 +112,18 @@ function domain_tokens($type, $tokens, array $data = array(), array $options = a
             $subdomain = 'www';
           }
           $subdomain = domain_url_encode($subdomain);
-          $replacements[$original] = $sanitize ? check_plain($subdomain) : $subdomain;
+          $replacements[$original] = $sanitize?check_plain($subdomain) : $subdomain;
           break;
         case 'hostname':
           $subdomain = $domain['subdomain'];
-          $replacements[$original] = $sanitize ? check_plain($subdomain) : $subdomain;
+          $replacements[$original] = $sanitize?check_plain($subdomain) : $subdomain;
           break;
       }
     }
   }
 
   // Node tokens.
+
   if ($type == 'node' && !empty($data['node']->nid)) {
     $node = $data['node'];
     $domain = domain_get_node_match($node->nid);
@@ -126,9 +131,10 @@ function domain_tokens($type, $tokens, array $data = array(), array $options = a
       return $replacements;
     }
     // Loop through the tokens to not waste cycles.
+
     foreach ($tokens as $name => $original) {
       if ($name == 'domain') {
-        $replacements[$original] = $sanitize ? check_plain($domain['sitename']) : $domain['sitename'];
+        $replacements[$original] = $sanitize?check_plain($domain['sitename']) : $domain['sitename'];
       }
     }
     if ($domain_tokens = token_find_with_prefix($tokens, 'domain')) {
@@ -137,12 +143,14 @@ function domain_tokens($type, $tokens, array $data = array(), array $options = a
   }
 
   // Current domain tokens.
+
   elseif ($type == 'current-domain') {
     $current_domain = domain_get_domain();
     $replacements += token_generate('domain', $tokens, array('domain' => $current_domain), $options);
   }
 
   // Default domain tokens.
+
   elseif ($type == 'default-domain') {
     $default_domain = domain_default(FALSE);
     $replacements += token_generate('domain', $tokens, array('domain' => $default_domain), $options);

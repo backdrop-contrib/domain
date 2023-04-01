@@ -15,7 +15,7 @@ function domain_theme_features_export_options() {
 /**
  * Implements hook_features_export().
  */
-function domain_theme_features_export($data, &$export, $module_name) {
+function domain_theme_features_export($data, $export, $module_name) {
   $export['dependencies']['domain_theme'] = 'domain_theme';
   $list = domain_features_selection($data);
   foreach ($list as $machine_name) {
@@ -33,8 +33,10 @@ function domain_theme_features_export_render($module_name, $data, $export = NULL
   $code = array();
   $code[] = '  $domain_themes = array();';
   // Set the wipe tables item.
+
   if ($wipe = domain_features_export_wipe_tables_code($data, $code, $export, 'domain_themes') && empty($export)) {
     // Check for changes against the target database.
+
     $data = domain_machine_names();
   }
   foreach ($data as $name) {
@@ -86,6 +88,7 @@ function domain_theme_features_revert($module) {
 function domain_theme_features_rebuild($module) {
   if ($defaults = domain_features_load($module, 'domain_theme_default_themes', TRUE)) {
     // Check for hard rebuild/revert.
+
     if ($wipe = domain_features_wipe_tables($defaults)) {
       db_delete('domain_theme')
         ->execute();
@@ -97,10 +100,12 @@ function domain_theme_features_rebuild($module) {
         continue;
       }
       // Delete existing theme settings.
+
       db_delete('domain_theme')
         ->condition('domain_id', $domain_id)
         ->execute();
       // Save the new theme settings.
+
       if (!empty($themes)) {
         foreach ($themes as $theme) {
           $record = array(
@@ -110,7 +115,7 @@ function domain_theme_features_rebuild($module) {
             'status' => $theme['status'],
             'filepath' => $theme['filepath'],
           );
-          drupal_write_record('domain_theme', $record);
+          backdrop_write_record('domain_theme', $record);
         }
       }
     }

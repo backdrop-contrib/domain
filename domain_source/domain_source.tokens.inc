@@ -9,13 +9,14 @@
  * Implements hook_token_info().
  * Provide information about our source domain token.
  *
- * @see http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_token_info/7
+ * @see http://api.drupal.org/api/backdrop/modules--system--system.api.php/function/hook_token_info/7
  * @return array
  *   An associative array of available tokens and token types.
  */
 function domain_source_token_info() {
 
   // Node tokens.
+
   $info['tokens']['node']['source-domain-node-url'] = array(
     'name' => t('Node URL with base source domain url.'),
     'description' => t("Node URL with base source domain url. Useful for canonical link."),
@@ -28,7 +29,7 @@ function domain_source_token_info() {
  * Implements hook_tokens().
  * Provide replacement values for placeholder tokens.
  *
- * @see http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_tokens/7
+ * @see http://api.drupal.org/api/backdrop/modules--system--system.api.php/function/hook_tokens/7
  * @param string $type
  *   The machine-readable name of the type (group) of token being replaced, such
  *   as 'node', 'user', or another type defined by a hook_token_info()
@@ -50,6 +51,7 @@ function domain_source_token_info() {
 function domain_source_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
   // Node tokens.
+
   if ($type == 'node' && !empty($data['node'])) {
     $node = $data['node'];
 
@@ -57,7 +59,8 @@ function domain_source_tokens($type, $tokens, array $data = array(), array $opti
       switch ($name) {
         case 'source-domain-node-url':
           // Get the query string parameters. If none set, set to NULL
-          $query_string = drupal_get_query_parameters();
+
+          $query_string = backdrop_get_query_parameters();
           if (empty($query_string)) {
             $query_string = NULL;
           }

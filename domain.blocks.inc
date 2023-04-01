@@ -55,10 +55,12 @@ function domain_block_view_information() {
     return;
   }
   // Print the assigned domains.
+
   if (!empty($node->subdomains)) {
     $output .= theme('item_list', array('items' => $node->subdomains, 'title' => t('Assigned domains')));
   }
   // Print the link source domain.
+
   $this_domain = domain_get_node_match($node->nid);
   $output .= theme('item_list', array('items' => array(check_plain($this_domain['sitename'])), 'title' => t('Source domain')));
   if (empty($output)) {
@@ -95,6 +97,7 @@ function domain_block_view_server() {
   $match = t('TRUE');
   if ($check == -1) {
     // Specific check for Domain Alias.
+
     if (isset($_domain['active_alias_id'])) {
       $match = t('ALIAS: Using alias %id', array('%id' => $_domain['active_alias_id']));
     }
@@ -118,7 +121,7 @@ function domain_block_view_server() {
     }
     $rows[] = array(
       check_plain($key),
-      !is_array($value) ? check_plain($value) : _domain_block_print_array($value),
+      !is_array($value)?check_plain($value) : _domain_block_print_array($value),
     );
   }
   $output = theme('table', array('header' => $header, 'rows' => $rows));

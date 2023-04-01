@@ -12,6 +12,7 @@
  */
 function domain_conf_domain_warning() {
   // These are the forms for variables set by Domain Conf.
+
   $forms = array(
     'system_admin_theme_settings',
     'system_performance_settings',
@@ -33,13 +34,18 @@ function domain_conf_domain_warning() {
  * Implements hook_domain_batch().
  */
 function domain_conf_domain_batch() {
+  $config = config('domain_conf.settings');
   $batch = array();
   // Allows the deletion of all Domain Configuration rows.
+
   $batch['domain_conf'] = array(
     '#form' => array(
       '#title' => t('Reset configurations'),
       '#type' => 'checkbox',
-      '#options' => array(0 => 1, 1 => t('Reset')),
+      '#options' => array(
+        0 => 1,
+        1 => t('Reset'),
+      ),
       '#description' => t('Delete custom settings for this domain.'),
     ),
     '#permission' => 'administer site configuration',
@@ -51,6 +57,7 @@ function domain_conf_domain_batch() {
     '#weight' => -10,
   );
   // Change the site name.
+
   $batch['site_name'] = array(
     '#form' => array(
       '#title' => t('Site name'),
@@ -61,7 +68,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_name', ''),
+    '#system_default' => config_get('system.performance', 'site_name'),
     '#variable' => 'site_name',
     '#meta_description' => t('Set the site name for all domains.'),
     '#data_type' => 'string',
@@ -70,6 +77,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Site configuration'),
   );
   // Change the email address.
+
   $batch['site_mail'] = array(
     '#form' => array(
       '#title' => t('Email address'),
@@ -80,7 +88,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_mail', ''),
+    '#system_default' => config_get('system.performance', 'site_mail'),
     '#variable' => 'site_mail',
     '#meta_description' => t('Set the email address for all domains.'),
     '#data_type' => 'string',
@@ -89,6 +97,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Site configuration'),
   );
   // Change the site slogan.
+
   $batch['site_slogan'] = array(
     '#form' => array(
       '#title' => t('Site slogan'),
@@ -99,7 +108,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_slogan', ''),
+    '#system_default' => config_get('system.performance', 'site_slogan'),
     '#variable' => 'site_slogan',
     '#meta_description' => t('Set the site slogan for all domains.'),
     '#data_type' => 'string',
@@ -108,6 +117,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Site configuration'),
   );
   // Change the site front page.
+
   $batch['site_frontpage'] = array(
     '#form' => array(
       '#title' => t('Site frontpage'),
@@ -118,7 +128,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_frontpage', 'node'),
+    '#system_default' => config_get('system.performance', 'site_frontpage'),
     '#variable' => 'site_frontpage',
     '#meta_description' => t('Set the site frontpage for all domains.'),
     '#data_type' => 'string',
@@ -127,6 +137,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Site configuration'),
   );
   // Change the anonymous user name.
+
   $batch['anonymous'] = array(
     '#form' => array(
       '#title' => t('Anonymous user'),
@@ -137,7 +148,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('anonymous', 'Anonymous'),
+    '#system_default' => config_get('system.performance', 'anonymous'),
     '#variable' => 'anonymous',
     '#meta_description' => t('Set the anonymous user label for all domains.'),
     '#data_type' => 'string',
@@ -146,6 +157,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Site configuration'),
   );
   // Change the administrative theme.
+
   $themes = list_themes();
   ksort($themes);
   $options[] = t('Use domain default theme');
@@ -161,7 +173,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('admin_theme', 0),
+    '#system_default' => config_get('system.performance', 'admin_theme'),
     '#variable' => 'admin_theme',
     '#meta_description' => t('Set the administrative theme for all domains.'),
     '#data_type' => 'string',
@@ -170,6 +182,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Administrative theme'),
   );
   // Choose whether the admin theme is used when creating/editing content
+
   $batch['node_admin_theme'] = array(
     '#form' => array(
       '#type' => 'checkbox',
@@ -178,7 +191,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('node_admin_theme', 0),
+    '#system_default' => config_get('system.performance', 'node_admin_theme'),
     '#variable' => 'node_admin_theme',
     '#meta_description' => t('Choose whether to use the administrative theme when editing or creating content on all domains.'),
     '#data_type' => 'boolean',
@@ -186,9 +199,11 @@ function domain_conf_domain_batch() {
     '#update_all' => TRUE,
     '#group' => t('Administrative theme'),
   );
-  
+
   // Change the timezone.
+
   $zones = system_time_zones();
+  // TODO This variable was probably removed in Backdrop without replacement.
   $batch['date_default_timezone'] = array(
     '#form' => array(
       '#title' => t('Timezone default'),
@@ -207,7 +222,8 @@ function domain_conf_domain_batch() {
     '#group' => t('Timezone settings'),
   );
   // Change the caching mode.
-  $cache = variable_get('cache', 0);
+
+  $cache = config_get('system.performance', 'cache');
   $batch['cache'] = array(
     '#form' => array(
       '#type' => 'checkbox',
@@ -225,15 +241,18 @@ function domain_conf_domain_batch() {
     '#group' => t('Performance'),
   );
   // Change the cache lifetime.
-  $period = drupal_map_assoc(array(0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
+
+  $period = backdrop_map_assoc(array(0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
   $period[0] = '<' . t('none') . '>';
+  // TODO This variable was probably removed in Backdrop without replacement.
+  // TODO This variable was probably removed in Backdrop without replacement.
   $batch['cache_lifetime'] = array(
     '#form' => array(
       '#type' => 'select',
       '#title' => t('Minimum cache lifetime'),
       '#default_value' => variable_get('cache_lifetime', 0),
       '#options' => $period,
-      '#description' => t('The minimum amount of time that will elapse before the caches are recreated.')
+      '#description' => t('The minimum amount of time that will elapse before the caches are recreated.'),
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
@@ -246,16 +265,17 @@ function domain_conf_domain_batch() {
     '#group' => t('Performance'),
   );
   // Toggle the site offline status.
+
   $batch['maintenance_mode'] = array(
     '#form' => array(
       '#type' => 'checkbox',
       '#title' => t('Put site into maintenance mode'),
-      '#default_value' => variable_get('maintenance_mode', 0),
+      '#default_value' => state_get('maintenance_mode', 0),
       '#description' => t('When enabled, only users with the "Access site in maintenance mode" <a href="@permissions-url">permission</a> are able to access your site to perform maintenance; all other visitors see the maintenance mode message configured below. Authorized users can log in directly via the <a href="@user-login">user login</a> page.', array('@permissions-url' => url('admin/people/permissions'), '@user-login' => url('user'))),
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('maintenance_mode', 0),
+    '#system_default' => state_get('maintenance_mode', 0),
     '#variable' => 'maintenance_mode',
     '#meta_description' => t('Set maintenance for all domains.'),
     '#data_type' => 'integer',
@@ -264,6 +284,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Maintenance mode'),
   );
   // Change the site offline message.
+
   $batch['maintenance_mode_message'] = array(
     '#form' => array(
       '#title' => t('Site offline message'),
@@ -274,7 +295,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => t('@site is currently under maintenance. We should be back shortly. Thank you for your patience.', array('@site' => variable_get('site_name', 'Drupal'))),
+    '#system_default' => t('@site is currently under maintenance. We should be back shortly. Thank you for your patience.', array('@site' => config_get('system.performance', 'site_name'))),
     '#variable' => 'maintenance_mode_message',
     '#meta_description' => t('Set the site offline message for all domains.'),
     '#data_type' => 'string',
@@ -283,6 +304,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Maintenance mode'),
   );
   // Change the default language.
+
   if (module_exists('locale')) {
     $languages = domain_conf_language_options();
     $default = language_default();
@@ -307,10 +329,12 @@ function domain_conf_domain_batch() {
     );
   }
   // Change the menus
+
   if (module_exists('menu')) {
     $menus = menu_get_menus();
     $menu_options = $menus;
     $menus[0] = t('Do not use for this site');
+    // TODO This variable was probably removed in Backdrop without replacement.
     $main = variable_get('menu_main_links_source', 'main-menu');
     $batch['menu_main_links_source'] = array(
       '#form' => array(
@@ -330,12 +354,13 @@ function domain_conf_domain_batch() {
       '#group' => t('Menu settings'),
       '#module' => t('Menu'),
     );
+    // TODO This variable was probably removed in Backdrop without replacement.
     $batch['menu_secondary_links_source'] = array(
       '#form' => array(
         '#title' => t('Source for the Secondary links'),
         '#type' => 'select',
         '#options' => $menus,
-        '#description' => t("Select the source for the Secondary links. An advanced option allows you to use the same source for both Main links (currently %main) and Secondary links: if your source menu has two levels of hierarchy, the top level menu links will appear in the Main links, and the children of the active link will appear in the Secondary links." , array('%main' => isset($menus[$main]) ? $menus[$main] : t('No Main menu'))),
+        '#description' => t("Select the source for the Secondary links. An advanced option allows you to use the same source for both Main links (currently %main) and Secondary links: if your source menu has two levels of hierarchy, the top level menu links will appear in the Main links, and the children of the active link will appear in the Secondary links.", array('%main' => isset($menus[$main]) ? $menus[$main] : t('No Main menu'))),
       ),
       '#permission' => 'administer menu',
       '#domain_action' => 'domain_conf',
@@ -350,20 +375,28 @@ function domain_conf_domain_batch() {
     );
     $types = node_type_get_types();
     // Node menu handling is much more complex now.
-    // Call Drupal.menu_update_parent_list() to filter the list of
+
+    // Call Backdrop.menu_update_parent_list() to filter the list of
+
     // available default parent menu items based on the selected menus.
+
     // This function will not work with multiple form elements on the page.
+
     // TODO: Replace or extend the core JS.
+
     /*
-    drupal_add_js(
-      '(function ($) { Drupal.menu_update_parent_list(); })(jQuery);',
-      array('scope' => 'footer', 'type' => 'inline')
-    );
-    drupal_add_js(drupal_get_path('module', 'menu') . '/menu.admin.js'));
-    */
+     backdrop_add_js(
+     '(function ($) { Backdrop.menu_update_parent_list(); })(jQuery);',
+     array('scope' => 'footer', 'type' => 'inline')
+     );
+     backdrop_add_js(backdrop_get_path('module', 'menu') . '/menu.admin.js'));
+     */
     // To avoid an 'illegal option' error after saving the form we have to load
+
     // all available menu items. Otherwise it is not possible to dynamically add
+
     // options to the list.
+
     foreach ($types as $type) {
       $form['menu']['menu_options'] = array(
         '#type' => 'checkboxes',
@@ -377,6 +410,7 @@ function domain_conf_domain_batch() {
         '#attributes' => array('class' => array('menu-title-select')),
         '#process' => array('domain_conf_get_menu_parents'),
       );
+      // TODO This variable was probably removed in Backdrop without replacement.
       $batch['menu_options_' . $type->type] = array(
         '#form' => $form['menu']['menu_options'],
         '#permission' => 'administer menu',
@@ -391,6 +425,7 @@ function domain_conf_domain_batch() {
         '#group' => t('@type menu settings', array('@type' => $type->name)),
         '#module' => t('Menu'),
       );
+      // TODO This variable was probably removed in Backdrop without replacement.
       $batch['menu_parent_' . $type->type] = array(
         '#form' => $form['menu']['menu_parent'],
         '#permission' => 'administer menu',
@@ -433,7 +468,7 @@ function domain_conf_domain_delete($domain, $form_values = array()) {
  * So we use this process callback to populate the menus safely, after they
  * have been rebuilt.
  */
-function domain_conf_get_menu_parents($element, &$form_state) {
+function domain_conf_get_menu_parents($element, $form_state) {
   static $options;
   if (!isset($options)) {
     $options = menu_parent_options(menu_get_menus(), array('mlid' => 0));

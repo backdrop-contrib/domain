@@ -8,6 +8,7 @@
  */
 
 // Ensure that the node admin page functions are loaded.
+
 module_load_include('inc', 'node', 'node.admin');
 
 /**
@@ -21,10 +22,12 @@ function domain_content_page() {
   $content = array();
   $content = system_admin_menu_block(menu_get_item('admin/domain/content'));
   // Print the list of options.
+
   if (!empty($content)) {
     $output = theme('admin_block_content', array('content' => $content));
   }
   // There was an error or invalid request.
+
   else {
     $output = t('There are no valid domains configured.');
   }
@@ -49,37 +52,53 @@ function domain_content_list() {
 
   if (!$show_all) {
     if (empty($user->domain_user)) {
-      return drupal_access_denied();
+      return backdrop_access_denied();
     }
     $user_domains = array_filter($user->domain_user);
   }
   // Table information
+
   $header = array(
-    array('data' => t('Id'), 'field' => 'domain_id'),
-    array('data' => t('Site content'), 'field' => 'sitename'),
+    array(
+      'data' => t('Id'),
+      'field' => 'domain_id',
+    ),
+    array(
+      'data' => t('Site content'),
+      'field' => 'sitename',
+    ),
     array('data' => t('Content count')),
     array('data' => t('Unpublished')),
-    array('data' => t('Site'), 'field' => 'subdomain'),
+    array(
+      'data' => t('Site'),
+      'field' => 'subdomain',
+    ),
   );
   // Set up the base query.
+
   $query = db_select('domain', 'd')
     ->fields('d', array('is_default', 'domain_id', 'sitename', 'subdomain', 'scheme', 'valid'));
   // Filter by user access to assigned domains.
+
   if (!$show_all) {
     $query->condition('domain_id', $user_domains, 'IN');
   }
   // Add the tablesort.
+
   $query = $query
     ->extend('TableSort')
     ->orderBy('is_default', 'DESC')
     ->orderByHeader($header);
+  // TODO This variable was probably removed in Backdrop without replacement.
   $query = $query->extend('PagerDefault')->limit(variable_get('domain_list_size', DOMAIN_LIST_SIZE));
   // Get the domains.
+
   $result = $query->execute();
   foreach ($result as $data) {
     $domains[] = (array) $data;
   }
   // Create the table.
+
   $rows = array();
   foreach ($domains as $domain) {
     $path = trim(domain_get_path($domain), '/');
@@ -109,7 +128,7 @@ function domain_content_list() {
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
-      '#attributes' =>  array('id' => 'domain-list'),
+      '#attributes' => array('id' => 'domain-list'),
     );
     $build['pager']['#theme'] = 'pager';
   }
@@ -140,31 +159,35 @@ function domain_content_view($domain_id = NULL, $all_affiliates = FALSE) {
   $build = array();
   $_domain = domain_get_domain();
   // Load the active domain, which is not necessarily the current domain.
+
   if (!is_null($domain_id) && $domain_id != $_domain['domain_id']) {
     domain_set_domain($domain_id);
     $_domain = domain_get_domain();
   }
   $output = '';
   // Override the $_domain global so we can see the appropriate content
+
   if (!is_null($domain_id)) {
     $_domain['site_grant'] = FALSE;
-    drupal_set_title(t('Content for @domain', array('@domain' => $_domain['sitename'])));
+    backdrop_set_title(t('Content for @domain', array('@domain' => $_domain['sitename'])));
   }
   elseif ($all_affiliates) {
     $_domain['site_grant'] = TRUE;
-    drupal_set_title(t('Content for all affiliate sites'));
+    backdrop_set_title(t('Content for all affiliate sites'));
   }
 
   // KILLSWITCH CASE: returns an error
+
   else {
-    drupal_set_message(t('Invalid request'), 'error');
+    backdrop_set_message(t('Invalid request'), 'error');
     $build['content'] = array(
       '#markup' => t('<p>The specified domain does not exist.</p>'),
     );
     return $build;
   }
-  $output = drupal_get_form('domain_content_admin');
+  $output = backdrop_get_form('domain_content_admin');
   // Reset the active domain.
+
   domain_reset_domain();
   return $output;
 }
@@ -175,12 +198,13 @@ function domain_content_view($domain_id = NULL, $all_affiliates = FALSE) {
  * @return
  *   A themed HTML batch content editing form.
  */
-function domain_content_admin($form, &$form_state) {
-  $form['#attached']['css'] = array(drupal_get_path('module', 'domain_content') . '/domain_content.css');
+function domain_content_admin($form, $form_state) {
+  $form['#attached']['css'] = array(backdrop_get_path('module', 'domain_content') . '/domain_content.css');
 
   if (isset($form_state['values']['operation']) && $form_state['values']['operation'] == 'delete') {
     $form = node_multiple_delete_confirm($form, $form_state, array_filter($form_state['values']['nodes']));
     // Set the proper path for form actions.
+
     $form['actions']['cancel']['#href'] = $form['actions']['cancel']['#options']['path'] = request_path();
     $form['#submit'][] = 'domain_content_delete_multiple_submit';
     return $form;
@@ -189,6 +213,7 @@ function domain_content_admin($form, &$form_state) {
   $form['#submit'][] = 'node_filter_form_submit';
 
   // Privileged users can make global changes to Domain Access permissions.
+
   if (user_access('set domain access')) {
     domain_content_add_form_widget($form);
   }
@@ -196,6 +221,7 @@ function domain_content_admin($form, &$form_state) {
 
   $form['admin']['options']['submit']['#submit'][] = 'domain_content_process_nodes';
   // Filter the available operations based on user permissions.
+
   domain_content_filter_operations($form['admin']['options']['operation']['#options']);
 
   return $form;
@@ -204,7 +230,7 @@ function domain_content_admin($form, &$form_state) {
 /**
  * On delete confirmation, redirect properly.
  */
-function domain_content_delete_multiple_submit($form, &$form_state) {
+function domain_content_delete_multiple_submit($form, $form_state) {
   $form_state['redirect'] = $form['actions']['cancel']['#href'];
 }
 
@@ -219,6 +245,7 @@ function domain_content_form() {
   $admin_access = user_access('administer nodes');
 
   // Build the 'Update options' form.
+
   $form['options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update options'),
@@ -226,12 +253,14 @@ function domain_content_form() {
   );
   $options = array();
   // Get the actions the user may perform.
+
   if ($admin_access) {
     foreach (module_invoke_all('node_operations') as $operation => $array) {
       $options[$operation] = $array['label'];
     }
   }
   // Otherwise, only allow domain content module operations.
+
   else {
     $list = domain_content_node_operations();
     foreach ($list as $key => $value) {
@@ -239,6 +268,7 @@ function domain_content_form() {
     }
   }
   // No options? No form access.
+
   if (empty($options)) {
     $form['options']['#access'] = FALSE;
   }
@@ -255,21 +285,40 @@ function domain_content_form() {
   );
 
   // Enable language column if translation module is enabled
+
   // or if we have any node with language.
+
   $multilanguage = (module_exists('translation') || db_query("SELECT 1 FROM {node} WHERE language <> :language", array(':language' => LANGUAGE_NONE))->fetchField());
 
   // Build the sortable table header.
+
   $header = array(
-    'title' => array('data' => t('Title'), 'field' => 'n.title'),
+    'title' => array(
+      'data' => t('Title'),
+      'field' => 'n.title',
+    ),
     'domains' => array('data' => t('Affiliates')),
-    'type' => array('data' => t('Type'), 'field' => 'n.type'),
+    'type' => array(
+      'data' => t('Type'),
+      'field' => 'n.type',
+    ),
     'author' => t('Author'),
-    'status' => array('data' => t('Status'), 'field' => 'n.status'),
-    'changed' => array('data' => t('Updated'), 'field' => 'n.changed', 'sort' => 'desc')
+    'status' => array(
+      'data' => t('Status'),
+      'field' => 'n.status',
+    ),
+    'changed' => array(
+      'data' => t('Updated'),
+      'field' => 'n.changed',
+      'sort' => 'desc',
+    ),
   );
 
   if ($multilanguage) {
-    $header['language'] = array('data' => t('Language'), 'field' => 'n.language');
+    $header['language'] = array(
+      'data' => t('Language'),
+      'field' => 'n.language',
+    );
   }
   $header['operations'] = array('data' => t('Operations'));
 
@@ -278,12 +327,17 @@ function domain_content_form() {
 
   if (!user_access('bypass node access')) {
     // If the user can view unpublished nodes on assigned domains, then we can
+
     // continue here.
+
     if (user_access('view unpublished domain content')) {
       // Do nothing.
+
     }
     // If the user is able to view their own unpublished nodes, allow them
+
     // to see these in addition to published nodes.
+
     elseif (user_access('view own unpublished content')) {
       $subselect = db_select('node', 'node')
         ->fields('node', array('nid'))
@@ -295,19 +349,23 @@ function domain_content_form() {
       );
     }
     // If not, restrict the query to published nodes.
+
     else {
       $query->condition('n.status', 1);
     }
   }
 
   // Write the proper query.
+
   $arg = arg(3);
   // If 'all', only show content assigned to all affiliates.
+
   if ($arg == 'all') {
     domain_content_alter_node_query($query, TRUE, FALSE);
   }
   else {
     // Restrict the query to the active domain.
+
     domain_content_alter_node_query($query, FALSE);
   }
 
@@ -320,11 +378,12 @@ function domain_content_form() {
   $nodes = node_load_multiple($nids);
 
   // Prepare the list of nodes.
+
   $languages = language_list();
-  $destination = drupal_get_destination();
+  $destination = backdrop_get_destination();
   $options = array();
   foreach ($nodes as $node) {
-    $l_options = (!empty($node->language) && $node->language != LANGUAGE_NONE) ? array('language' => $languages[$node->language]) : array();
+    $l_options = (!empty($node->language) && $node->language != LANGUAGE_NONE)?array('language' => $languages[$node->language]) : array();
     $options[$node->nid] = array(
       'title' => array(
         'data' => array(
@@ -338,13 +397,14 @@ function domain_content_form() {
       'domains' => domain_content_view_domains($node), // set the assigned domains
       'type' => check_plain(node_type_get_name($node)),
       'author' => theme('username', array('account' => $node)),
-      'status' => $node->status ? t('published') : t('not published'),
+      'status' => $node->status?t('published') : t('not published'),
       'changed' => format_date($node->changed, 'short'),
     );
     if ($multilanguage) {
-      $options[$node->nid]['language'] = (empty($node->language) || $node->language == LANGUAGE_NONE) ? t('Language neutral') : t($languages[$node->language]->name);
+      $options[$node->nid]['language'] = (empty($node->language) || $node->language == LANGUAGE_NONE)?t('Language neutral') : t($languages[$node->language]->name);
     }
     // Build a list of all the accessible operations for the current node.
+
     $operations = array();
     if (node_access('update', $node)) {
       $operations['edit'] = array(
@@ -363,6 +423,7 @@ function domain_content_form() {
     $options[$node->nid]['operations'] = array();
     if (count($operations) > 1) {
       // Render an unordered list of operations links.
+
       $options[$node->nid]['operations'] = array(
         'data' => array(
           '#theme' => 'links__node_operations',
@@ -373,6 +434,7 @@ function domain_content_form() {
     }
     elseif (!empty($operations)) {
       // Render the first and only operation as a link.
+
       $link = reset($operations);
       $options[$node->nid]['operations'] = array(
         'data' => array(
@@ -385,7 +447,9 @@ function domain_content_form() {
     }
   }
   // Only use a tableselect when the current user is able to perform any
+
   // operations.
+
   if (!empty($operations)) {
     $form['nodes'] = array(
       '#type' => 'tableselect',
@@ -395,6 +459,7 @@ function domain_content_form() {
     );
   }
   // Otherwise, use a simple table.
+
   else {
     $form['nodes'] = array(
       '#theme' => 'table',
@@ -413,31 +478,33 @@ function domain_content_form() {
  * Format domains for this node.
  */
 function domain_content_view_domains($node) {
-    $node_domains = array();
-    if (!empty($node->domains)) {
-      foreach ($node->domains as $domain) {
-        // Convert the domain ids to data so we can print them.
-        $node_domains[] = domain_lookup($domain);
-      }
+  $node_domains = array();
+  if (!empty($node->domains)) {
+    foreach ($node->domains as $domain) {
+      // Convert the domain ids to data so we can print them.
+
+      $node_domains[] = domain_lookup($domain);
     }
-    // If we have multiple domains, print them.
-    $items = array();
-    if ($node->domain_site) {
-      $items[-1] = t('All affiliates');
+  }
+  // If we have multiple domains, print them.
+
+  $items = array();
+  if ($node->domain_site) {
+    $items[-1] = t('All affiliates');
+  }
+  if (!empty($node_domains)) {
+    foreach ($node_domains as $item) {
+      $items[$item['domain_id']] = check_plain($item['sitename']);
     }
-    if (!empty($node_domains)) {
-      foreach ($node_domains as $item) {
-        $items[$item['domain_id']] = check_plain($item['sitename']);
-      }
+  }
+  if (module_exists('domain_source')) {
+    $source = NULL;
+    $source = db_query("SELECT domain_id FROM {domain_source} WHERE nid = :nid", array(':nid' => $node->nid))->fetchField();
+    if (!empty($source) && isset($items[$source])) {
+      $items[$source] .= '*';
     }
-    if (module_exists('domain_source')) {
-      $source = NULL;
-      $source = db_query("SELECT domain_id FROM {domain_source} WHERE nid = :nid", array(':nid' => $node->nid))->fetchField();
-      if (!empty($source) && isset($items[$source])) {
-        $items[$source] .= '*';
-      }
-    }
-    return theme('item_list', array('items' => $items));
+  }
+  return theme('item_list', array('items' => $items));
 }
 
 /**
@@ -449,12 +516,14 @@ function domain_content_view_domains($node) {
  * @return
  *   No return value. Modify by reference.
  */
-function domain_content_filter_operations(&$operations) {
+function domain_content_filter_operations($operations) {
   // Administer nodes can do anything.
+
   if (user_access('administer nodes')) {
     return;
   }
   // Check for the delete perm.
+
   if (!user_access('delete domain content')) {
     unset($operations['delete']);
   }
@@ -499,6 +568,7 @@ function domain_content_alter_node_query(QueryAlterableInterface $query, $all_af
       }
       $query->condition($or);
       // Node module will not have run, so add the distinct.
+
       $query->distinct();
     }
   }

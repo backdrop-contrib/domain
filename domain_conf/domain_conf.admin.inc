@@ -22,11 +22,11 @@ function domain_conf_page($domain) {
     return t('Invalid page requested.');
   }
   if ($domain['domain_id'] == domain_default_id()) {
-    drupal_set_message(t('This is your default domain. Use of this form is discouraged. Set these values through the standard interface.'), 'warning', FALSE);
+    backdrop_set_message(t('This is your default domain. Use of this form is discouraged. Set these values through the standard interface.'), 'warning', FALSE);
   }
   $output = theme('domain_conf_reset', array('domain' => $domain));
-  drupal_set_title(t('Settings for !site', array('!site' => $domain['subdomain'])));
-  $form = drupal_get_form('domain_conf_form', $domain);
+  backdrop_set_title(t('Settings for !site', array('!site' => $domain['subdomain'])));
+  $form = backdrop_get_form('domain_conf_form', $domain);
   $form['intro'] = array(
     '#weight' => -5,
     '#markup' => $output,
@@ -43,7 +43,7 @@ function domain_conf_page($domain) {
  * @param $domain
  *   The domain currently being updated.
  */
-function domain_conf_form($form, &$form_state, $domain) {
+function domain_conf_form($form, $form_state, $domain) {
   $form = array();
   $batch = domain_batch_actions();
   $settings = domain_conf_data_get($domain['domain_id']);
@@ -69,6 +69,7 @@ function domain_conf_form($form, &$form_state, $domain) {
     $form[$group][$key] = $action['#form'];
     $form[$group][$key]['#default_value'] = isset($settings[$key]) ? $settings[$key] : $action['#system_default'];
     // Change the path for the front page.
+
     if ($key == 'site_frontpage') {
       global $base_url;
       $prefix = $base_url . '/';
@@ -78,8 +79,13 @@ function domain_conf_form($form, &$form_state, $domain) {
       $form[$default_group]['site_frontpage']['#field_prefix'] = $fix;
     }
   }
-  $form['domain_id'] = array('#type' => 'value', '#value' => $domain['domain_id']);
+  $form['domain_id'] = array(
+    '#type' => 'value',
+    '#value' => $domain['domain_id'],
+  );
   // Site name must be edited at the domain creation screen.
+
+  // TODO This variable was probably removed in Backdrop without replacement.
   if (variable_get('domain_sitename_override', 1) && isset($form[$default_group]['site_name'])) {
     $sitename = domain_conf_variable_get($domain['domain_id'], 'site_name');
     $form[$default_group]['site_name'] = array(
@@ -91,20 +97,23 @@ function domain_conf_form($form, &$form_state, $domain) {
     );
   }
   // Locale module is a little tricky, so handle it properly.
+
   $str = t('Language settings');
   if (isset($form[$str]['language_default']) && !isset($settings['language_default'])) {
     $form[$str]['language_default']['#default_value'] = NULL;
   }
 
   // Grab any extra elements defined by other modules.
+
   $extra = domain_conf_api(TRUE, $settings);
   // Merge the $extra and $form arrays.
+
   $form = array_merge_recursive($form, $extra);
 
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save domain settings'),
-    '#weight' => 10
+    '#weight' => 10,
   );
   return $form;
 }
@@ -112,10 +121,11 @@ function domain_conf_form($form, &$form_state, $domain) {
 /**
  * FormsAPI for domain_conf_form().
  */
-function domain_conf_form_submit($form, &$form_state) {
+function domain_conf_form_submit($form, $form_state) {
   $new_settings = array();
 
   // Throw away what we don't need.
+
   $ignore = array('form_token', 'form_id', 'form_build_id', 'op', 'submit', 'domain_id');
   foreach ($form_state['values'] as $key => $value) {
     if (in_array($key, $ignore)) {
@@ -125,10 +135,12 @@ function domain_conf_form_submit($form, &$form_state) {
   }
 
   // Update configuration.
+
   domain_conf_data_set($form_state['values']['domain_id'], $new_settings);
-  drupal_set_message(t('Domain options saved successfully.'));
+  backdrop_set_message(t('Domain options saved successfully.'));
 
   // Clear the cache.
+
   cache_clear_all();
 }
 
@@ -142,11 +154,15 @@ function domain_conf_form_submit($form, &$form_state) {
  *   A confirmation form.
  */
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function domain_conf_reset($domain) {
   if ($domain == -1) {
     return t('Invalid page requested.');
   }
-  return drupal_get_form('domain_conf_reset_form', $domain);
+  return backdrop_get_form('domain_conf_reset_form', $domain);
 }
 
 /**
@@ -159,8 +175,15 @@ function domain_conf_reset($domain) {
  *   Themed HTML form.
  */
 
-function domain_conf_reset_form($form, &$form_state, $domain) {
-  $extra['domain_id'] = array('#type' => 'value', '#value' => $domain['domain_id']);
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function domain_conf_reset_form($form, $form_state, $domain) {
+  $extra['domain_id'] = array(
+    '#type' => 'value',
+    '#value' => $domain['domain_id'],
+  );
   $form = confirm_form($extra, t('Are you sure you wish to reset the settings for %name?', array('%name' => $domain['sitename'])), 'admin/structure/domain/view/' . $domain['domain_id'] . '/config', t('Submitting this form will restore default settings for this domain.'));
   return $form;
 }
@@ -168,13 +191,14 @@ function domain_conf_reset_form($form, &$form_state, $domain) {
 /**
  * FormsAPI for domain_conf_reset_form().
  */
-function domain_conf_reset_form_submit($form, &$form_state) {
+function domain_conf_reset_form_submit($form, $form_state) {
   domain_conf_data_delete($form_state['values']['domain_id']);
-  drupal_set_message(t('Domain configuration settings have been reset.'));
+  backdrop_set_message(t('Domain configuration settings have been reset.'));
 
   $form_state['redirect'] = 'admin/structure/domain/view/' . $form_state['values']['domain_id'] . '/config';
 
   // Clear the cache.
+
   cache_clear_all();
 }
 

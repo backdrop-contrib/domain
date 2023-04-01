@@ -16,10 +16,16 @@
  * Implements hook_domain_bootstrap_full().
  */
 function domain_conf_domain_bootstrap_full($domain) {
-  $check = &drupal_static(__FUNCTION__);
+  $check = backdrop_static(__FUNCTION__);
   // If running domain_set_domain(), we have issues with the variables
+
+
   // from the primary domain, which need to be loaded from cache.
+
+
   // @link http://drupal.org/node/412156
+
+
   if ($check) {
     $_domain = domain_get_domain();
     if ($domain['domain_id'] == 0 && $check != $_domain['domain_id']) {
@@ -27,18 +33,24 @@ function domain_conf_domain_bootstrap_full($domain) {
     }
   }
   // Flag that we have already loaded.
+
+
   $check = $domain['domain_id'];
   $settings = domain_conf_data_get($domain['domain_id']);
   if (!empty($settings)) {
     global $conf;
 
     // Overwrite the $conf variables.
+
+
     foreach ($settings as $key => $value) {
       if ($value === 'domain-conf-ignore') {
         continue;
       }
 
       // Language handling is a special case.
+
+
       if ($key == 'language_default') {
         $language = (bool) db_query("SELECT status FROM {system} WHERE name = 'locale' AND type = 'module'")->fetchField();
         if ($language) {
@@ -49,7 +61,11 @@ function domain_conf_domain_bootstrap_full($domain) {
             $conf[$key] = $value;
           }
           // Ensure we store the default language in case of reset.
+
+
           // See domain_conf_js_maintain().
+
+
           $result = db_query('SELECT value FROM {variable} WHERE name = :name', array(':name' => $key))->fetchField();
           if (!empty($result)) {
             domain_conf_default_language(unserialize($result));
@@ -78,17 +94,25 @@ function domain_conf_domain_bootstrap_full($domain) {
  */
 function domain_conf_data_get($domain_id, $reset = FALSE) {
   // Static cache management.
-  $static_cache = &drupal_static(__FUNCTION__, array());
+
+
+  $static_cache = backdrop_static(__FUNCTION__, array());
   if (!$reset && isset($static_cache[$domain_id])) {
     return $static_cache[$domain_id];
   }
 
   // Used to expose the DB call flag for testing
+
+
   // TODO: Think of better implementation to track query executions.
-  $hit = &drupal_static('domain_conf_data_get_db_hit', FALSE);
+
+
+  $hit = backdrop_static('domain_conf_data_get_db_hit', FALSE);
   $hit = TRUE;
 
   // Fetch data from source.
+
+
   $settings = array();
   $data = db_select('domain_conf', 'd')
     ->fields('d', array('settings'))
@@ -100,6 +124,8 @@ function domain_conf_data_get($domain_id, $reset = FALSE) {
   }
 
   // Populate cache layers.
+
+
   $static_cache[$domain_id] = $settings;
 
   return $settings;
@@ -124,13 +150,15 @@ function domain_conf_data_set($domain_id, array $new_settings, $merge = TRUE) {
   db_merge('domain_conf')
     ->key(array('domain_id' => $domain_id))
     ->fields(array(
-      'domain_id' => $domain_id,
-      'settings' => serialize($new_settings),
-    ))
+    'domain_id' => $domain_id,
+    'settings' => serialize($new_settings),
+  ))
     ->execute();
 
   // Update the static cache for any subsequent gets.
-  $static_cache_get = &drupal_static('domain_conf_data_get', array());
+
+
+  $static_cache_get = backdrop_static('domain_conf_data_get', array());
   $static_cache_get[$domain_id] = $new_settings;
 }
 
@@ -145,6 +173,8 @@ function domain_conf_data_delete($domain_id) {
   $wildcard = $domain_id === 'all';
 
   // Remove from source.
+
+
   $query = db_delete('domain_conf');
   if (!$wildcard) {
     $query->condition('domain_id', (int) $domain_id);
@@ -152,7 +182,9 @@ function domain_conf_data_delete($domain_id) {
   $query->execute();
 
   // Remove from the static cache for any subsequent gets.
-  $static_cache_get = &drupal_static('domain_conf_data_get', array());
+
+
+  $static_cache_get = backdrop_static('domain_conf_data_get', array());
   if ($wildcard) {
     $static_cache_get = array();
   }
@@ -162,7 +194,7 @@ function domain_conf_data_delete($domain_id) {
 }
 
 /**
- * Implements hook_menu()
+ * Implements hook_menu().
  */
 function domain_conf_menu() {
   $items = array();
@@ -186,7 +218,7 @@ function domain_conf_menu() {
 }
 
 /**
- * Implements hook_theme()
+ * Implements hook_theme().
  */
 function domain_conf_theme() {
   $themes = array(
@@ -202,6 +234,8 @@ function domain_conf_theme() {
  */
 function domain_conf_hook_info() {
   // TODO: test the loader function, which may fail in D7.
+
+
   $hooks['domain_conf'] = array(
     'group' => 'domain',
   );
@@ -232,8 +266,12 @@ function domain_conf_api($all = FALSE, $settings = array()) {
       }
       if (!empty($value['#domain_setting']) || $all == TRUE) {
         // Discard the #domain_setting flag; it is not needed.
+
+
         unset($value['#domain_setting']);
         // Set the $options array.
+
+
         $options[$key] = domain_conf_settings_load($value, $settings);
       }
     }
@@ -241,7 +279,7 @@ function domain_conf_api($all = FALSE, $settings = array()) {
   return $options;
 }
 
- /**
+/**
  * Recursively set default values of form fields based on settings for the domain being configured.
  *
  * @param $elements
@@ -286,29 +324,49 @@ function domain_conf_block_info() {
  */
 function domain_conf_block_view($delta = '') {
   // Dispatch to sub-function.
+
+
   if (empty($delta)) {
     return;
   }
   // Get the menu information.
+
+
   $menus = menu_get_menus();
   $string = str_replace('domain-', '', $delta);
   $name = str_replace('-links', '-menu', $string);
   $source = 'menu_' . str_replace('-', '_', $string) . '_source';
+  // TODO This variable was probably removed in Backdrop without replacement.
+
   $data = variable_get($source, $string);
   // Some domains can disable primary and secondary links.
+
+
   if (empty($data)) {
     return;
   }
   // In D7, secondary links may be children of main links.
+
+
+  // TODO This variable was probably removed in Backdrop without replacement.
+
+  // TODO This variable was probably removed in Backdrop without replacement.
+
   if ($delta == 'domain-secondary-links' && variable_get('menu_secondary_links_source', 'user-menu') == variable_get('menu_main_links_source', 'main-menu')) {
     // This does not work right now.
+
+
   }
   if (!isset($menus[$data])) {
     return;
   }
   // Output the block.
+
+
   $output = menu_tree($data);
   // Build the block.
+
+
   $block = array(
     'subject' => check_plain($menus[$data]),
     'content' => $output,
@@ -339,10 +397,14 @@ function domain_conf_variable_set($domain_id, $variable, $value = NULL) {
   global $conf, $_domain;
   domain_conf_variable_save($domain_id, $variable, $value);
   // Clear the cache.
+
+
   cache_clear_all('variables', 'cache');
-  drupal_static_reset('domain_conf_variable_get_settings');
-  drupal_static_reset('domain_conf_variable_get_base');
+  backdrop_static_reset('domain_conf_variable_get_settings');
+  backdrop_static_reset('domain_conf_variable_get_base');
   // If we are on the active domain, set the active variable.
+
+
   if ($domain_id == $_domain['domain_id']) {
     $conf[$variable] = $value;
   }
@@ -366,14 +428,16 @@ function domain_conf_variable_set($domain_id, $variable, $value = NULL) {
  */
 function domain_conf_variable_get($domain_id, $variable = '', $all = FALSE, $reset = FALSE) {
   $_domain = domain_get_domain();
-  $settings = &drupal_static(__FUNCTION__ . '_settings');
-  $base = &drupal_static(__FUNCTION__ . '_base');
+  $settings = backdrop_static(__FUNCTION__ . '_settings');
+  $base = backdrop_static(__FUNCTION__ . '_base');
   if (empty($base)) {
     $base = _domain_conf_load_primary(FALSE);
   }
 
   if (!isset($settings[$domain_id]) || $reset) {
     // Get the current settings for this domain, if any.
+
+
     $data = domain_conf_data_get($domain_id, $reset);
     $settings[$domain_id] = array_merge($base, $data);
   }
@@ -418,12 +482,14 @@ function domain_conf_language_options() {
  *   Otherwise, return the settings data for the primary domain.
  */
 function _domain_conf_load_primary($unset = FALSE) {
-  $settings = &drupal_static(__FUNCTION__);
+  $settings = backdrop_static(__FUNCTION__);
 
   if (!isset($settings)) {
     $settings = variable_initialize(array());
   }
   // Do we reset the global or just return data?
+
+
   if ($unset) {
     global $conf;
     $conf = $settings;
@@ -442,9 +508,13 @@ function _domain_conf_load_primary($unset = FALSE) {
  */
 function domain_conf_delete_variable($domain_id, $variable) {
   // Get the current settings for this domain, if any.
+
+
   $settings = domain_conf_data_get($domain_id, TRUE);
 
   // Settings found, remove them.
+
+
   if (!empty($settings)) {
     unset($settings[$variable]);
     domain_conf_data_set($domain_id, $settings, FALSE);
@@ -482,7 +552,7 @@ function domain_conf_features_api() {
       'default_file' => FEATURES_DEFAULTS_CUSTOM,
       'default_filename' => 'domains',
       'feature_source' => TRUE,
-      'file' => drupal_get_path('module', 'domain_conf') .'/domain_conf.features.inc',
+      'file' => backdrop_get_path('module', 'domain_conf') . '/domain_conf.features.inc',
     ),
   );
   return $components;
@@ -510,18 +580,20 @@ function domain_conf_features_api() {
  */
 function domain_conf_js_maintain() {
   // Only a factor if using the Locale module.
+
+
   if (!module_exists('locale')) {
     return;
   }
   if ($default_language = domain_conf_default_language()) {
-    drupal_register_shutdown_function('domain_conf_set_default_language', $default_language);
+    backdrop_register_shutdown_function('domain_conf_set_default_language', $default_language);
   }
 }
 
 /**
  * Implements hook_js_alter().
  */
-function domain_conf_js_alter(&$javascript) {
+function domain_conf_js_alter($javascript) {
   domain_conf_js_maintain();
 }
 
@@ -542,7 +614,7 @@ function domain_conf_multilingual_settings_changed() {
  *  The language object or FALSE if not set.
  */
 function domain_conf_default_language($value = NULL) {
-  $language = &drupal_static(__FUNCTION__);
+  $language = backdrop_static(__FUNCTION__);
   if (!is_null($value)) {
     $language = $value;
   }
@@ -557,6 +629,14 @@ function domain_conf_default_language($value = NULL) {
  */
 function domain_conf_set_default_language($default_language) {
   if (!empty($default_language) && is_object($default_language)) {
-    variable_set('language_default', $default_language);
+    config_set('system.performance', 'language_default', $default_language);
   }
+}
+
+/**
+ * Implements hook_autoload_info().
+ */
+function domain_conf_autoload_info() {
+  return array(
+  );
 }

@@ -21,6 +21,7 @@ class DomainConfTestCase extends DomainTestCase {
     parent::setUp($modules);
 
     // Create some test domains.
+
     $this->domainCreateDomains();
   }
 
@@ -29,6 +30,7 @@ class DomainConfTestCase extends DomainTestCase {
    */
   public function testCrudUtilities() {
     // Init...
+
     $domain = domain_default();
     $domain_id = $domain['domain_id'];
     $reset = TRUE;
@@ -38,6 +40,7 @@ class DomainConfTestCase extends DomainTestCase {
     $this->assertFalse(isset($settings['value_2']), t('Setting `value_2` is not set yet.'));
 
     // Test settings additions.
+
     $settings['value_1'] = 1;
     $settings['value_2'] = 2;
     domain_conf_data_set($domain_id, $settings);
@@ -48,6 +51,7 @@ class DomainConfTestCase extends DomainTestCase {
     $this->assertTrue(isset($settings['value_2']), t('Setting `value_2` is set.'));
 
     // Test override: Change, remove and add settings.
+
     $settings['value_1'] = 11;
     unset($settings['value_2']);
     $settings['value_3'] = 3;
@@ -56,6 +60,7 @@ class DomainConfTestCase extends DomainTestCase {
     $this->assertTrue(domain_conf_data_get($domain_id, $reset) == $settings, t('Data extracted is the same as data passed in when overriding.'));
 
     // Test merge settings: add / update only.
+
     $new_settings = $settings;
     $new_settings['value_1'] = 111;
     unset($new_settings['value_3']);
@@ -66,10 +71,12 @@ class DomainConfTestCase extends DomainTestCase {
     $this->assertCacheState($domain_id, $settings);
 
     // Test domain conf removal.
+
     domain_conf_data_delete($domain_id);
     $this->assertNoCache($domain_id);
 
     // Assert the cache of empty/default configs (to spare the DB query).
+
     $settings = domain_conf_data_get($domain_id, $reset);
     $this->assertIdentical($settings, array(), t('No default overrides for domain :domain.', array(':domain' => $domain_id)));
     $this->assertCacheState($domain_id, array());
@@ -83,34 +90,40 @@ class DomainConfTestCase extends DomainTestCase {
     $domain_id = $domain['domain_id'];
 
     // Warm caches and DB with some testing data.
+
     $settings = domain_conf_data_get($domain_id, TRUE);
     $settings['value_1'] = 1;
     domain_conf_data_set($domain_id, $settings, FALSE);
     $original = $settings;
 
     // Init the query flag.
-    $db_hit = &drupal_static('domain_conf_data_get_db_hit', FALSE);
+
+    $db_hit = backdrop_static('domain_conf_data_get_db_hit', FALSE);
     $db_hit = FALSE;
 
     // Test static cache.
+
     $this->assertEqual($original, domain_conf_data_get($domain_id), t('Data taken successfully from static cache.'));
     $this->assertFalse($db_hit, t('No DB select was executed in getting the settings.'));
     $db_hit = FALSE;
 
     // Clear the static cache, so now there are no caches.
-    $static_cache_get = &drupal_static('domain_conf_data_get', array());
+
+    $static_cache_get = backdrop_static('domain_conf_data_get', array());
     unset($static_cache_get[$domain_id]);
     $this->assertEqual($original, domain_conf_data_get($domain_id), t('Data taken successfully from DB.'));
     $this->assertTrue($db_hit, t('DB select WAS executed for getting the settings.'));
     $db_hit = FALSE;
 
     // Delete the settings and warm caches.
+
     domain_conf_data_delete($domain_id);
     domain_conf_data_get($domain_id, TRUE);
     $this->assertTrue($db_hit, t('Warmed caches for domain :domain.', array(':domain' => $domain_id)));
     $db_hit = FALSE;
 
     // Get settinngs
+
     $new_settings = domain_conf_data_get($domain_id);
     $this->assertFalse($db_hit, t('Extracted empty settings for :domain from cache.', array(':domain' => $domain_id)));
     $this->assertEqual(array(), $new_settings, t('The settings are confirmed empty.'));
@@ -127,7 +140,8 @@ class DomainConfTestCase extends DomainTestCase {
    */
   public function assertCacheState($domain_id, $settings) {
     // Validate the static cache.
-    $static_cache_get = &drupal_static('domain_conf_data_get', array());
+
+    $static_cache_get = backdrop_static('domain_conf_data_get', array());
     $this->assertTrue(isset($static_cache_get[$domain_id]), t('There is static cache for the domain :domain.', array(
       ':domain' => $domain_id,
     )));
@@ -144,7 +158,8 @@ class DomainConfTestCase extends DomainTestCase {
    */
   public function assertNoCache($domain_id) {
     // Validate the static cache.
-    $static_cache_get = &drupal_static('domain_conf_data_get', array());
+
+    $static_cache_get = backdrop_static('domain_conf_data_get', array());
     $this->assertFalse(isset($static_cache_get[$domain_id]), t('The static cache for the domain :domain is missing.', array(
       ':domain' => $domain_id,
     )));

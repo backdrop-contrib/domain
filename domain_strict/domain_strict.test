@@ -24,14 +24,17 @@ class DomainStrictTestCase extends DomainTestCase {
     $account = user_load(1);
     $grants = node_access_grants('view', $account);
     // User 1 is a member of the primary domain. Confirm this.
+
     $this->assertTrue(!empty($grants['domain_id']), t('User is assigned to the default domain properly.'));
     // Clear and reset the {domain_editor} table.
+
     db_delete('domain_editor')
       ->condition('uid', $account->uid)
       ->execute();
     $count = db_query("SELECT 1 FROM {domain_editor} WHERE uid = 1")->fetchField();
     $this->assertTrue(empty($count), t('User removed from the primary domain.'));
     // No caching: no need to reload the user data to remove it.
+
     $grants = node_access_grants('view', $account);
     $this->assertTrue(empty($grants['domain_id']), t('Domain strict revoked rights to the user.'));
   }

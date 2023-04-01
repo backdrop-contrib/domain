@@ -10,21 +10,39 @@
  */
 function domain_nav_uninstall() {
   // Remove our variables.
-  variable_del('domain_nav_block');
-  variable_del('domain_nav_theme');
+
+
+  config_clear('domain_nav.settings', 'domain_nav_block');
+  config_clear('domain_nav.settings', 'domain_nav_theme');
+}
+
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+
+function domain_nav_update_7000() { }
+
+/**
+ * Implements hook_update_last_removed().
+ */
+function domain_nav_update_last_removed() {
+  return 7000;
 }
 
 /**
- * Update block deltas to Drupal 7.
+ * Migrate domain_nav variables to config.
  */
-function domain_nav_update_7000() {
-  // Get an array of the renamed block deltas, organized by module.
-  $renamed_deltas = array(
-    'domain_nav' => array(
-      '0' => 'default',
-    ),
-  );
-  $moved_deltas = array();
-  update_fix_d7_block_deltas($sandbox, $renamed_deltas, $moved_deltas);
-  return t('Domain Access blocks updated.');
+function domain_nav_update_1000() {
+  $config = config('domain_nav.settings');
+  $config->set('domain_nav_block', update_variable_get('domain_nav_block', '0'));
+  $config->set('domain_nav_theme', update_variable_get('domain_nav_theme', 'default'));
+  $config->save();
+
+  update_variable_del('domain_nav_block');
+  update_variable_del('domain_nav_theme');
+}
+
+/**
+ * Implements hook_install().
+ */
+function domain_nav_install() {
+  // Dynamically generated variable data was detected.
 }

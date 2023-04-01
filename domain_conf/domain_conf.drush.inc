@@ -22,7 +22,7 @@ function domain_conf_drush_command() {
     'arguments' => array(
       'domain_id' => 'The domain_id for the setting. If set to "all" it will be applied to all domains.',
       'name' => 'The name variable to set (e.g. site_frontpage).',
-      'value' => 'The value to set for this variable.'
+      'value' => 'The value to set for this variable.',
     ),
     'aliases' => array('dc-set'),
   );
@@ -59,6 +59,7 @@ function drush_domain_conf_set($domain_id, $name, $value) {
     drush_print('Variable set.');
   }
   else {
+    // TODO This variable was probably removed in Backdrop without replacement.
     variable_set($name, $value);
     foreach (domain_domains(TRUE) as $domain) {
       domain_conf_delete_variable($domain['domain_id'], $name);

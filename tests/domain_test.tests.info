@@ -1,0 +1,78 @@
+[DomainTestCase]
+name = DomainTestCase
+description = DomainTestCase
+group = domain_test
+file = domain.test
+
+[DomainInstallTest]
+name = Check install routine
+description = Create primary domain record and verify its consistency in the database.
+group = Domain Access
+file = domain.test
+
+[DomainCreateTest]
+name = Create domains
+description = Create random domains and verify consistency in the database.
+group = Domain Access
+file = domain.test
+
+[DomainHookTest]
+name = Domain module hooks
+description = Fire domain hooks and test responses.
+group = Domain Access
+file = domain.test
+
+[DomainSwitchingTest]
+name = Domain switching
+description = Ensure that programmatic domain switching works.
+group = Domain Access
+file = domain.test
+
+[DomainUnitTest]
+name = Domain unit tests
+description = Tests for function encapsulation.
+group = Domain Access
+file = domain.test
+
+[DomainCacheTest]
+name = Domain caching tests
+description = Tests for proper page caching and markup.
+group = Domain Access
+file = domain.test
+
+[DomainUpdateTest]
+name = Domain update tests
+description = Tests for the update to 7.x.3.
+group = Domain Access
+file = domain.test
+
+[DomainFilterTest]
+name = Domain filter tests
+description = Tests for domain-based text filters.
+group = Domain Access
+file = domain.test
+
+[DomainInvalidTest]
+name = Invalid domain tests
+description = Tests for inactive / invalid domains.
+group = Domain Access
+file = domain.test
+
+[DomainTokenTest]
+name = Domain token tests
+description = Tests for domain-based tokens.
+group = Domain Access
+file = domain.test
+
+[DomainSitenameTest]
+name = Sitename override
+description = Tests behavior of sitenames and domain names.
+group = Domain Access
+file = domain.test
+
+[DomainSettingsTest]
+name = Module settings
+description = Tests configuration options for the module.
+group = Domain Access
+file = domain.test
+

@@ -18,7 +18,7 @@
  */
 
 /**
- * Implements hook_menu()
+ * Implements hook_menu().
  */
 function domain_content_menu() {
   $items = array();
@@ -36,24 +36,28 @@ function domain_content_menu() {
     'access callback' => 'domain_content_menu_check',
     'file' => 'domain_content.admin.inc',
     'description' => 'View content assigned to all affiliate sites.',
-    'weight' => -10
+    'weight' => -10,
   );
   // Generate the list of active domains as menu items.
+
   // We must wrap this check, otherwise the uninstall fails.
+
   // See http://drupal.org/node/1003430.
+
   if (module_exists('domain')) {
     $domains = domain_domains();
+    // TODO This variable was probably removed in Backdrop without replacement.
     if (count($domains) <= variable_get('domain_list_size', DOMAIN_LIST_SIZE)) {
       foreach ($domains as $domain) {
         $items['admin/domain/content/' . $domain['domain_id']] = array(
-          'title' => check_plain($domain['sitename']) .' content',
+          'title' => check_plain($domain['sitename']) . ' content',
           'page callback' => 'domain_content_view',
           'page arguments' => array($domain['domain_id'], FALSE),
           'access callback' => 'domain_content_check',
           'access arguments' => array($domain['domain_id']),
           'file' => 'domain_content.admin.inc',
-          'description' => 'View content assigned to '. filter_xss_admin($domain['subdomain']),
-          'weight' => $domain['domain_id']
+          'description' => 'View content assigned to ' . filter_xss_admin($domain['subdomain']),
+          'weight' => $domain['domain_id'],
         );
       }
     }
@@ -64,7 +68,7 @@ function domain_content_menu() {
         'access callback' => 'domain_content_menu_check',
         'file' => 'domain_content.admin.inc',
         'description' => 'View your list of affiliates',
-        'weight' => -10
+        'weight' => -10,
       );
       $items['admin/domain/content/%'] = array(
         'title' => 'Affiliate site list',
@@ -74,7 +78,7 @@ function domain_content_menu() {
         'access arguments' => array(3),
         'file' => 'domain_content.admin.inc',
         'description' => 'Content list for a domain',
-        'weight' => -10
+        'weight' => -10,
       );
     }
   }
@@ -100,7 +104,7 @@ function domain_content_permission() {
 }
 
 /**
- * Access control for menu items.  There may be another way to do this in Drupal 6.
+ * Access control for menu items.  There may be another way to do this in Backdrop 6.
  *
  * @param $check
  *   The access check value passed from hook_menu().
@@ -124,16 +128,19 @@ function domain_content_menu_check() {
 function domain_content_check($domain_id) {
   global $user;
   // If the user can bypass node access, just return TRUE.
+
   if (user_access('bypass node access') || user_access('review content for all domains')) {
     return TRUE;
   }
   // Otherwise, the user must be able to edit domain content.
+
   $rule = user_access('access the domain content page');
   if (!$rule) {
     return FALSE;
   }
   $domains = domain_get_user_domains($user);
   // Can this user see the requested site?
+
   if (!empty($domains[$domain_id])) {
     return TRUE;
   }
@@ -141,11 +148,13 @@ function domain_content_check($domain_id) {
 }
 
 /**
- * Implement hook_node_operations()
+ * Implements hook_node_operations().
  */
 function domain_content_node_operations() {
   // Only privileged users can perform this operation.
+
   // Do not show this on the default node editing form.
+
   if (user_access('set domain access')) {
     $operations = array(
       'domain' => array(
@@ -164,19 +173,20 @@ function domain_content_node_operations() {
  * This callback is required, but we actually do our action inside
  * of domain_content_process_nodes().
  */
-function domain_content_node_operations_process($nodes) {
-}
+function domain_content_node_operations_process($nodes) { }
 
 /**
  * Allow domain assignment to be made from the default content form.
  */
-function domain_content_form_node_admin_content_alter(&$form, &$form_state) {
+function domain_content_form_node_admin_content_alter($form, $form_state) {
   // Privileged users can make global changes to Domain Access permissions.
+
   if (!user_access('set domain access') || isset($form['operation']['#value'])) {
     return;
   }
 
   // Add our form elements.
+
   domain_content_add_form_widget($form);
   $form['admin']['#weight'] = 4;
   $form['domain']['#weight'] = 2;
@@ -186,11 +196,13 @@ function domain_content_form_node_admin_content_alter(&$form, &$form_state) {
 /**
  * Abstraction function for selecting domains for batch operations.
  */
-function domain_content_add_form_widget(&$form) {
+function domain_content_add_form_widget($form) {
   global $_domain;
   // We have different settings for the two form contexts.
+
   // A blank form comes from core.
-  $prefix = '<div class="description">'. t('If you select <em>Change affiliate publishing options</em>, you should confirm the <em>Affiliate publishing options</em> settings below.') .'</div>';
+
+  $prefix = '<div class="description">' . t('If you select <em>Change affiliate publishing options</em>, you should confirm the <em>Affiliate publishing options</em> settings below.') . '</div>';
   $collapsed = TRUE;
   if (empty($form)) {
     $prefix = '';
@@ -200,9 +212,11 @@ function domain_content_add_form_widget(&$form) {
   $format = domain_select_format();
   foreach (domain_domains() as $data) {
     // The domain must be valid.
+
     if ($data['valid'] || user_access('access inactive domains')) {
       // Filter checkboxes but not select lists.
-      $options[$data['domain_id']] = empty($format) ? check_plain($data['sitename']) : $data['sitename'];
+
+      $options[$data['domain_id']] = empty($format)?check_plain($data['sitename']) : $data['sitename'];
     }
   }
   $form['domain'] = array(
@@ -215,7 +229,11 @@ function domain_content_add_form_widget(&$form) {
   $form['domain']['behavior'] = array(
     '#type' => 'radios',
     '#title' => t('Update behavior'),
-    '#options' => array(0 => t('Replace old values with new settings'), 1 => t('Add new settings to existing values'), 2 => t('Remove selected domains from existing values')),
+    '#options' => array(
+      0 => t('Replace old values with new settings'),
+      1 => t('Add new settings to existing values'),
+      2 => t('Remove selected domains from existing values'),
+    ),
     '#description' => t('Defines how new grants will be applied to the updated nodes.'),
     '#default_value' => 0,
   );
@@ -247,7 +265,7 @@ function domain_content_add_form_widget(&$form) {
  *
  * This callback works for the normal operations callback.
  */
-function domain_content_process_nodes($form, &$form_state) {
+function domain_content_process_nodes($form, $form_state) {
   if ($form_state['values']['operation'] != 'domain') {
     return;
   }
@@ -267,20 +285,27 @@ function domain_content_process_nodes($form, &$form_state) {
  */
 function domain_content_update_nodes($nids, $options) {
   // If our operation is run, then we have to manually change the
+
   // {node_access} table.  The rest of the process will clear the cache,
+
   // so this should be a safe operation.
+
   $domain_site = $options['domain_site'];
   $behavior = $options['behavior'];
   foreach ($nids as $nid) {
     $domains = $options['domain_id'];
     // Other modules need to respond, we have to load the full node.
+
     $node = node_load($nid);
     // Make sure the node is valid.
+
     if ($node->nid > 0) {
       // If modifying values, do so here.
+
       if (!empty($behavior)) {
         $current = domain_get_node_domains($node->nid);
         // Add values to the current set.
+
         if ($behavior == 1) {
           if (!empty($current['domain_site'])) {
             $domain_site = TRUE;
@@ -288,6 +313,7 @@ function domain_content_update_nodes($nids, $options) {
           $domains += $current['domain_id'];
         }
         // Remove values from the current set.
+
         else {
           foreach ($domains as $domain_id) {
             if (isset($current['domain_id'][$domain_id])) {
@@ -296,18 +322,22 @@ function domain_content_update_nodes($nids, $options) {
           }
           $domains = $current['domain_id'];
           // If all affiliates is selected, remove it.
+
           if ($domain_site) {
             $domain_site = FALSE;
           }
         }
       }
       // Use our new options, as set above.
+
       $node->domain_site = $domain_site;
       $node->domains = $domains;
       // Delete our grants and rebuild.
+
       node_access_acquire_grants($node);
     }
   }
   // Clear the cache.
+
   cache_clear_all();
 }

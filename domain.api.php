@@ -32,10 +32,12 @@
  *
  * @ingroup domain_hooks
  */
-function hook_domain_load(&$domain) {
+function hook_domain_load($domain) {
   // Add a variable to the $domain array.
+
   $domain['myvar'] = 'mydomainvar';
   // Remove the site_grant flag, removing access to 'all affiliates.'
+
   $domain['site_grant'] = FALSE;
 }
 
@@ -54,9 +56,9 @@ function hook_domain_load(&$domain) {
 function hook_domain_insert($domain, $form_values = array()) {
   db_insert('mytable')
     ->fields(array(
-      'domain_id' => $domain['domain_id'],
-      'myvar' => 1,
-    ))
+    'domain_id' => $domain['domain_id'],
+    'myvar' => 1,
+  ))
     ->execute();
 }
 
@@ -75,8 +77,8 @@ function hook_domain_insert($domain, $form_values = array()) {
 function hook_domain_update($domain, $form_values = array()) {
   db_update('mytable')
     ->fields(array(
-      'status' => 1,
-    ))
+    'status' => 1,
+  ))
     ->condition('domain_id', $domain['domain_id'])
     ->execute();
 }
@@ -114,7 +116,7 @@ function hook_domain_delete($domain, $form_values = array()) {
  *   - domain_id -- the unique identifier of this domain
  *   - subdomain -- the host path of the url for this domain
  *   - sitename -- the human-readable name of this domain
- *   - path -- the link path (a Drupal-formatted path)
+ *   - path -- the link path (a Backdrop-formatted path)
  *   - active -- a boolean flag indicating the currently active domain
  *
  * @ingroup domain_hooks
@@ -147,6 +149,7 @@ function hook_domain_nav($domain) {
  */
 function hook_domain_cron($domain) {
   // Run a node query.
+
   $select = db_select('node', 'n')
     ->fields('n', array('nid'))
     ->condition('status', 1)
@@ -154,13 +157,16 @@ function hook_domain_cron($domain) {
     ->extend('PagerDefault')
     ->limit(1);
   // Note that we don't tag this query with 'node_access' because it is an
+
   // administrative query and we want to return all nodes for a specific domain.
+
   $select->join('domain_access', 'da', 'n.nid = da.nid AND da.domain_id = :domain_id',
     array(':domain_id' => $domain['domain_id']));
   $nid = $select->execute()->fetchCol();
   if ($node = node_load($nid)) {
     // Set a variable for each domain containing the last node updated.
-    variable_set('domain_' . $domain['domain_id'] . '_lastnode', $node->nid);
+
+    config_set('domain.settings', 'domain_' . $domain['domain_id'] . '_lastnode', $node->nid);
   }
 }
 
@@ -177,8 +183,9 @@ function hook_domain_cron($domain) {
  */
 function hook_domain_install() {
   // If MyModule is being used, check to see that it is installed correctly.
+
   if (module_exists('mymodule') && !function_exists('_mymodule_load')) {
-    drupal_set_message(t('MyModule is not installed correctly.  Please edit your settings.php file as described in <a href="!url">INSTALL.txt</a>', array('!url' => drupal_get_path('module', 'mymodule') . '/INSTALL.txt')));
+    backdrop_set_message(t('MyModule is not installed correctly.  Please edit your settings.php file as described in <a href="!url">INSTALL.txt</a>', array('!url' => backdrop_get_path('module', 'mymodule') . '/INSTALL.txt')));
   }
 }
 
@@ -193,21 +200,22 @@ function hook_domain_install() {
  * @return
  *   No return value.  The $form is modified by reference, as needed.
  */
-function hook_domain_form(&$form) {
+function hook_domain_form($form) {
   // Add the form element to the main screen.
+
   $form['domain_mymodule'] = array(
     '#type' => 'fieldset',
     '#title' => t('Mymodule settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
+    '#collapsed' => TRUE,
   );
-  $options = drupal_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
+  $options = backdrop_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
   $form['domain_mymodule']['domain_mymodule'] = array(
     '#type' => 'select',
     '#title' => t('Mymodule settings variable'),
     '#options' => $options,
-    '#default_value' => variable_get('domain_mymodule', 0),
-    '#description' => t('You description goes here.')
+    '#default_value' => config_get('domain.settings', 'domain_mymodule'),
+    '#description' => t('You description goes here.'),
   );
 }
 
@@ -228,11 +236,12 @@ function hook_domain_form(&$form) {
  */
 function hook_domain_warning() {
   // These are the forms for variables set by Domain Conf.
+
   $forms = array(
     'system_admin_theme_settings',
     'system_date_time_settings',
     'system_site_information_settings',
-    'system_site_maintenance_settings'
+    'system_site_maintenance_settings',
   );
   $return = array();
   foreach ($forms as $key) {
@@ -252,25 +261,29 @@ function hook_domain_warning() {
  * @return
  *   No return value; modify $source by reference.
  */
-function hook_domain_source_alter(&$source, $nid) {
+function hook_domain_source_alter($source, $nid) {
   // Taken from the Domain Source module
+
   $source_id = domain_source_lookup($nid);
   // If FALSE returned, no source is defined.
+
   if (!$source_id) {
     return;
   }
   // DOMAIN_SOURCE_USE_ACTIVE is the status for 'Use active domain.'
+
   if ($source_id == DOMAIN_SOURCE_USE_ACTIVE) {
     $source = domain_get_domain();
   }
   // The source_id always returns a valid domain.
+
   else {
     $source = domain_lookup($source_id);
   }
 }
 
 /**
- * Allows modules to specify the target link for a Drupal path.
+ * Allows modules to specify the target link for a Backdrop path.
  *
  * Note: This hook is not meant to be used for node paths, which
  * are handled by hook_domain_source_alter(). This hook is split
@@ -287,8 +300,9 @@ function hook_domain_source_alter(&$source, $nid) {
  * @return
  *   No return value; modify $source by reference.
  */
-function hook_domain_source_path_alter(&$source, $path) {
+function hook_domain_source_path_alter($source, $path) {
   // Always make admin links go to the primary domain.
+
   $base = arg(0, $path);
   if ($base == 'admin') {
     $source = domain_default();
@@ -345,10 +359,10 @@ function hook_domain_conf() {
   $form['pictures']['user_picture_default'] = array(
     '#type' => 'textfield',
     '#title' => t('Default picture'),
-    '#default_value' => variable_get('user_picture_default', ''),
+    '#default_value' => config_get('system.performance', 'user_picture_default'),
     '#size' => 30,
     '#maxlength' => 255,
-    '#description' => t('URL of picture to display for users with no custom picture selected. Leave blank for none.')
+    '#description' => t('URL of picture to display for users with no custom picture selected. Leave blank for none.'),
   );
   return $form;
 }
@@ -433,7 +447,7 @@ function hook_domain_conf() {
  *   --- 'integer' == the query will use %d to insert the data.
  *   --- 'float' == the query will use %f to insert the data.
  *   --- 'binary' == the query will use %b to insert the data.
- * For more information, see db_query() in the Drupal API documentation.
+ * For more information, see db_query() in the Backdrop API documentation.
  *
  * - '#weight' [optional] Used to weight the item in the menu system.  Should
  * normally be set to zero.  Negative values are reserved for use by the core
@@ -461,6 +475,7 @@ function hook_domain_conf() {
  */
 function hook_domain_batch() {
   // A simple function to rename my setting in Domain Configuration.
+
   $batch = array();
   $batch['mysetting'] = array(
     '#form' => array(
@@ -489,15 +504,16 @@ function hook_domain_batch() {
 /**
  * Allow modules to modify the batch editing functions.
  *
- * @see drupal_alter()
+ * @see backdrop_alter()
  *
  * @param &$batch
  *   An array of batch editing functions, passed by reference.
  * @return
  *   No return value. Modify $batch by reference.
  */
-function hook_domain_batch_alter(&$batch) {
+function hook_domain_batch_alter($batch) {
   // Rename 'Put site into maintenance mode'.
+
   $batch['maintenance_mode']['#form']['#title'] = t('Take site offline');
 }
 
@@ -509,6 +525,7 @@ function hook_domain_batch_alter(&$batch) {
  */
 function hook_domain_ignore() {
   // User login should always be from the current domain.
+
   return array('user_login');
 }
 
@@ -516,13 +533,13 @@ function hook_domain_ignore() {
  * The Domain Bootstrap Process.
  *
  * There are some variables that Domain Access and its modules
- * need to set before Drupal finishes loading. In effect, we have to add
- * stages to the Drupal bootstrap process.
+ * need to set before Backdrop finishes loading. In effect, we have to add
+ * stages to the Backdrop bootstrap process.
  *
  * These processes are initiated after settings.php is loaded, during
- * DRUPAL_BOOTSTRAP_CONFIGURATION. We skip ahead and
- * load DRUPAL_BOOTSTRAP_DATABASE to access db_query() and
- * similar functions.  However, the majority of Drupal functions are
+ * BACKDROP_BOOTSTRAP_CONFIGURATION. We skip ahead and
+ * load BACKDROP_BOOTSTRAP_DATABASE to access db_query() and
+ * similar functions.  However, the majority of Backdrop functions are
  * not yet available.
  *
  * The following modules will load during the bootstrap process, if enabled:
@@ -542,6 +559,7 @@ function hook_domain_ignore() {
  */
 function hook_domain_bootstrap() {
   // Documentation function.
+
 }
 
 /**
@@ -557,7 +575,7 @@ function hook_domain_bootstrap() {
  * For example, Domain Alias can change the domain_id matched to the current
  * domain name before related information is retrieved during domain_init().
  *
- * Note: Because this function is usually called VERY early, many Drupal
+ * Note: Because this function is usually called VERY early, many Backdrop
  * functions or modules won't be loaded yet.
  *
  * Warning: do _not_ call domain_lookup() or domain_load() from within this
@@ -571,6 +589,7 @@ function hook_domain_bootstrap() {
  */
 function hook_domain_bootstrap_lookup($domain) {
   // Match en.example.org to default domain (id:0)
+
   if ($domain['subdomain'] == 'en.example.org') {
     $domain['domain_id'] = 0;
   }
@@ -578,12 +597,12 @@ function hook_domain_bootstrap_lookup($domain) {
 }
 
 /**
- * Allows modules to execute code before Drupal's hook_boot().
+ * Allows modules to execute code before Backdrop's hook_boot().
  *
- * This hook can be used to modify drupal's variables system or prefix database
+ * This hook can be used to modify backdrop's variables system or prefix database
  * tables, as used in the module domain_conf.
  *
- * Note: Because this function is usually called VERY early, many Drupal
+ * Note: Because this function is usually called VERY early, many Backdrop
  * functions or modules won't be loaded yet.
  *
  * Warning: do _not_ call domain_lookup() or domain_load() from within this
@@ -597,7 +616,7 @@ function hook_domain_bootstrap_lookup($domain) {
  *   No return value. However, if you wish to set an error message on failure,
  *   you should load and modify the $_domain global and add an 'error' element
  *   to the array. This element should only include the name of your module.
- *   We do this because drupal_set_message() and t() are not yet loaded.
+ *   We do this because backdrop_set_message() and t() are not yet loaded.
  *
  *   Normally, you do not need to validate errors, since this function will not
  *   be called unless $domain is set properly.
@@ -605,13 +624,16 @@ function hook_domain_bootstrap_lookup($domain) {
 function hook_domain_bootstrap_full($domain) {
   global $conf;
   // The language variable should not be set yet.
+
   // Check for errors.
+
   if (isset($conf['language'])) {
     global $_domain;
     $_domain['error'] = 'mymodule';
     return;
   }
   // Our test module sets the default language to Spanish.
+
   $conf['language'] = 'es';
 }
 
@@ -627,7 +649,7 @@ function hook_domain_bootstrap_full($domain) {
  * @param $domain_id
  *   The domain_id taken from {domain}.
  * @param $path
- *   The internal drupal path to the node.
+ *   The internal backdrop path to the node.
  * @param $options
  *   The path options.
  * @param $original_path
@@ -635,11 +657,14 @@ function hook_domain_bootstrap_full($domain) {
  *
  * @ingroup domain_hooks
  */
-function hook_domain_path($domain_id, &$path, &$options, $original_path) {
+function hook_domain_path($domain_id, $path, $options, $original_path) {
   // Give a normal path alias
-  $path = drupal_get_path_alias($path);
+
+  $path = backdrop_get_path_alias($path);
   // In D7, path alias lookups are done after url_alter, so if the
+
   // alias is set, the option must be flagged.
+
   $options['alias'] = TRUE;
 }
 
@@ -665,6 +690,7 @@ function hook_domain_path($domain_id, &$path, &$options, $original_path) {
  */
 function mymodule_form_submit($form_state) {
   // When we save these changes, replicate them across all domains.
+
   if (!module_exists('domain_conf')) {
     return;
   }
@@ -678,14 +704,14 @@ function mymodule_form_submit($form_state) {
 /**
  * Allow modules to alter access to Domain Navigation items.
  *
- * This drupal_alter hook exposes the $options array before
+ * This backdrop_alter hook exposes the $options array before
  * Domain Nav passes its links to the theme layer. You can use it
  * to introduce additional access controls on those links.
  *
  * Note that "inactive" domains are already filtered before this
  * hook is called, so you would have to explicitly add them again.
  *
- * @see drupal_alter()
+ * @see backdrop_alter()
  * @see theme_domain_nav_default()
  *
  * @param &$options
@@ -693,11 +719,12 @@ function mymodule_form_submit($form_state) {
  * @return
  *   No return value. Modify $options by reference.
  */
-function hook_domain_nav_options_alter(&$options) {
+function hook_domain_nav_options_alter($options) {
   global $user;
   domain_user_set($user);
 
   // Remove domains that the user is not a member of.
+
   if (empty($user->domain_user)) {
     $options = array();
   }
@@ -719,8 +746,9 @@ function hook_domain_nav_options_alter(&$options) {
  * @param &$forms
  *   An array of form_ids, passed by reference.
  */
-function hook_domain_warning_alter(&$forms) {
+function hook_domain_warning_alter($forms) {
   // Forms which Domain Settings handles and are set as warnings.
+
   $core_forms = array(
     'system_admin_theme_settings',
     'system_site_information_settings',
@@ -748,8 +776,10 @@ function hook_domain_warning_alter(&$forms) {
  */
 function hook_domain_settings($domain_id, $values) {
   // Sync domain 2 with the primary domain in all cases.
+
   if ($domain_id == 2) {
-    foreach($values as $name => $value) {
+    foreach ($values as $name => $value) {
+      // TODO This variable was probably removed in Backdrop without replacement.
       variable_set($name, $value);
     }
   }
@@ -777,8 +807,9 @@ function hook_domain_settings($domain_id, $values) {
  *
  * @see domain_valid_domain()
  */
-function hook_domain_validate_alter(&$error_list, $subdomain) {
+function hook_domain_validate_alter($error_list, $subdomain) {
   // Only allow TLDs to be .org for our site.
+
   if (substr($subdomain, -4) != '.org') {
     $error_list[] = t('Only .org domains may be registered.');
   }
@@ -799,7 +830,7 @@ function hook_domain_validate_alter(&$error_list, $subdomain) {
  * trigger a TRUE response.
  *
  * Also note that the status of this function cannot be changed _during_ a
- * page load. Drupal's Node Access system only allows these permissions
+ * page load. Backdrop's Node Access system only allows these permissions
  * to be set once per callback.
  *
  * @param $grant
@@ -809,7 +840,7 @@ function hook_domain_validate_alter(&$error_list, $subdomain) {
  *   An array of optional information gathered by domain_grant_all(). This
  *   keyed array may contain the following values:
  *    'script' == The name of invoking script if the page is called by cron.php
- *      or xmlrpc.php instead of Drupal's standard index.php. Presence indicates
+ *      or xmlrpc.php instead of Backdrop's standard index.php. Presence indicates
  *      that the function returned TRUE.
  *    'search' == Indicates that we are on a search page and searching across
  *      all domains has been enabled.
@@ -821,8 +852,9 @@ function hook_domain_validate_alter(&$error_list, $subdomain) {
  *
  * @see domain_grant_all()
  */
-function hook_domain_grant_all_alter(&$grant, $options) {
+function hook_domain_grant_all_alter($grant, $options) {
   // Always show all nodes on admin pages.
+
   $base_path = arg(0);
   if ($base_path == 'admin') {
     $grant = TRUE;
@@ -847,6 +879,7 @@ function hook_domain_grant_all_alter(&$grant, $options) {
  */
 function hook_domain_reassign($old_domain, $new_domain, $table) {
   // On node changes, update {domain_source}.
+
   if ($table == 'domain_access') {
     db_update('domain_source')
       ->fields(array('domain_id' => $new_domain['domain_id']))

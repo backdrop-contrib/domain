@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Support for domains in core Drupal objects
+ * Support for domains in core Backdrop objects
  */
 
 /**
- * Migration class for importing domains into Drupal.
+ * Migration class for importing domains into Backdrop.
  *
- * In your migration class, you may map existing data directly to a Drupal
+ * In your migration class, you may map existing data directly to a Backdrop
  * domain record.  The fields are as follows:
  *
  *  - subdomain -- the domain URL (e.g. example.com), not including a protocol
@@ -77,6 +77,7 @@ class MigrateDestinationDomain extends MigrateDestination {
    */
   public function import(stdClass $domain, stdClass $row) {
     // Set up optional fields.
+
     if (empty($domain->machine_name)) {
       $domain->machine_name = domain_machine_name($domain->subdomain);
     }
@@ -94,13 +95,16 @@ class MigrateDestinationDomain extends MigrateDestination {
     }
 
     // Invoke migration prepare handlers.
+
     $this->prepare($domain, $row);
 
     // Domains are handled as arrays, so clone the object to an array.
+
     $domain = clone $domain;
     $domain = (array) $domain;
 
     // Check to see if this is a new domain.
+
     $update = FALSE;
     if ($data = domain_machine_name_load($domain['machine_name'])) {
       $domain['domain_id'] = $data['domain_id'];
@@ -108,14 +112,18 @@ class MigrateDestinationDomain extends MigrateDestination {
     }
 
     // domain_save() provides no return callback, so we can't really test this
+
     // without running a domain_load() check.
+
     migrate_instrument_start('domain_save');
     domain_save($domain);
     migrate_instrument_stop('domain_save');
 
     // Return the new id or FALSE on failure.
+
     if ($data = domain_machine_name_load($domain['machine_name'])) {
       // Increment the count if the save succeeded.
+
       if ($update) {
         $this->numUpdated++;
       }
@@ -123,6 +131,7 @@ class MigrateDestinationDomain extends MigrateDestination {
         $this->numCreated++;
       }
       // Return the primary key to the mapping table.
+
       $return = array($data['machine_name']);
     }
     else {
@@ -130,6 +139,7 @@ class MigrateDestinationDomain extends MigrateDestination {
     }
 
     // Invoke migration complete handlers.
+
     $domain = (object) $data;
     $this->complete($domain, $row);
 
@@ -141,14 +151,17 @@ class MigrateDestinationDomain extends MigrateDestination {
    */
   public function prepare($domain, stdClass $row) {
     // We do nothing here but allow child classes to act.
+
     $migration = Migration::currentMigration();
     $domain->migrate = array(
       'machineName' => $migration->getMachineName(),
     );
 
     // Call any general handlers.
+
     migrate_handler_invoke_all('domain', 'prepare', $domain, $row);
     // Then call any prepare handler for this specific Migration.
+
     if (method_exists($migration, 'prepare')) {
       $migration->prepare($domain, $row);
     }
@@ -156,13 +169,16 @@ class MigrateDestinationDomain extends MigrateDestination {
 
   public function complete($domain, stdClass $row) {
     // We do nothing here but allow child classes to act.
+
     $migration = Migration::currentMigration();
     $domain->migrate = array(
       'machineName' => $migration->getMachineName(),
     );
     // Call any general handlers.
+
     migrate_handler_invoke_all('domain', 'complete', $domain, $row);
     // Then call any complete handler for this specific Migration.
+
     if (method_exists($migration, 'complete')) {
       $migration->complete($domain, $row);
     }
@@ -181,12 +197,13 @@ class MigrateDestinationDomain extends MigrateDestination {
     $this->prepareRollback($domain_name);
     if ($domain = domain_machine_name_load($domain_name)) {
       // We cannot delete the primary domain.
+
       $default = domain_default_id();
       if ($domain['domain_id'] != $default) {
         domain_delete($domain);
       }
       else {
-        drupal_set_message(t('The default domain may not be rolled back.'), 'status', FALSE);
+        backdrop_set_message(t('The default domain may not be rolled back.'), 'status', FALSE);
       }
     }
     $this->completeRollback($domain_name);
@@ -201,10 +218,13 @@ class MigrateDestinationDomain extends MigrateDestination {
    */
   public function prepareRollback($domain_name) {
     // We do nothing here but allow child classes to act.
+
     $migration = Migration::currentMigration();
     // Call any general handlers.
+
     migrate_handler_invoke_all('domain', 'prepareRollback', $domain_name);
     // Then call any complete handler for this specific Migration.
+
     if (method_exists($migration, 'prepareRollback')) {
       $migration->prepareRollback($domain_name);
     }
@@ -218,10 +238,13 @@ class MigrateDestinationDomain extends MigrateDestination {
    */
   public function completeRollback($domain_name) {
     // We do nothing here but allow child classes to act.
+
     $migration = Migration::currentMigration();
     // Call any general handlers.
+
     migrate_handler_invoke_all('domain', 'completeRollback', $domain_name);
     // Then call any complete handler for this specific Migration.
+
     if (method_exists($migration, 'completeRollback')) {
       $migration->completeRollback($domain_name);
     }
@@ -230,7 +253,7 @@ class MigrateDestinationDomain extends MigrateDestination {
 }
 
 /**
- * Migration class for importing Drupal nodes.
+ * Migration class for importing Backdrop nodes.
  *
  * In your migration class, there are two field mappings you may set.
  *
@@ -260,11 +283,13 @@ class DomainNodeHandler extends MigrateDestinationHandler {
   public function prepare($node, stdClass $row) {
     $domains = array();
     // If not set, be sure that we aren't updating an existing record.
+
     if (!empty($node->nid) && empty($node->domains)) {
       $nodes[$node->nid] = $node;
       domain_node_load($nodes, array());
     }
     // If set, ensure domains exist.
+
     if (isset($node->domains)) {
       $node->domains = (array) $node->domains;
       foreach ($node->domains as $id) {
@@ -277,7 +302,9 @@ class DomainNodeHandler extends MigrateDestinationHandler {
       }
     }
     // If empty, assign to the default domain. Note that domain_site can be
+
     // set automatically if not added by the migration.
+
     if (empty($domains) && $default = domain_default_id()) {
       $domains[$default] = $default;
     }
@@ -286,7 +313,7 @@ class DomainNodeHandler extends MigrateDestinationHandler {
 }
 
 /**
- * Migration class for supporting Drupal user accounts.
+ * Migration class for supporting Backdrop user accounts.
  *
  * In our migration class, you may add a domain_user field mapping. This field
  * may contain a domain_id string or array of domain ids (either numeric or
@@ -309,6 +336,7 @@ class DomainUserHandler extends MigrateDestinationHandler {
 
   public function prepare($user, stdClass $row) {
     // If set, ensure domains exist.
+
     $domains = array();
     if (isset($user->uid)) {
       domain_user_set($user);
@@ -325,6 +353,7 @@ class DomainUserHandler extends MigrateDestinationHandler {
       }
     }
     // If empty, assign to the default domain.
+
     if (empty($domains) && $default = domain_default_id()) {
       $domains[$default] = $default;
     }

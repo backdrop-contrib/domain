@@ -12,8 +12,17 @@ function domain_conf_schema() {
   $schema['domain_conf'] = array(
     'description' => 'Stores custom settings for each domain.',
     'fields' => array(
-      'domain_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
-      'settings' => array('type' => 'blob', 'size' => 'big', 'not null' => FALSE)),
+      'domain_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'settings' => array(
+        'type' => 'blob',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+    ),
     'primary key' => array('domain_id'),
     'foreign_keys' => array(
       'domain_id' => array('domain' => 'domain_id'),
@@ -22,57 +31,14 @@ function domain_conf_schema() {
   return $schema;
 }
 
-/**
- * Update block deltas to Drupal 7.
- */
-function domain_conf_update_7000() {
-  // Get an array of the renamed block deltas, organized by module.
-  $renamed_deltas = array(
-    'domain' => array(
-      'domain-primary-links' => 'domain-main-links',
-    ),
-  );
-  $moved_deltas = array();
-  update_fix_d7_block_deltas($sandbox, $renamed_deltas, $moved_deltas);
-  return t('Domain Conf blocks updated.');
-}
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+function domain_conf_update_7000() { }
+
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+function domain_conf_update_7001() { }
 
 /**
- * Some variable names changed in Drupal 7.
- */
-function domain_conf_update_7001() {
-  $changes = domain_conf_d7_variable_changes();
-  $domains = db_query("SELECT * FROM {domain}")->FetchAllAssoc('domain_id');
-  $result = db_query("SELECT domain_id FROM {domain_conf}");
-  foreach ($result as $object) {
-    if (!isset($domains[$object->domain_id])) {
-      // Remove cruft from the table.
-      domain_conf_data_delete($object->domain_id);
-      continue;
-    }
-
-    $settings = domain_conf_data_get($object->domain_id, TRUE);
-    if (!empty($settings)) {
-      // Update the record with the new variables.
-      foreach ($changes['removed'] as $key) {
-        if (isset($settings[$key])) {
-          unset($settings[$key]);
-        }
-      }
-      foreach ($changes['renamed'] as $key => $value) {
-        if (isset($settings[$key])) {
-          $settings[$value] = $settings[$key];
-          unset($settings[$key]);
-        }
-      }
-      domain_conf_data_set($object->domain_id, $settings, FALSE);
-    }
-  }
-  return t('Domain Conf variables updated.');
-}
-
-/**
- * Return an array of variable changes from Drupal 6 to 7.
+ * Return an array of variable changes from Backdrop 6 to 7.
  */
 function domain_conf_d7_variable_changes() {
   $removed = array(
@@ -99,26 +65,8 @@ function domain_conf_update_dependencies() {
   return $dependencies;
 }
 
-/**
- * Remove references to row 0.
- */
-function domain_conf_update_7300(&$sandbox) {
-  $default_id = db_query("SELECT domain_id FROM {domain} WHERE is_default = 1")->fetchField();
-  db_update('domain_conf')
-    ->fields(array('domain_id' => $default_id))
-    ->condition('domain_id', 0)
-    ->execute();
-  return t('Domain Configuration zero records removed.');
-}
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+function domain_conf_update_7300($sandbox) { }
 
-/**
- * Increases the size of the {domain_conf}.settings to long blob.
- */
-function domain_conf_update_7301(&$sandbox) {
-  $updated_field = array(
-    'type' => 'blob',
-    'size' => 'big',
-    'not null' => FALSE,
-  );
-  db_change_field('domain_conf', 'settings', 'settings', $updated_field);
-}
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+function domain_conf_update_7301($sandbox) { }

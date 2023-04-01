@@ -13,11 +13,15 @@
 function domain_theme_domain_batch() {
   $batch = array();
   // Allows the deletion of all Domain Theme rows.
+
   $batch['domain_theme'] = array(
     '#form' => array(
       '#title' => t('Reset themes'),
       '#type' => 'checkbox',
-      '#options' => array(0 => 1, 1 => t('Reset')),
+      '#options' => array(
+        0 => 1,
+        1 => t('Reset'),
+      ),
       '#description' => t('Delete custom theme settings for this domain.'),
     ),
     '#permission' => 'administer themes',
@@ -28,6 +32,7 @@ function domain_theme_domain_batch() {
     '#weight' => -10,
   );
   // Change themes for sites.
+
   $themes = list_themes();
   $options = array();
   foreach ($themes as $theme) {
@@ -46,7 +51,7 @@ function domain_theme_domain_batch() {
     '#domain_action' => 'custom',
     '#lookup' => 'domain_theme_batch_lookup',
     '#submit' => 'domain_theme_batch_submit',
-    '#system_default' => variable_get('theme_default', 'garland'),
+    '#system_default' => config_get('system.performance', 'theme_default'),
     '#variable' => 'theme_default',
     '#meta_description' => t('Change the themes for all domains.'),
     '#data_type' => 'string',

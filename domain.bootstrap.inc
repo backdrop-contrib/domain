@@ -6,9 +6,9 @@
  *
  * The domain bootstrap process is initiated in domain/settings.inc which is
  * (supposed to be) included in the user's settings.php and therefore initiated
- * during drupal's first bootstrap phase (DRUPAL_BOOTSTRAP_CONFIGURATION).
+ * during backdrop's first bootstrap phase (BACKDROP_BOOTSTRAP_CONFIGURATION).
  *
- * The purpose of this is to allow domain-based modules to modify basic drupal
+ * The purpose of this is to allow domain-based modules to modify basic backdrop
  * systems like the variable or database/prefix system - before they are used by
  * any other modules.
  *
@@ -35,14 +35,14 @@ define('DOMAIN_BOOTSTRAP_FULL', 2);
 /**
  * Domain module bootstrap: calls all bootstrap phases.
  *
- * Effectively, we add our own bootstrap phase to Drupal core.
- * This allows us to do selective configuration changes before Drupal
+ * Effectively, we add our own bootstrap phase to Backdrop core.
+ * This allows us to do selective configuration changes before Backdrop
  * has a chance to react. For example, the Domain Conf module allows
  * page caching to be set to "on" for example.com but "off" for
  * no-cache.example.com.
  *
  * The big issues here are command-line interactions, which are slightly
- * different; and the fact that drupal_settings_initialize() is needed to
+ * different; and the fact that backdrop_settings_initialize() is needed to
  * properly hit the page cache.
  *
  * The initial check for GLOBALS['base_root'] lets us know that we have
@@ -50,15 +50,18 @@ define('DOMAIN_BOOTSTRAP_FULL', 2);
  * settings per-domain.
  *
  * Note that this problem is largely caused by the need to jump ahead
- * in drupal_bootstrap() in order to have database functions available.
+ * in backdrop_bootstrap() in order to have database functions available.
  */
 function domain_bootstrap() {
   global $_domain;
   // Initialize our global variable.
+
   $_domain = array();
 
   // Ensure that core globals are loaded so that we don't break page caching.
+
   // See http://drupal.org/node/1046844 and http://drupal.org/node/1189916.
+
   if (!isset($GLOBALS['base_root'])) {
     domain_settings_initialize();
   }
@@ -66,7 +69,9 @@ function domain_bootstrap() {
   $phases = array(DOMAIN_BOOTSTRAP_INIT, DOMAIN_BOOTSTRAP_NAME_RESOLVE, DOMAIN_BOOTSTRAP_FULL);
   foreach ($phases as $phase) {
     // We return NULL if the domain module is not enabled.  This prevents
+
     // load errors during module enable / disable.
+
     $error = _domain_bootstrap($phase);
     if ($error === NULL) {
       $_domain['error'] = -1;
@@ -74,8 +79,11 @@ function domain_bootstrap() {
     }
     elseif ($error === FALSE) {
       // watchdog() is not available here, and there may be other logging.
+
       // So we have to write an error message global variable and pick them up
+
       // in settings,inc.
+
       $_domain['error'] = $phase;
       break;
     }
@@ -97,21 +105,31 @@ function _domain_bootstrap($phase) {
   switch ($phase) {
     case DOMAIN_BOOTSTRAP_INIT:
       // Make sure database is loaded.
+
       // The new update handler causes problems here, so we account for it.
+
       // Same with drush or other CLI resources. It turns out that the
-      // drupal_is_cli() function is not consistent for php and drush scripts,
+
+      // backdrop_is_cli() function is not consistent for php and drush scripts,
+
       // so instead, we check to see if the database driver has been loaded.
+
       // See http://drupal.org/node/1342740 for the latest background.
+
       $new_phase = FALSE;
       // If running from drush or update.php, we act differently.
+
       // Prevent $new_phase = TRUE when running drush site-install by checking
+
       // the $install_state global.
+
       if ((function_exists('drush_verify_cli') || function_exists('update_prepare_d7_bootstrap')) && empty($install_state)) {
         $new_phase = TRUE;
       }
-      drupal_bootstrap(DRUPAL_BOOTSTRAP_DATABASE, $new_phase);
+      backdrop_bootstrap(BACKDROP_BOOTSTRAP_DATABASE, $new_phase);
 
       // If the Domain Access module has been disabled, or if we're unable to interact with the database, stop loading.
+
       if (function_exists('db_query')) {
         $check = (bool) db_query("SELECT status FROM {system} WHERE name = 'domain' AND type = 'module'")->fetchField();
         if (empty($check)) {
@@ -123,9 +141,11 @@ function _domain_bootstrap($phase) {
       }
 
       // Load bootstrap modules registered by Domain Access.
+
       _domain_bootstrap_modules_load();
 
       // If essential core module file has not been loaded, bootstrap fails.
+
       if (!function_exists('domain_load')) {
         return FALSE;
       }
@@ -133,8 +153,10 @@ function _domain_bootstrap($phase) {
 
     case DOMAIN_BOOTSTRAP_NAME_RESOLVE:
       // Get the domain_id of the request.
+
       $_domain = domain_resolve_host();
       // If we don't have a valid domain id now, we can't really go on, bootstrap fails.
+
       if (empty($_domain['domain_id']) || !is_numeric($_domain['domain_id'])) {
         return FALSE;
       }
@@ -142,9 +164,11 @@ function _domain_bootstrap($phase) {
 
     case DOMAIN_BOOTSTRAP_FULL:
       // Grant access to all affiliates. See http://drupal.org/node/770650
+
       $_domain['site_grant'] = DOMAIN_SITE_GRANT;
 
       // Load all bootstrap processes registered with the module.
+
       _domain_bootstrap_invoke_all('full', $_domain);
       break;
   }
@@ -165,7 +189,7 @@ function _domain_bootstrap($phase) {
  *   An array of module names.
  */
 function _domain_bootstrap_modules($reset = FALSE) {
-  $modules = &drupal_static(__FUNCTION__, NULL);
+  $modules = backdrop_static(__FUNCTION__, NULL);
   if ($reset || is_null($modules)) {
     $modules = _domain_bootstrap_modules_get();
     if (!is_array($modules)) {
@@ -186,13 +210,13 @@ function _domain_bootstrap_modules($reset = FALSE) {
 function _domain_bootstrap_modules_load() {
   $modules = _domain_bootstrap_modules();
   foreach ($modules as $module) {
-    drupal_load('module', $module);
+    backdrop_load('module', $module);
   }
 }
 
 /**
  * Retrieves the value of the variable 'domain_bootstrap_modules' from the
- * {variable} table. This function does not use Drupal's variable system.
+ * {variable} table. This function does not use Backdrop's variable system.
  *
  * @return
  *   An array containing module names.
@@ -244,17 +268,17 @@ function _domain_bootstrap_invoke_all() {
 }
 
 /**
- * Replaces the logic from drupal_settings_initialize() so caching works.
+ * Replaces the logic from backdrop_settings_initialize() so caching works.
  *
- * Problem: we cannot run drupal_settings_initialize() twice, so this logic
+ * Problem: we cannot run backdrop_settings_initialize() twice, so this logic
  * has to be cloned here, otherwise, user logins get corrupted. Without this
  * code, core page caching breaks because the url path isn't set properly
  * for use as a cache id.
  *
- * Further, calling drupal_settings_initialize() will reset $conf to an array
+ * Further, calling backdrop_settings_initialize() will reset $conf to an array
  * which destroys caching settings.
  *
- * @see drupal_settings_initialize()
+ * @see backdrop_settings_initialize()
  *
  * @link http://drupal.org/node/1046844
  * @link http://drupal.org/node/1189916
@@ -266,22 +290,27 @@ function domain_settings_initialize() {
 
   if (isset($base_url)) {
     // Parse fixed base URL from settings.php.
+
     $parts = parse_url($base_url);
     if (!isset($parts['path'])) {
       $parts['path'] = '';
     }
     $base_path = $parts['path'] . '/';
     // Build $base_root (everything until first slash after "scheme://").
+
     $base_root = substr($base_url, 0, strlen($base_url) - strlen($parts['path']));
   }
   else {
     // Create base URL
+
     $http_protocol = $is_https ? 'https' : 'http';
     $base_root = $http_protocol . '://' . $_SERVER['HTTP_HOST'];
     $base_url = $base_root;
 
     // $_SERVER['SCRIPT_NAME'] can, in contrast to $_SERVER['PHP_SELF'], not
+
     // be modified by a visitor.
+
     if ($dir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '\/')) {
       $base_path = $dir;
       $base_url .= $base_path;
@@ -294,17 +323,23 @@ function domain_settings_initialize() {
 
   if ($cookie_domain) {
     // If the user specifies the cookie domain, also use it for session name.
+
     $session_name = $cookie_domain;
   }
   else {
     // Otherwise use $base_url as session name, without the protocol
+
     // to use the same session identifiers across http and https.
+
     list( , $session_name) = explode('://', $base_url, 2);
     // HTTP_HOST can be modified by a visitor, but we already sanitized it
-    // in drupal_settings_initialize().
+
+    // in backdrop_settings_initialize().
+
     if (!empty($_SERVER['HTTP_HOST'])) {
       $cookie_domain = $_SERVER['HTTP_HOST'];
       // Strip leading periods, www., and port numbers from cookie domain.
+
       $cookie_domain = ltrim($cookie_domain, '.');
       if (strpos($cookie_domain, 'www.') === 0) {
         $cookie_domain = substr($cookie_domain, 4);
@@ -314,27 +349,40 @@ function domain_settings_initialize() {
     }
   }
   // Per RFC 2109, cookie domains must contain at least one dot other than the
+
   // first. For hosts such as 'localhost' or IP Addresses we don't set a cookie domain.
+
   if (count(explode('.', $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
     ini_set('session.cookie_domain', $cookie_domain);
   }
   // To prevent session cookies from being hijacked, a user can configure the
+
   // SSL version of their website to only transfer session cookies via SSL by
+
   // using PHP's session.cookie_secure setting. The browser will then use two
+
   // separate session cookies for the HTTPS and HTTP versions of the site. So we
+
   // must use different session identifiers for HTTPS and HTTP to prevent a
+
   // cookie collision.
+
   if ($is_https) {
     ini_set('session.cookie_secure', TRUE);
   }
 
   // We have set $cookie_domain, so we must match $session_name to it, since
-  // that's what will happen inside drupal_settings_initialize() after we run.
+
+  // that's what will happen inside backdrop_settings_initialize() after we run.
+
   // Essentially, we short-circuit the IF routine when this copied code runs
+
   // after our routine.
+
   $session_name = $cookie_domain;
 
   // Now set the session token correctly.
+
   $prefix = ini_get('session.cookie_secure') ? 'SSESS' : 'SESS';
   session_name($prefix . substr(hash('sha256', $session_name), 0, 32));
 }

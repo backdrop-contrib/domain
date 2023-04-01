@@ -8,7 +8,7 @@
 /**
  * Implements hook_features_export().
  */
-function domain_features_export($data, &$export, $module_name) {
+function domain_features_export($data, $export, $module_name) {
   $export['dependencies']['domain'] = 'domain';
   $list = domain_features_selection($data);
   foreach ($list as $machine_name) {
@@ -33,8 +33,10 @@ function domain_features_export_render($module_name, $data, $export = NULL) {
   $code = array();
   $code[] = '  $domains = array();';
   // Set the wipe tables item.
+
   if ($wipe = domain_features_export_wipe_tables_code($data, $code, $export, 'domains') && empty($export)) {
     // Check for changes against the target database.
+
     $data = domain_machine_names();
   }
   foreach ($data as $name) {
@@ -63,6 +65,7 @@ function domain_features_revert($module) {
 function domain_features_rebuild($module) {
   if ($defaults = domain_features_load($module, 'domain_default_domains', TRUE)) {
     // Check for hard rebuild/revert.
+
     if ($wipe = domain_features_wipe_tables($defaults)) {
       $domains = domain_domains(TRUE);
       foreach ($domains as $domain) {
@@ -73,6 +76,7 @@ function domain_features_rebuild($module) {
       unset($defaults['wipe-domain-tables']);
     }
     // Save the domains in this feature.
+
     foreach ($defaults as $key => $domain) {
       if ($id = domain_load_domain_id($key)) {
         $domain['domain_id'] = $id;

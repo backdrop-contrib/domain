@@ -29,8 +29,9 @@ function domain_alias_domain_nav($domain) {
  *
  * Adds a list of all aliases for the current domain.
  */
-function domain_alias_domain_load(&$domain) {
+function domain_alias_domain_load($domain) {
   // Get the domain aliases
+
   $domain['aliases'] = domain_alias_list($domain['domain_id']);
   if (isset($domain['active_alias_id'])) {
     $domain['aliases'][$domain['active_alias_id']]['active'] = TRUE;

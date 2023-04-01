@@ -14,32 +14,39 @@ function domain_alias_schema() {
   $schema['domain_alias'] = array(
     'description' => 'Domain aliases and patterns for domain entries.',
     'fields' => array(
-      'alias_id' => array('type' => 'serial',
+      'alias_id' => array(
+        'type' => 'serial',
         'description' => 'The primary identifier for an alias/pattern.',
         'not null' => TRUE,
-        ),
-      'domain_id' => array('type' => 'int',
+      ),
+      'domain_id' => array(
+        'type' => 'int',
         'description' => 'The related domain entry in the {domain} table.',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-        ),
-      'pattern' => array('type' => 'varchar',
+      ),
+      'pattern' => array(
+        'type' => 'varchar',
         'description' => 'The domain alias/pattern',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
-        ),
-      'redirect' => array('type' => 'int',
+      ),
+      'redirect' => array(
+        'type' => 'int',
         'description' => 'Indicating whether the alias should be redirected to the main domain.',
         'size' => 'small',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-        ),
       ),
+    ),
     'primary key' => array('alias_id'),
-    'indexes' => array('pattern' => array('pattern'), 'domain' => array('domain_id')),
+    'indexes' => array(
+      'pattern' => array('pattern'),
+      'domain' => array('domain_id'),
+    ),
     'foreign_keys' => array(
       'uid' => array('user' => 'uid'),
       'domain_id' => array('domain' => 'domain_id'),
@@ -59,25 +66,8 @@ function domain_alias_update_dependencies() {
   return $dependencies;
 }
 
-/**
- * Remove references to row 0.
- */
-function domain_alias_update_7300(&$sandbox) {
-  $default_id = db_query("SELECT domain_id FROM {domain} WHERE is_default = 1")->fetchField();
-  db_update('domain_alias')
-    ->fields(array('domain_id' => $default_id))
-    ->condition('domain_id', 0)
-    ->execute();
-  return t('Domain Alias zero records removed.');
-}
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+function domain_alias_update_7300($sandbox) { }
 
-/**
- * Update existing redirects to 302.
- */
-function domain_alias_update_7301(&$sandbox) {
-  db_change_field('domain_alias', 'redirect', 'redirect', array('type' => 'int', 'size' => 'small'));
-  db_update('domain_alias')
-    ->fields(array('redirect' => '302'))
-    ->condition('redirect', '1')
-    ->execute();
-}
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+function domain_alias_update_7301($sandbox) { }

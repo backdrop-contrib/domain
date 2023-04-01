@@ -1,0 +1,6 @@
+[DomainStrictTestCase]
+name = Check grants alteration
+description = Esure that grants are only assigned to domains the user belongs to.
+group = Domain Strict
+file = domain_strict.test
+

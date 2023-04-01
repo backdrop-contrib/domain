@@ -23,18 +23,22 @@ function domain_theme_custom_theme() {
   $_domain = domain_get_domain();
 
   // Assign the theme selected, based on the active domain.
+
   $theme = domain_theme_lookup($_domain['domain_id']);
 
   // Check for a custom admin theme.
+
   if (isset($conf['admin_theme']) && path_is_admin(current_path()) && user_access('view the administration theme')) {
     $theme = domain_theme_lookup($_domain['domain_id'], $conf['admin_theme']);
     // No custom settings, but use the admin theme.
+
     if ($theme == -1) {
       return $conf['admin_theme'];
     }
   }
 
   // The above returns -1 on failure.
+
   if ($theme != -1) {
     domain_theme_set_variables($theme);
     return $theme['theme'];
@@ -50,10 +54,14 @@ function domain_theme_set_variables($theme) {
     $settings = domain_unserialize($theme['settings']);
     $conf['theme_' . $theme['theme'] . '_settings'] = $settings;
     // Account for color module.
+
     $vars = array('palette', 'stylesheets', 'logo', 'files', 'screenshot');
     // In some cases, where the domain uses the default color palette
+
     // and the primary theme does not, we may only have the palette
+
     // stored, in which case, we have to load that data and ignore the rest.
+
     $palette_var = 'color_' . $theme['theme'] . '_palette';
     if (!isset($settings[$palette_var])) {
       if (isset($settings['palette'])) {
@@ -72,11 +80,12 @@ function domain_theme_set_variables($theme) {
 }
 
 /**
- * Implements hook_menu()
+ * Implements hook_menu().
  */
 function domain_theme_menu() {
   $items = array();
   // Menu items for configuring themes.
+
   $items['admin/structure/domain/view/%domain/theme'] = array(
     'title' => 'Theme',
     'type' => MENU_LOCAL_TASK,
@@ -105,7 +114,7 @@ function domain_theme_menu() {
 }
 
 /**
- * Implements hook_theme()
+ * Implements hook_theme().
  */
 function domain_theme_theme() {
   $themes = array(
@@ -148,11 +157,23 @@ function domain_theme_lookup($domain_id, $theme = NULL, $reset = FALSE) {
 }
 
 /**
- * Implements hook_domain_form()
+ * Implements hook_config_info().
  */
-function domain_theme_domain_form(&$form) {
+function domain_theme_config_info() {
+  $prefixes['domain_theme.settings'] = array(
+    'label' => t('Domain Access settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
+ * Implements hook_domain_form().
+ */
+function domain_theme_domain_form($form) {
   // Set the module weight for Domain Theme,
-  $module_weight = variable_get('domain_theme_weight', 0);
+
+  $module_weight = config_get('domain_theme.settings', 'domain_theme_weight');
   db_update('system')
     ->fields(array('weight' => $module_weight))
     ->condition('name', 'domain_theme')
@@ -160,13 +181,14 @@ function domain_theme_domain_form(&$form) {
     ->execute();
 
   // Add the form element to the main screen.
+
   $form['domain_theme'] = array(
     '#type' => 'fieldset',
     '#title' => t('Theme settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
+    '#collapsed' => TRUE,
   );
-  $options = drupal_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
+  $options = backdrop_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
   $form['domain_theme']['domain_theme_weight'] = array(
     '#type' => 'select',
     '#title' => t('Domain Theme execution order'),
@@ -174,7 +196,7 @@ function domain_theme_domain_form(&$form) {
     '#default_value' => $module_weight,
     '#description' => t('If you use other modules that allow custom user or group themes, you may experience conflicts
       with the Domain Theme module.  Use this setting to vary the execution order of the Domain Theme module.  Lower
-      (negative) values will execute earlier in the Drupal page building process.')
+      (negative) values will execute earlier in the Backdrop page building process.'),
   );
 }
 
@@ -188,6 +210,7 @@ function domain_theme_batch_submit($values) {
   foreach ($values['domain_batch'] as $key => $value) {
     if ((int) $key != domain_default_id()) {
       // Clear out the old theme.
+
       db_update('domain_theme')
         ->fields(array('status' => 0))
         ->condition('domain_id', $key)
@@ -204,14 +227,14 @@ function domain_theme_batch_submit($values) {
       else {
         db_insert('domain_theme')
           ->fields(array(
-            'domain_id' => $key,
-            'theme' => $value,
-            'status' => 1,
+          'domain_id' => $key,
+          'theme' => $value,
+          'status' => 1,
         ))->execute();
       }
     }
     else {
-      variable_set('theme_default', $value);
+      config_set('system.performance', 'theme_default', $value);
     }
   }
 }
@@ -235,9 +258,11 @@ function domain_theme_get_color_path($path) {
  * where we add additional form elements if we are dealing with domain-specific
  * form settings.
  */
-function domain_theme_form_alter(&$form, &$form_state, $form_id) {
+function domain_theme_form_alter($form, $form_state, $form_id) {
   // We cannot use a named form_alter here because of color module.
+
   // Color submit must happen first, and a named function destroys that.
+
   if ($form_id != 'system_theme_settings' || arg(2) != 'domain') {
     return;
   }
@@ -247,10 +272,11 @@ function domain_theme_form_alter(&$form, &$form_state, $form_id) {
 
   $domain = domain_lookup($domain_id);
   if ($domain == -1 || !array_key_exists($theme, $themes)) {
-    return drupal_access_denied();
+    return backdrop_access_denied();
   }
 
   // Which domain are we editing?
+
   $form['domain_id'] = array(
     '#type' => 'value',
     '#value' => $domain['domain_id'],
@@ -261,7 +287,9 @@ function domain_theme_form_alter(&$form, &$form_state, $form_id) {
   );
 
   // We have to remove the core submit handler, but keep other handlers.
+
   // Otherwise, our changes get saved to the {variables} table.
+
   $form['#submit'][100] = 'domain_theme_settings_submit';
   foreach ($form['#submit'] as $key => $value) {
     if ($value == 'system_theme_settings_submit') {
@@ -270,27 +298,39 @@ function domain_theme_form_alter(&$form, &$form_state, $form_id) {
   }
 
   // Check for the presence of color.module. If it exists, we have to account
+
   // for it and run a check to ensure we don't delete the main site's theme
+
   // folder if we set a domain theme to the default scheme.
+
   $color_info = NULL;
   if (module_exists('color') && $color_info = color_get_info($theme)) {
     $form['#submit'][-100] = 'domain_theme_color_submit';
   }
 
   // Order of operation becomes:
+
   // domain_theme_color_submit()
+
   // color_form_submit()
+
   // domain_theme_settings_submit()
+
   ksort($form['#submit']);
 
   // If no color module, we are done.
+
   if (empty($color_info)) {
     return;
   }
 
   // Label the scheme correctly.
+
   // Since may have added a 'domain_default' element to the palette,
+
   // color module might think we are not using the default theme.
+
+  // TODO This variable was probably removed in Backdrop without replacement.
   $current_scheme = variable_get('color_' . $theme . '_palette', array());
   if (isset($current_scheme['domain_default'])) {
     unset($current_scheme['domain_default']);
@@ -301,16 +341,23 @@ function domain_theme_form_alter(&$form, &$form_state, $form_id) {
   }
 
   // Color module will reset the values in {variable}. which we don't
+
   // want to happen. So we have to grab the existing values and store
+
   // them so that we can set the {variable} table correctly.
+
   // TODO: Make this work with Domain Prefix.
+
   $vars = array('palette', 'stylesheets', 'logo', 'files', 'screenshot');
   foreach ($vars as $variable) {
     $name = 'color_' . $theme . '_' . $variable;
     $value = db_query("SELECT value FROM {variable} WHERE name = :name", array(':name' => $name))->fetchField();
     $color_settings[$name] = isset($value) ? $value : NULL;
   }
-  $form['domain_color_defaults'] = array('#type' => 'value', '#value' => $color_settings);
+  $form['domain_color_defaults'] = array(
+    '#type' => 'value',
+    '#value' => $color_settings,
+  );
 }
 
 /**
@@ -324,7 +371,7 @@ function domain_theme_features_api() {
       'default_file' => FEATURES_DEFAULTS_CUSTOM,
       'default_filename' => 'domains',
       'feature_source' => TRUE,
-      'file' => drupal_get_path('module', 'domain_theme') .'/domain_theme.features.inc',
+      'file' => backdrop_get_path('module', 'domain_theme') . '/domain_theme.features.inc',
     ),
   );
   return $components;

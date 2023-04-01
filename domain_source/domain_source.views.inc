@@ -11,13 +11,16 @@
  */
 function domain_source_views_data() {
   // Define the {domain_access} table.
+
   $data['domain_source']['table']['group'] = t('Domain Source');
   // Define the joins.
+
   $data['domain_source']['table']['join']['node'] = array(
     'left_field' => 'nid',
     'field' => 'nid',
   );
   // Define the fields.
+
   $data['domain_source']['nid'] = array(
     'title' => t('Node ID'),
     'help' => t('The node id.'),
@@ -55,7 +58,7 @@ function domain_source_views_data() {
     // Information for accepting a domain_id as an argument
     'argument' => array(
       'handler' => 'views_handler_argument_numeric',
-    ),    
+    ),
     // Information for sorting on a domain_id.
     'sort' => array(
       'handler' => 'views_handler_sort',

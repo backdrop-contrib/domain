@@ -21,22 +21,38 @@
  *
  * @ingroup strict
  */
-function domain_strict_node_grants_alter(&$grants, $account, $op) {
+function domain_strict_node_grants_alter($grants, $account, $op) {
   $_domain = domain_get_domain();
   // We only act on the 'view' operation.
+
+
   if ($op != 'view') {
     return;
   }
   // Erase the default domain_id grants.
+
+
   $grants['domain_id'] = array();
   // Get the user-assigned domains.
+
+
   $domains = domain_get_user_domains($account);
   if (!empty($domains)) {
     foreach ($domains as $key => $value) {
       // If the user has access to the current domain, set that grant.
+
+
       if ($value == $_domain['domain_id']) {
         $grants['domain_id'][] = $value;
       }
     }
   }
+}
+
+/**
+ * Implements hook_autoload_info().
+ */
+function domain_strict_autoload_info() {
+  return array(
+  );
 }

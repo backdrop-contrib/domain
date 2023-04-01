@@ -69,7 +69,7 @@ function domain_drush_command() {
       'domain' => 'The domain to make default (e.g. example.com or the domain_id).',
     ),
     'options' => array(
-      'skip_check' => 'Bypass the domain response test.'
+      'skip_check' => 'Bypass the domain response test.',
     ),
   );
   $items['generate-domains'] = array(
@@ -79,7 +79,7 @@ function domain_drush_command() {
     ),
     'options' => array(
       'count' => 'The count of extra domains to generate. Default is 15.',
-      'empty' => 'Pass empty=1 to truncate the {domain} table before creating records.'
+      'empty' => 'Pass empty=1 to truncate the {domain} table before creating records.',
     ),
     'examples' => array(
       'drush domain-generate example.com',
@@ -155,12 +155,14 @@ function drush_domain_list() {
  */
 function drush_domain_generate_domains($primary = 'example.com') {
   // Check the number of domains to create.
+
   $count = drush_get_option('count');
   $domains = domain_domains(TRUE);
   if (empty($count)) {
     $count = 15;
   }
   // Ensure we don't duplicate any domains.
+
   $existing = array();
   if (!empty($domains)) {
     foreach ($domains as $domain) {
@@ -168,6 +170,7 @@ function drush_domain_generate_domains($primary = 'example.com') {
     }
   }
   // Set up one.* and so on.
+
   $names = array(
     'one',
     'two',
@@ -184,13 +187,16 @@ function drush_domain_generate_domains($primary = 'example.com') {
     'baz',
   );
   // Set the creation array.
+
   $new = array($primary);
   foreach ($names as $name) {
     $new[] = $name . '.' . $primary;
   }
   // Include a non subdomain.
+
   $new[] = 'my' . $primary;
   // Filter against existing so we can count correctly.
+
   $prepared = array();
   foreach ($new as $key => $value) {
     if (!in_array($value, $existing)) {
@@ -198,8 +204,10 @@ function drush_domain_generate_domains($primary = 'example.com') {
     }
   }
   // Add any test domains.
+
   if ($count > 15 || empty($prepared)) {
     // Find the highest numbered test domain.
+
     $start = db_query("SELECT sitename FROM {domain} WHERE sitename LIKE 'test%' ORDER BY domain_id DESC")->fetchField();
     $start = (int) str_ireplace('test', '', $start);
     $j = count($prepared);
@@ -209,11 +217,12 @@ function drush_domain_generate_domains($primary = 'example.com') {
     }
   }
   // Get the initial item weight for sorting.
+
   $start_weight = db_query("SELECT weight FROM {domain} ORDER BY weight DESC")->fetchField();
   $prepared = array_slice($prepared, 0, $count);
   foreach ($prepared as $key => $item) {
     $record = array(
-      'sitename' => ($item != $primary) ? ucwords(str_replace(".$primary", '', $item)) : variable_get('site_name', 'Drupal'),
+      'sitename' => ($item != $primary)?ucwords(str_replace(".$primary", '', $item)) : config_get('system.performance', 'site_name'),
       'subdomain' => strtolower($item),
       'scheme' => 'http',
       'valid' => 1,
@@ -327,6 +336,7 @@ function drush_domain_delete($argument = NULL) {
     drush_set_error('domain', dt('You must specify a domain to delete.'));
   }
   // Resolve the domain.
+
   if ($domain = drush_domain_get_from_argument($argument)) {
     $domains = array($domain);
   }
@@ -337,6 +347,7 @@ function drush_domain_delete($argument = NULL) {
     return drush_set_error('domain', dt('The primary domain may not be deleted.'));
   }
   // Set options for re-assigning content.
+
   $list = domain_domains();
   $options = array('0' => t('Do not reassign'));
   foreach ($list as $data) {
@@ -379,7 +390,7 @@ function drush_domain_test($argument = NULL) {
   foreach ($domains as $domain) {
     $error = domain_check_response($domain, TRUE);
     if ($error) {
-      drush_print(dt('Fail: !error' , array('!error' => $error)));
+      drush_print(dt('Fail: !error', array('!error' => $error)));
     }
     else {
       drush_print(dt('Success: !url tested successfully.', array('!url' => domain_get_path($domain))));
@@ -392,6 +403,7 @@ function drush_domain_test($argument = NULL) {
  */
 function drush_domain_default($argument) {
   // Resolve the domain.
+
   if ($domain = drush_domain_get_from_argument($argument)) {
     $domains = array($domain);
   }
@@ -399,6 +411,7 @@ function drush_domain_default($argument) {
     return;
   }
   // Check for domain response.
+
   $check = drush_get_option('skip_check');
   if (empty($check)) {
     $error = domain_check_response($domain, TRUE);

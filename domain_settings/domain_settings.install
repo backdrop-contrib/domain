@@ -5,19 +5,37 @@
  * Install file for the Domain Settings module
  */
 
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+
+function domain_settings_update_6000() { }
+
 /**
- * Rename the variable 'domain_settings_ignore'.
+ * Implements hook_update_last_removed().
  */
-function domain_settings_update_6000() {
-  // Get existing variable:
-  $old_settings = variable_get('domain_settings_ignore', '');
-  // Save the variable with another name if it exists:
-  if (!empty($old_settings)) {
-    variable_set('domain_settings_forms', $old_settings);
-  }
+function domain_settings_update_last_removed() {
+  return 6000;
+}
 
-  // Delete the old variable:
-  variable_del('domain_settings_ignore');
+/**
+ * Migrate domain_settings variables to config.
+ */
+function domain_settings_update_1000() {
+  $config = config('domain_settings.settings');
+  $config->set('domain_settings_ignore', update_variable_get('domain_settings_ignore', ''));
+  $config->set('domain_settings_behavior', update_variable_get('domain_settings_behavior', '0'));
+  $config->set('domain_settings_form_visibility', update_variable_get('domain_settings_form_visibility', 'DOMAIN_SETTINGS_SHOW_EXCEPT_LISTED'));
+  $config->set('domain_settings_forms', update_variable_get('domain_settings_forms', ''));
+  $config->save();
 
-  return t('Updated Domain Settings configuration.');
+  update_variable_del('domain_settings_ignore');
+  update_variable_del('domain_settings_behavior');
+  update_variable_del('domain_settings_form_visibility');
+  update_variable_del('domain_settings_forms');
+}
+
+/**
+ * Implements hook_install().
+ */
+function domain_settings_install() {
+  // Dynamically generated variable data was detected.
 }

@@ -1,0 +1,6 @@
+[DomainConfTestCase]
+name = Domain Conf tests
+description = Test the functionality provided by Domain Conf to set domain-specific settings.
+group = Domain Conf
+file = tests/domain_conf.test
+

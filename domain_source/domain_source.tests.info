@@ -1,0 +1,6 @@
+[DomainSourceTest]
+name = Domain Source tests
+description = Test the functionality provided by Domain Source to assign canonical domains to content.
+group = Domain Source
+file = tests/domain_source.test
+

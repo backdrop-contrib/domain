@@ -51,12 +51,20 @@ function domain_test_domain_bootstrap_full($domain) {
  * Implements hook_node_insert().
  */
 function domain_test_node_insert($node) {
-  drupal_set_message(token_replace('Inserted node [node:title] assigned to domain [node:domain:id] ([node:domain]).', array('node' => $node)));
+  backdrop_set_message(token_replace('Inserted node [node:title] assigned to domain [node:domain:id] ([node:domain]).', array('node' => $node)));
 }
 
 /**
  * Implements hook_node_update().
  */
 function domain_test_node_update($node) {
-  drupal_set_message(token_replace('Updated node [node:title] assigned to domain [node:domain:id] ([node:domain]).', array('node' => $node)));
+  backdrop_set_message(token_replace('Updated node [node:title] assigned to domain [node:domain:id] ([node:domain]).', array('node' => $node)));
+}
+
+/**
+ * Implements hook_autoload_info().
+ */
+function domain_test_autoload_info() {
+  return array(
+  );
 }
