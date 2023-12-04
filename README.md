@@ -68,6 +68,8 @@ Drupal maintainers:
 
 Drupal development sponsored by [Palantir.net](https://palantir.net/)
 
+Created for Drupal by [Gurpartap Singh](https://www.drupal.org/u/gurpartap-singh)
+
 License
 -------
 <!--
