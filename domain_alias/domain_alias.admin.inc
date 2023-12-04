@@ -31,7 +31,7 @@ function domain_alias($domain) {
  *   An array of additional hidden key/value pairs to pass to the form.
  *   Used by child modules to control behaviors.
  */
-function domain_alias_form($form, $form_state, $domain, $arguments = array()) {
+function domain_alias_form($form, &$form_state, $domain, $arguments = array()) {
   $form = array();
   backdrop_set_title(t('Aliases for !domain', array('!domain' => $domain['subdomain'])));
   $form['domain_id'] = array(
@@ -121,7 +121,7 @@ function domain_alias_form($form, $form_state, $domain, $arguments = array()) {
 /**
  * FAPI for domain_alias_form()
  */
-function domain_alias_form_validate($form, $form_state) {
+function domain_alias_form_validate($form, &$form_state) {
   // Validate aliases
 
   $aliases = array();
@@ -259,7 +259,7 @@ function _domain_alias_validate($form, $alias, $id, $aliases, $type) {
 /**
  * Forms_API for domain_alias_form().
  */
-function domain_alias_form_submit($form, $form_state) {
+function domain_alias_form_submit($form, &$form_state) {
   // The new alias fields are always present.
 
   foreach ($form_state['values']['domain_alias_new'] as $id => $alias) {

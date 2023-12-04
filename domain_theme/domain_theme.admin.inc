@@ -47,7 +47,7 @@ function domain_theme_page($domain) {
  * @return
  *   An HTML form.
  */
-function domain_theme_form($form, $form_state, $domain) {
+function domain_theme_form($form, &$form_state, $domain) {
   $form = array();
   // Get the current $theme for this domain, if available.
 
@@ -95,7 +95,7 @@ function domain_theme_form($form, $form_state, $domain) {
 /**
  * Form submit handler.
  */
-function domain_theme_form_submit($form, $form_state) {
+function domain_theme_form_submit($form, &$form_state) {
   // Update or Insert?
 
   $domain_id = $form_state['values']['domain_id'];
@@ -216,7 +216,7 @@ function domain_theme_reset($domain) {
  * @return
  *   A themed HTML form.
  */
-function domain_theme_reset_form($form, $form_state, $domain) {
+function domain_theme_reset_form($form, &$form_state, $domain) {
   $extra['domain_id'] = array(
     '#type' => 'value',
     '#value' => $domain['domain_id'],
@@ -228,7 +228,7 @@ function domain_theme_reset_form($form, $form_state, $domain) {
 /**
  * FormsAPI for domain_theme_reset_form.
  */
-function domain_theme_reset_form_submit($form, $form_state) {
+function domain_theme_reset_form_submit($form, &$form_state) {
   db_delete('domain_theme')
     ->condition('domain_id', $form_state['values']['domain_id'])
     ->execute();
@@ -292,7 +292,7 @@ function domain_theme_settings($domain, $theme) {
 /**
  * Process domain_theme_settings form submissions.
  */
-function domain_theme_settings_submit($form, $form_state) {
+function domain_theme_settings_submit($form, &$form_state) {
   $values = $form_state['values'];
   // Prepare a filepath for color module settings.
 
@@ -402,7 +402,7 @@ function domain_theme_settings_submit($form, $form_state) {
  *
  * @see color_form_submit()
  */
-function domain_theme_color_submit($form, $form_state) {
+function domain_theme_color_submit($form, &$form_state) {
   $theme = $form_state['values']['theme'];
   $info = $form_state['values']['info'];
 
@@ -433,7 +433,7 @@ function domain_theme_color_submit($form, $form_state) {
  * @param $values
  *   An array of form values, passed by reference.
  */
-function domain_theme_file_upload($values) {
+function domain_theme_file_upload(&$values) {
   // If the user uploaded a new logo or favicon, save it to a permanent location
 
   // and use it in place of the default theme-provided file.

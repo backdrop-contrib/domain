@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Domain bootstrap file.
@@ -55,13 +54,10 @@ define('DOMAIN_BOOTSTRAP_FULL', 2);
 function domain_bootstrap() {
   global $_domain;
   // Initialize our global variable.
-
   $_domain = array();
 
   // Ensure that core globals are loaded so that we don't break page caching.
-
   // See http://drupal.org/node/1046844 and http://drupal.org/node/1189916.
-
   if (!isset($GLOBALS['base_root'])) {
     domain_settings_initialize();
   }
@@ -69,9 +65,7 @@ function domain_bootstrap() {
   $phases = array(DOMAIN_BOOTSTRAP_INIT, DOMAIN_BOOTSTRAP_NAME_RESOLVE, DOMAIN_BOOTSTRAP_FULL);
   foreach ($phases as $phase) {
     // We return NULL if the domain module is not enabled.  This prevents
-
     // load errors during module enable / disable.
-
     $error = _domain_bootstrap($phase);
     if ($error === NULL) {
       $_domain['error'] = -1;
@@ -79,11 +73,8 @@ function domain_bootstrap() {
     }
     elseif ($error === FALSE) {
       // watchdog() is not available here, and there may be other logging.
-
       // So we have to write an error message global variable and pick them up
-
       // in settings,inc.
-
       $_domain['error'] = $phase;
       break;
     }
@@ -105,31 +96,22 @@ function _domain_bootstrap($phase) {
   switch ($phase) {
     case DOMAIN_BOOTSTRAP_INIT:
       // Make sure database is loaded.
-
       // The new update handler causes problems here, so we account for it.
-
       // Same with drush or other CLI resources. It turns out that the
-
       // backdrop_is_cli() function is not consistent for php and drush scripts,
-
       // so instead, we check to see if the database driver has been loaded.
-
       // See http://drupal.org/node/1342740 for the latest background.
-
       $new_phase = FALSE;
+
       // If running from drush or update.php, we act differently.
-
       // Prevent $new_phase = TRUE when running drush site-install by checking
-
       // the $install_state global.
-
-      if ((function_exists('drush_verify_cli') || function_exists('update_prepare_d7_bootstrap')) && empty($install_state)) {
+      if ((function_exists('drush_verify_cli') || function_exists('update_prepare_bootstrap')) && empty($install_state)) {
         $new_phase = TRUE;
       }
       backdrop_bootstrap(BACKDROP_BOOTSTRAP_DATABASE, $new_phase);
 
       // If the Domain Access module has been disabled, or if we're unable to interact with the database, stop loading.
-
       if (function_exists('db_query')) {
         $check = (bool) db_query("SELECT status FROM {system} WHERE name = 'domain' AND type = 'module'")->fetchField();
         if (empty($check)) {
@@ -141,11 +123,9 @@ function _domain_bootstrap($phase) {
       }
 
       // Load bootstrap modules registered by Domain Access.
-
       _domain_bootstrap_modules_load();
 
       // If essential core module file has not been loaded, bootstrap fails.
-
       if (!function_exists('domain_load')) {
         return FALSE;
       }
@@ -153,10 +133,8 @@ function _domain_bootstrap($phase) {
 
     case DOMAIN_BOOTSTRAP_NAME_RESOLVE:
       // Get the domain_id of the request.
-
       $_domain = domain_resolve_host();
       // If we don't have a valid domain id now, we can't really go on, bootstrap fails.
-
       if (empty($_domain['domain_id']) || !is_numeric($_domain['domain_id'])) {
         return FALSE;
       }
@@ -164,11 +142,9 @@ function _domain_bootstrap($phase) {
 
     case DOMAIN_BOOTSTRAP_FULL:
       // Grant access to all affiliates. See http://drupal.org/node/770650
-
       $_domain['site_grant'] = DOMAIN_SITE_GRANT;
 
       // Load all bootstrap processes registered with the module.
-
       _domain_bootstrap_invoke_all('full', $_domain);
       break;
   }
@@ -286,31 +262,39 @@ function _domain_bootstrap_invoke_all() {
 function domain_settings_initialize() {
   global $base_url, $base_path, $base_root, $cookie_domain;
 
+// FOLLOWING IS REMOVED IN DOMAIN
+
+  // // Export these settings.php variables to the global namespace.
+  // global $databases, $cookie_domain, $conf, $installed_profile, $update_free_access, $db_url, $db_prefix, $drupal_hash_salt, $is_https, $base_secure_url, $base_insecure_url;
+  // $conf = array();
+
+  // if (file_exists(DRUPAL_ROOT . '/' . conf_path() . '/settings.php')) {
+  //   include_once DRUPAL_ROOT . '/' . conf_path() . '/settings.php';
+  // }
+  // $is_https = drupal_is_https();
+
+  // Load configuration classes and functions.
+  require_once BACKDROP_ROOT . '/core/includes/config.inc';
   $is_https = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on';
 
   if (isset($base_url)) {
     // Parse fixed base URL from settings.php.
-
     $parts = parse_url($base_url);
     if (!isset($parts['path'])) {
       $parts['path'] = '';
     }
     $base_path = $parts['path'] . '/';
     // Build $base_root (everything until first slash after "scheme://").
-
     $base_root = substr($base_url, 0, strlen($base_url) - strlen($parts['path']));
   }
   else {
     // Create base URL
-
     $http_protocol = $is_https ? 'https' : 'http';
     $base_root = $http_protocol . '://' . $_SERVER['HTTP_HOST'];
     $base_url = $base_root;
 
     // $_SERVER['SCRIPT_NAME'] can, in contrast to $_SERVER['PHP_SELF'], not
-
     // be modified by a visitor.
-
     if ($dir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '\/')) {
       $base_path = $dir;
       $base_url .= $base_path;
@@ -320,26 +304,25 @@ function domain_settings_initialize() {
       $base_path = '/';
     }
   }
+//The following was removed for DOMAIN
+// $base_secure_url = str_replace('http://', 'https://', $base_url);
+// $base_insecure_url = str_replace('https://', 'http://', $base_url);
+
 
   if ($cookie_domain) {
     // If the user specifies the cookie domain, also use it for session name.
-
     $session_name = $cookie_domain;
   }
   else {
     // Otherwise use $base_url as session name, without the protocol
-
     // to use the same session identifiers across http and https.
-
     list( , $session_name) = explode('://', $base_url, 2);
     // HTTP_HOST can be modified by a visitor, but we already sanitized it
-
     // in backdrop_settings_initialize().
-
     if (!empty($_SERVER['HTTP_HOST'])) {
+      // CHANGED FOR DOMAIN
       $cookie_domain = $_SERVER['HTTP_HOST'];
       // Strip leading periods, www., and port numbers from cookie domain.
-
       $cookie_domain = ltrim($cookie_domain, '.');
       if (strpos($cookie_domain, 'www.') === 0) {
         $cookie_domain = substr($cookie_domain, 4);
@@ -349,40 +332,28 @@ function domain_settings_initialize() {
     }
   }
   // Per RFC 2109, cookie domains must contain at least one dot other than the
-
   // first. For hosts such as 'localhost' or IP Addresses we don't set a cookie domain.
-
   if (count(explode('.', $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
     ini_set('session.cookie_domain', $cookie_domain);
   }
   // To prevent session cookies from being hijacked, a user can configure the
-
   // SSL version of their website to only transfer session cookies via SSL by
-
   // using PHP's session.cookie_secure setting. The browser will then use two
-
   // separate session cookies for the HTTPS and HTTP versions of the site. So we
-
   // must use different session identifiers for HTTPS and HTTP to prevent a
-
   // cookie collision.
-
   if ($is_https) {
     ini_set('session.cookie_secure', TRUE);
   }
 
+  // THIS LOOKS LIKE IT MIGHT BE ADDITIONAL FOR DOMAIN
   // We have set $cookie_domain, so we must match $session_name to it, since
-
   // that's what will happen inside backdrop_settings_initialize() after we run.
-
   // Essentially, we short-circuit the IF routine when this copied code runs
-
   // after our routine.
-
   $session_name = $cookie_domain;
 
   // Now set the session token correctly.
-
   $prefix = ini_get('session.cookie_secure') ? 'SSESS' : 'SESS';
   session_name($prefix . substr(hash('sha256', $session_name), 0, 32));
 }

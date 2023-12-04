@@ -10,7 +10,7 @@
  *
  * Add a 'test' variable to the domain array.
  */
-function domain_test_domain_load($domain) {
+function domain_test_domain_load(&$domain) {
   // Add a variable to the $domain array.
 
   $domain['testvar'] = TRUE;
@@ -74,7 +74,7 @@ function domain_test_domain_cron($domain) {
  *
  * Remove any errors on validation.
  */
-function domain_test_domain_validate_alter($errors, $subdomain) {
+function domain_test_domain_validate_alter(&$errors, $subdomain) {
   if ($subdomain == 'thisshouldfail') {
     $errors = array();
   }
@@ -121,7 +121,7 @@ function domain_test_domain_batch() {
 /**
  * Implements hook_domain_batch_alter().
  */
-function domain_test_domain_batch_alter($batch) {
+function domain_test_domain_batch_alter(&$batch) {
   // Rename 'Put site into maintenance mode'.
 
   $batch['maintenance_mode']['#form']['#title'] = t('Test reset value');

@@ -198,7 +198,7 @@ function domain_content_view($domain_id = NULL, $all_affiliates = FALSE) {
  * @return
  *   A themed HTML batch content editing form.
  */
-function domain_content_admin($form, $form_state) {
+function domain_content_admin($form, &$form_state) {
   $form['#attached']['css'] = array(backdrop_get_path('module', 'domain_content') . '/domain_content.css');
 
   if (isset($form_state['values']['operation']) && $form_state['values']['operation'] == 'delete') {
@@ -230,7 +230,7 @@ function domain_content_admin($form, $form_state) {
 /**
  * On delete confirmation, redirect properly.
  */
-function domain_content_delete_multiple_submit($form, $form_state) {
+function domain_content_delete_multiple_submit($form, &$form_state) {
   $form_state['redirect'] = $form['actions']['cancel']['#href'];
 }
 
@@ -516,7 +516,7 @@ function domain_content_view_domains($node) {
  * @return
  *   No return value. Modify by reference.
  */
-function domain_content_filter_operations($operations) {
+function domain_content_filter_operations(&$operations) {
   // Administer nodes can do anything.
 
   if (user_access('administer nodes')) {

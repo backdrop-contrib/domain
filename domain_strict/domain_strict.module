@@ -21,7 +21,7 @@
  *
  * @ingroup strict
  */
-function domain_strict_node_grants_alter($grants, $account, $op) {
+function domain_strict_node_grants_alter(&$grants, $account, $op) {
   $_domain = domain_get_domain();
   // We only act on the 'view' operation.
 

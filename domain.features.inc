@@ -8,7 +8,7 @@
 /**
  * Implements hook_features_export().
  */
-function domain_features_export($data, $export, $module_name) {
+function domain_features_export($data, &$export, $module_name) {
   $export['dependencies']['domain'] = 'domain';
   $list = domain_features_selection($data);
   foreach ($list as $machine_name) {

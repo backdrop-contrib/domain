@@ -43,7 +43,7 @@ function domain_conf_page($domain) {
  * @param $domain
  *   The domain currently being updated.
  */
-function domain_conf_form($form, $form_state, $domain) {
+function domain_conf_form($form, &$form_state, $domain) {
   $form = array();
   $batch = domain_batch_actions();
   $settings = domain_conf_data_get($domain['domain_id']);
@@ -121,7 +121,7 @@ function domain_conf_form($form, $form_state, $domain) {
 /**
  * FormsAPI for domain_conf_form().
  */
-function domain_conf_form_submit($form, $form_state) {
+function domain_conf_form_submit($form, &$form_state) {
   $new_settings = array();
 
   // Throw away what we don't need.
@@ -179,7 +179,7 @@ function domain_conf_reset($domain) {
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
  */
-function domain_conf_reset_form($form, $form_state, $domain) {
+function domain_conf_reset_form($form, &$form_state, $domain) {
   $extra['domain_id'] = array(
     '#type' => 'value',
     '#value' => $domain['domain_id'],
@@ -191,7 +191,7 @@ function domain_conf_reset_form($form, $form_state, $domain) {
 /**
  * FormsAPI for domain_conf_reset_form().
  */
-function domain_conf_reset_form_submit($form, $form_state) {
+function domain_conf_reset_form_submit($form, &$form_state) {
   domain_conf_data_delete($form_state['values']['domain_id']);
   backdrop_set_message(t('Domain configuration settings have been reset.'));
 

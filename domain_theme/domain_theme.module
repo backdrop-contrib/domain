@@ -170,7 +170,7 @@ function domain_theme_config_info() {
 /**
  * Implements hook_domain_form().
  */
-function domain_theme_domain_form($form) {
+function domain_theme_domain_form(&$form) {
   // Set the module weight for Domain Theme,
 
   $module_weight = config_get('domain_theme.settings', 'domain_theme_weight');
@@ -258,7 +258,7 @@ function domain_theme_get_color_path($path) {
  * where we add additional form elements if we are dealing with domain-specific
  * form settings.
  */
-function domain_theme_form_alter($form, $form_state, $form_id) {
+function domain_theme_form_alter(&$form, &$form_state, $form_id) {
   // We cannot use a named form_alter here because of color module.
 
   // Color submit must happen first, and a named function destroys that.

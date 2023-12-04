@@ -32,7 +32,7 @@
  *
  * @ingroup domain_hooks
  */
-function hook_domain_load($domain) {
+function hook_domain_load(&$domain) {
   // Add a variable to the $domain array.
 
   $domain['myvar'] = 'mydomainvar';
@@ -200,7 +200,7 @@ function hook_domain_install() {
  * @return
  *   No return value.  The $form is modified by reference, as needed.
  */
-function hook_domain_form($form) {
+function hook_domain_form(&$form) {
   // Add the form element to the main screen.
 
   $form['domain_mymodule'] = array(
@@ -261,7 +261,7 @@ function hook_domain_warning() {
  * @return
  *   No return value; modify $source by reference.
  */
-function hook_domain_source_alter($source, $nid) {
+function hook_domain_source_alter(&$source, $nid) {
   // Taken from the Domain Source module
 
   $source_id = domain_source_lookup($nid);
@@ -300,7 +300,7 @@ function hook_domain_source_alter($source, $nid) {
  * @return
  *   No return value; modify $source by reference.
  */
-function hook_domain_source_path_alter($source, $path) {
+function hook_domain_source_path_alter(&$source, $path) {
   // Always make admin links go to the primary domain.
 
   $base = arg(0, $path);
@@ -511,7 +511,7 @@ function hook_domain_batch() {
  * @return
  *   No return value. Modify $batch by reference.
  */
-function hook_domain_batch_alter($batch) {
+function hook_domain_batch_alter(&$batch) {
   // Rename 'Put site into maintenance mode'.
 
   $batch['maintenance_mode']['#form']['#title'] = t('Take site offline');
@@ -657,7 +657,7 @@ function hook_domain_bootstrap_full($domain) {
  *
  * @ingroup domain_hooks
  */
-function hook_domain_path($domain_id, $path, $options, $original_path) {
+function hook_domain_path($domain_id, &$path, &$options, $original_path) {
   // Give a normal path alias
 
   $path = backdrop_get_path_alias($path);
@@ -719,7 +719,7 @@ function mymodule_form_submit($form_state) {
  * @return
  *   No return value. Modify $options by reference.
  */
-function hook_domain_nav_options_alter($options) {
+function hook_domain_nav_options_alter(&$options) {
   global $user;
   domain_user_set($user);
 
@@ -746,7 +746,7 @@ function hook_domain_nav_options_alter($options) {
  * @param &$forms
  *   An array of form_ids, passed by reference.
  */
-function hook_domain_warning_alter($forms) {
+function hook_domain_warning_alter(&$forms) {
   // Forms which Domain Settings handles and are set as warnings.
 
   $core_forms = array(
@@ -807,7 +807,7 @@ function hook_domain_settings($domain_id, $values) {
  *
  * @see domain_valid_domain()
  */
-function hook_domain_validate_alter($error_list, $subdomain) {
+function hook_domain_validate_alter(&$error_list, $subdomain) {
   // Only allow TLDs to be .org for our site.
 
   if (substr($subdomain, -4) != '.org') {
@@ -852,7 +852,7 @@ function hook_domain_validate_alter($error_list, $subdomain) {
  *
  * @see domain_grant_all()
  */
-function hook_domain_grant_all_alter($grant, $options) {
+function hook_domain_grant_all_alter(&$grant, $options) {
   // Always show all nodes on admin pages.
 
   $base_path = arg(0);

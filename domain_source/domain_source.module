@@ -30,7 +30,7 @@ function domain_source_config_info() {
 /**
  * Implements hook_form_alter().
  */
-function domain_source_form_alter($form, $form_state, $form_id) {
+function domain_source_form_alter(&$form, &$form_state, $form_id) {
   // Apply to all node editing forms only.
 
 
@@ -149,7 +149,7 @@ function domain_source_form_alter($form, $form_state, $form_id) {
 /**
  * Integrate with Domain Content.
  */
-function domain_source_form_domain_content_admin_alter($form, $form_state) {
+function domain_source_form_domain_content_admin_alter(&$form, &$form_state) {
   $_domain = domain_get_domain();
   if (!user_access('set domain access') || isset($form['operation']['#value'])) {
     return;
@@ -179,7 +179,7 @@ function domain_source_form_domain_content_admin_alter($form, $form_state) {
 /**
  * Form integration with Administer nodes.
  */
-function domain_source_form_node_admin_content_alter($form, $form_state) {
+function domain_source_form_node_admin_content_alter(&$form, &$form_state) {
   // Do nothing on the delete screen.
 
 
@@ -331,7 +331,7 @@ function domain_source_lookup($nid) {
 /**
  * FormAPI function that lets us update access rules.
  */
-function domain_source_update_nodes($form, $form_state) {
+function domain_source_update_nodes($form, &$form_state) {
   // If our operation is flagged, then we have to manually change the
 
 
@@ -362,7 +362,7 @@ function domain_source_update_nodes($form, $form_state) {
 /**
  * Form validation step
  */
-function domain_source_validate($form, $form_state) {
+function domain_source_validate($form, &$form_state) {
   if ($form_state['values']['operation'] == 'domain') {
     $default = domain_default_id();
     $key = $form_state['values']['domain_source'];
@@ -424,7 +424,7 @@ function domain_source_views_api() {
  * Allows default settings for domain source when setting the default domain
  * selection per content type.
  */
-function domain_source_form_domain_nodes_form_alter($form, $form_state, $form_id) {
+function domain_source_form_domain_nodes_form_alter(&$form, &$form_state, $form_id) {
   $options = array();
   $domains = domain_domains();
   $options[DOMAIN_SOURCE_USE_ACTIVE] = t('Use active domain');
@@ -449,7 +449,7 @@ function domain_source_form_domain_nodes_form_alter($form, $form_state, $form_id
 /**
  * Validates default source selections.
  */
-function domain_source_validate_domain_nodes_form($form, $form_state) {
+function domain_source_validate_domain_nodes_form($form, &$form_state) {
   // Handle the differences between our form and the node type form.
 
 
@@ -501,7 +501,7 @@ function domain_source_validate_domain_nodes_form($form, $form_state) {
  * Allows default settings for domain source when setting the default domain
  * selection per content type.
  */
-function domain_source_form_node_type_form_alter($form, $form_state, $form_id) {
+function domain_source_form_node_type_form_alter(&$form, &$form_state, $form_id) {
   $options = array();
   $domains = domain_domains();
   $options[DOMAIN_SOURCE_USE_ACTIVE] = t('Use active domain');

@@ -15,7 +15,7 @@ function domain_conf_features_export_options() {
 /**
  * Implements hook_features_export().
  */
-function domain_conf_features_export($data, $export, $module_name) {
+function domain_conf_features_export($data, &$export, $module_name) {
   $export['dependencies']['domain_conf'] = 'domain_conf';
   $list = domain_features_selection($data);
   foreach ($list as $machine_name) {

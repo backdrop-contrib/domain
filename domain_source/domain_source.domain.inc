@@ -10,7 +10,7 @@
 /**
  * Implements hook_domain_source_alter().
  */
-function domain_source_domain_source_alter($source, $nid) {
+function domain_source_domain_source_alter(&$source, $nid) {
   $source_id = domain_source_lookup($nid);
   // If FALSE returned, no source is defined.
 

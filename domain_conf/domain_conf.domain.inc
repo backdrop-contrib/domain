@@ -468,7 +468,7 @@ function domain_conf_domain_delete($domain, $form_values = array()) {
  * So we use this process callback to populate the menus safely, after they
  * have been rebuilt.
  */
-function domain_conf_get_menu_parents($element, $form_state) {
+function domain_conf_get_menu_parents($element, &$form_state) {
   static $options;
   if (!isset($options)) {
     $options = menu_parent_options(menu_get_menus(), array('mlid' => 0));

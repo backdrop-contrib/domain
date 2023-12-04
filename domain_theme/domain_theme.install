@@ -66,7 +66,7 @@ function domain_theme_update_dependencies() {
 
 // TODO The old hook_update_N functions cannot be applied to Backdrop.
 
-function domain_theme_update_7300($sandbox) { }
+function domain_theme_update_7300(&$sandbox) { }
 
 /**
  * Implements hook_update_last_removed().

@@ -14,7 +14,7 @@
  *
  * Forces absolute paths for domains when needed.
  */
-function domain_url_outbound_alter($path, $options, $original_path) {
+function domain_url_outbound_alter(&$path, &$options, $original_path) {
   $config = config('domain.settings');
   $_domain = domain_get_domain();
 

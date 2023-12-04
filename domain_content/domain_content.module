@@ -178,7 +178,7 @@ function domain_content_node_operations_process($nodes) { }
 /**
  * Allow domain assignment to be made from the default content form.
  */
-function domain_content_form_node_admin_content_alter($form, $form_state) {
+function domain_content_form_node_admin_content_alter(&$form, &$form_state) {
   // Privileged users can make global changes to Domain Access permissions.
 
   if (!user_access('set domain access') || isset($form['operation']['#value'])) {
@@ -196,7 +196,7 @@ function domain_content_form_node_admin_content_alter($form, $form_state) {
 /**
  * Abstraction function for selecting domains for batch operations.
  */
-function domain_content_add_form_widget($form) {
+function domain_content_add_form_widget(&$form) {
   global $_domain;
   // We have different settings for the two form contexts.
 
@@ -265,7 +265,7 @@ function domain_content_add_form_widget($form) {
  *
  * This callback works for the normal operations callback.
  */
-function domain_content_process_nodes($form, $form_state) {
+function domain_content_process_nodes($form, &$form_state) {
   if ($form_state['values']['operation'] != 'domain') {
     return;
   }

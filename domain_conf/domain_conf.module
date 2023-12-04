@@ -593,7 +593,7 @@ function domain_conf_js_maintain() {
 /**
  * Implements hook_js_alter().
  */
-function domain_conf_js_alter($javascript) {
+function domain_conf_js_alter(&$javascript) {
   domain_conf_js_maintain();
 }
 

@@ -15,7 +15,7 @@ function domain_theme_features_export_options() {
 /**
  * Implements hook_features_export().
  */
-function domain_theme_features_export($data, $export, $module_name) {
+function domain_theme_features_export($data, &$export, $module_name) {
   $export['dependencies']['domain_theme'] = 'domain_theme';
   $list = domain_features_selection($data);
   foreach ($list as $machine_name) {

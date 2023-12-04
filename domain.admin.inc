@@ -11,7 +11,7 @@
 /**
  * Create an overview form for sorting domains and other quick actions.
  */
-function domain_overview_form($form, $form_state) {
+function domain_overview_form($form, &$form_state) {
   $check = (bool) db_query("SELECT COUNT(domain_id) FROM {domain}")->fetchField();
   if (empty($check)) {
     domain_set_primary_domain();
@@ -127,7 +127,7 @@ function domain_overview_form($form, $form_state) {
 /**
  * Validate handler for the domain overview form.
  */
-function domain_overview_form_validate($form, $form_state) {
+function domain_overview_form_validate($form, &$form_state) {
   $values = $form_state['values']['domain'];
   $default = $form_state['values']['default_domain'];
   if (isset($values[$default])) {
@@ -143,7 +143,7 @@ function domain_overview_form_validate($form, $form_state) {
 /**
  * Submit handler for the domain overview form.
  */
-function domain_overview_form_submit($form, $form_state) {
+function domain_overview_form_submit($form, &$form_state) {
   $values = $form_state['values']['domain'];
 
   foreach ($values as $domain_id => $value) {
@@ -186,7 +186,7 @@ function domain_configure() {
 /**
  * FormsAPI for configuring the domain module.
  */
-function domain_configure_form($form, $form_state, $user_submitted = FALSE) {
+function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
   $config = config('domain.settings');
   $form['#config'] = 'domain.settings';
   $form['domain_sitename_override'] = array(
@@ -445,7 +445,7 @@ function domain_values_from_form_state($form_state) {
  *    Indicates that a form should not process administrative messages and paths
  *    upon form submit.  Used by the Domain User module.
  */
-function domain_form($form, $form_state, $domain = array(), $arguments = array()) {
+function domain_form($form, &$form_state, $domain = array(), $arguments = array()) {
   $config = config('domain.settings');
   $_domain = domain_get_domain();
   // This action should be performed from the primary domain unless overridden.
@@ -585,7 +585,7 @@ function domain_form($form, $form_state, $domain = array(), $arguments = array()
 /**
  * Implement domain_form validate hook.
  */
-function domain_form_validate($form, $form_state) {
+function domain_form_validate($form, &$form_state) {
   $subdomain = $form_state['values']['subdomain'];
   $error_list = array();
   $domain_changed = (bool) strcmp($form_state['values']['subdomain'], $form['subdomain']['#default_value']);
@@ -611,7 +611,7 @@ function domain_form_validate($form, $form_state) {
 /**
  * Implement domain_form submit hook.
  */
-function domain_form_submit($form, $form_state) {
+function domain_form_submit($form, &$form_state) {
   $values = domain_values_from_form_state($form_state);
   // Set the proper message.
 
@@ -665,7 +665,7 @@ function domain_form_submit($form, $form_state) {
  *     Indicates that a form should not process administrative messages and paths
  *     upon form submit.  Used by the Domain User module.
  */
-function domain_delete_form($form, $form_state, $domain, $arguments = array()) {
+function domain_delete_form($form, &$form_state, $domain, $arguments = array()) {
   // This action should be performed from the primary domain.
 
   domain_check_primary();
@@ -728,7 +728,7 @@ function domain_delete_form($form, $form_state, $domain, $arguments = array()) {
 /**
  * Implement domain_delete_form submit hook.
  */
-function domain_delete_form_submit($form, $form_state) {
+function domain_delete_form_submit($form, &$form_state) {
   // Delete the domain.
 
   domain_delete($form_state['values']['domain'], $form_state['values']);
@@ -875,7 +875,7 @@ function domain_batch_sort($a, $b) {
  * @return
  *   A themed table of links and descriptions for batch actions.
  */
-function domain_batch_form($form, $form_state, $action, $batch, $domains) {
+function domain_batch_form($form, &$form_state, $action, $batch, $domains) {
   $default = array();
   backdrop_set_title($batch['#form']['#title']);
 
@@ -1046,7 +1046,7 @@ function theme_domain_batch_title($variables) {
 /**
  * FormsAPI for validating batch form actions.
  */
-function domain_batch_form_validate($form, $form_state) {
+function domain_batch_form_validate($form, &$form_state) {
   // Define the validation function and call it.
 
   if (isset($form_state['values']['validate_handler']) && function_exists($form_state['values']['validate_handler'])) {
@@ -1057,7 +1057,7 @@ function domain_batch_form_validate($form, $form_state) {
 /**
  * FormsAPI for saving batch form actions.
  */
-function domain_batch_form_submit($form, $form_state) {
+function domain_batch_form_submit($form, &$form_state) {
   if (!empty($form_state['values']['batch_override'])) {
     foreach ($form_state['values']['domain_batch'] as $domain_id => $value) {
       $options_all[$domain_id] = $form_state['values']['batch_all_setting'];
@@ -1119,7 +1119,7 @@ function domain_batch_form_submit($form, $form_state) {
 /**
  * FormAPI to set default domain settings per content type.
  */
-function domain_nodes_form($form, $form_state) {
+function domain_nodes_form($form, &$form_state) {
   $form = array();
   $form['#config'] = 'domain.settings';
 
@@ -1200,7 +1200,7 @@ function theme_domain_nodes_form($variables) {
  *
  * @see domain_get_user_domains()
  */
-function domain_roles_form($form, $form_state) {
+function domain_roles_form($form, &$form_state) {
   $config = config('domain.settings');
   $form = array();
   $form['#config'] = 'domain.settings';
@@ -1335,7 +1335,7 @@ function theme_domain_overview_form($variables) {
 /**
  * Repairs and updates instances of domain_id 0 after the update to 7.x.3.
  */
-function domain_repair_form($form, $form_state) {
+function domain_repair_form($form, &$form_state) {
   $list = domain_update_module_check();
   if (empty($list)) {
     $form['list'] = array(
@@ -1371,7 +1371,7 @@ function domain_repair_form($form, $form_state) {
 /**
  * Repairs references to domain_id 0.
  */
-function domain_repair_form_submit($form, $form_state) {
+function domain_repair_form_submit($form, &$form_state) {
   $tables = $form_state['values']['tables'];
   $success = domain_update_zero_records($tables);
   if ($success) {
