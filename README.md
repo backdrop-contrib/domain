@@ -58,8 +58,9 @@ libraries, list them here. You can also mention any organisations/companies who
 sponsored the module's development.
 -->
 
-Porting to Backdrop CMS by:
+Maintained for Backdrop CMS by:
 - [Martin Price](https://github.com/yorkshire-pudding) - [System Horizons Ltd](https://www.systemhorizons.co.uk)
+- [Tim Erickson](https://github.com/stpaultim) - [Simplo by Triplo](https://simplo.site/)
 - Could you help?
 
 Drupal maintainers:
