@@ -46,7 +46,8 @@ new/additional maintainers.
 -->
 
 - [Martin Price](https://github.com/yorkshire-pudding) - [System Horizons Ltd](https://www.systemhorizons.co.uk)
-- Collaboration and co-maintainers welcome! REALLY, REALLY WELCOME
+- [Tim Erickson](https://github.com/stpaultim) - [Simplo by Triplo](https://simplo.site/)
+- Collaboration and co-maintainers welcome! REALLY, REALLY WELCOME!!
 
 Credits
 -------
@@ -58,10 +59,10 @@ libraries, list them here. You can also mention any organisations/companies who
 sponsored the module's development.
 -->
 
-Maintained for Backdrop CMS by:
+Port to Backdrop CMS by:
 - [Martin Price](https://github.com/yorkshire-pudding) - [System Horizons Ltd](https://www.systemhorizons.co.uk)
 - [Tim Erickson](https://github.com/stpaultim) - [Simplo by Triplo](https://simplo.site/)
-- Could you help?
+- Could you help? Help is needed to document issues, work on fixes and to test fixes.
 
 Drupal maintainers:
 - [Ken Rickard (agentrickard)](https://www.drupal.org/u/agentrickard)
