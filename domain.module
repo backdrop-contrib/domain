@@ -92,11 +92,12 @@ function domain_init() {
     $_domain = array();
   }
 
+  $_domain = domain_default(TRUE);
+
   // Error handling in case the module is not installed correctly.
 
 
   if (!isset($_domain['domain_id'])) {
-    $_domain = domain_default(TRUE);
     $_domain['error'] = 'bootstrap include';
   }
   // If $_domain['error'] is present, then set a message and stop.
@@ -2943,7 +2944,7 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
   // Apply to all node editing forms only.
 
 
-  if (empty($form['#node_edit_form'])) {
+  if (empty($form['#node'])) {
     return;
   }
 
