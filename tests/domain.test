@@ -854,13 +854,13 @@ class DomainCacheTest extends DomainTestCase {
 
   function setUp($list = array()) {
     parent::setUp($list);
-    config_set('system.performance', 'cache', 1);
+    config_set('system.core', 'cache', 1);
   }
 
   // Check that cache works and ids are set properly.
 
   function testDomainPageCache() {
-    $cache = config_get('system.performance', 'cache');
+    $cache = config_get('system.core', 'cache');
     $this->assertTrue(!empty($cache), t('Page caching enabled.'));
 
     // This section borrowed from bootstrap.test.

@@ -56,7 +56,7 @@ function domain_theme_form($form, &$form_state, $domain) {
     $default = $theme['theme'];
   }
   else {
-    $default = config_get('system.performance', 'theme_default');
+    $default = config_get('system.core', 'theme_default');
     backdrop_set_message(t('No theme has been set for this domain. It will use the default theme settings.'), 'status', FALSE);
   }
   // Message to users.

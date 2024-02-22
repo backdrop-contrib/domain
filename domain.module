@@ -1333,12 +1333,12 @@ function domain_default($reset = FALSE, $alter = TRUE) {
       $default = array(
         'domain_id' => 0, // Indicates we have not set a real domain.
         'subdomain' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '',
-        'sitename' => config_get('system.performance', 'site_name'),
+        'sitename' => config_get('system.core', 'site_name'),
         'scheme' => empty($_SERVER['HTTPS']) ? 'http' : 'https',
         'valid' => 1,
         'is_default' => 1,
-        'machine_name' => domain_machine_name($default['subdomain']),
       );
+      $default['machine_name'] = domain_machine_name($default['subdomain']);
     }
   }
 
@@ -1408,7 +1408,7 @@ function domain_set_primary_domain() {
   if ($error = domain_valid_domain($root)) {
     return;
   }
-  $site = config_get('system.performance', 'site_name');
+  $site = config_get('system.core', 'site_name');
   $scheme = 'http';
   if (!empty($_SERVER['HTTPS'])) {
     $scheme = 'https';
@@ -3427,7 +3427,7 @@ function domain_grant_all($reset = FALSE) {
 
       $pages = $config->get('domain_grant_all');
       $options['pages'] = $pages;
-      $regexp = '/^(' . preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1' . preg_quote(config_get('system.performance', 'site_frontpage'), '/') . '\2'), preg_quote($pages, '/')) . ')$/';
+      $regexp = '/^(' . preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1' . preg_quote(config_get('system.core', 'site_frontpage'), '/') . '\2'), preg_quote($pages, '/')) . ')$/';
       // Compare with the internal and path alias (if any).
 
 
@@ -3606,7 +3606,7 @@ function domain_invalid_domain_requested() {
     // Log the access attempt.
 
 
-    watchdog('domain', 'Invalid domain requested by %user on %domain; redirected to %default.', array('%user' => isset($user->name) ? $user->name : config_get('system.performance', 'anonymous'), '%domain' => $_domain['sitename'], '%default' => $default['sitename']), WATCHDOG_WARNING);
+    watchdog('domain', 'Invalid domain requested by %user on %domain; redirected to %default.', array('%user' => isset($user->name) ? $user->name : config_get('system.core', 'anonymous'), '%domain' => $_domain['sitename'], '%default' => $default['sitename']), WATCHDOG_WARNING);
     backdrop_goto($default['path'] . backdrop_get_path_alias($path));
   }
   // Try to find the proper redirect for a node.
@@ -3640,7 +3640,7 @@ function domain_invalid_domain_requested() {
   // Log the access attempt.
 
 
-  watchdog('domain', 'Invalid domain requested by %user on %domain, redirected to %redirect', array('%user' => isset($user->name) ? $user->name : config_get('system.performance', 'anonymous'), '%domain' => $_domain['sitename'], '%redirect' => $redirect['sitename'] . $extra), WATCHDOG_WARNING);
+  watchdog('domain', 'Invalid domain requested by %user on %domain, redirected to %redirect', array('%user' => isset($user->name) ? $user->name : config_get('system.core', 'anonymous'), '%domain' => $_domain['sitename'], '%redirect' => $redirect['sitename'] . $extra), WATCHDOG_WARNING);
   backdrop_goto($redirect['path'] . backdrop_get_path_alias($path));
 }
 

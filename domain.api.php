@@ -359,7 +359,7 @@ function hook_domain_conf() {
   $form['pictures']['user_picture_default'] = array(
     '#type' => 'textfield',
     '#title' => t('Default picture'),
-    '#default_value' => config_get('system.performance', 'user_picture_default'),
+    '#default_value' => config_get('system.core', 'user_picture_default'),
     '#size' => 30,
     '#maxlength' => 255,
     '#description' => t('URL of picture to display for users with no custom picture selected. Leave blank for none.'),

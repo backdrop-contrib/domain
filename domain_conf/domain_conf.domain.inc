@@ -68,7 +68,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.performance', 'site_name'),
+    '#system_default' => config_get('system.core', 'site_name'),
     '#variable' => 'site_name',
     '#meta_description' => t('Set the site name for all domains.'),
     '#data_type' => 'string',
@@ -88,7 +88,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.performance', 'site_mail'),
+    '#system_default' => config_get('system.core', 'site_mail'),
     '#variable' => 'site_mail',
     '#meta_description' => t('Set the email address for all domains.'),
     '#data_type' => 'string',
@@ -108,7 +108,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.performance', 'site_slogan'),
+    '#system_default' => config_get('system.core', 'site_slogan'),
     '#variable' => 'site_slogan',
     '#meta_description' => t('Set the site slogan for all domains.'),
     '#data_type' => 'string',
@@ -128,7 +128,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.performance', 'site_frontpage'),
+    '#system_default' => config_get('system.core', 'site_frontpage'),
     '#variable' => 'site_frontpage',
     '#meta_description' => t('Set the site frontpage for all domains.'),
     '#data_type' => 'string',
@@ -148,7 +148,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.performance', 'anonymous'),
+    '#system_default' => config_get('system.core', 'anonymous'),
     '#variable' => 'anonymous',
     '#meta_description' => t('Set the anonymous user label for all domains.'),
     '#data_type' => 'string',
@@ -173,7 +173,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.performance', 'admin_theme'),
+    '#system_default' => config_get('system.core', 'admin_theme'),
     '#variable' => 'admin_theme',
     '#meta_description' => t('Set the administrative theme for all domains.'),
     '#data_type' => 'string',
@@ -191,7 +191,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.performance', 'node_admin_theme'),
+    '#system_default' => config_get('system.core', 'node_admin_theme'),
     '#variable' => 'node_admin_theme',
     '#meta_description' => t('Choose whether to use the administrative theme when editing or creating content on all domains.'),
     '#data_type' => 'boolean',
@@ -223,7 +223,7 @@ function domain_conf_domain_batch() {
   );
   // Change the caching mode.
 
-  $cache = config_get('system.performance', 'cache');
+  $cache = config_get('system.core', 'cache');
   $batch['cache'] = array(
     '#form' => array(
       '#type' => 'checkbox',
@@ -295,7 +295,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => t('@site is currently under maintenance. We should be back shortly. Thank you for your patience.', array('@site' => config_get('system.performance', 'site_name'))),
+    '#system_default' => t('@site is currently under maintenance. We should be back shortly. Thank you for your patience.', array('@site' => config_get('system.core', 'site_name'))),
     '#variable' => 'maintenance_mode_message',
     '#meta_description' => t('Set the site offline message for all domains.'),
     '#data_type' => 'string',

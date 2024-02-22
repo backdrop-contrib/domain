@@ -222,7 +222,7 @@ function drush_domain_generate_domains($primary = 'example.com') {
   $prepared = array_slice($prepared, 0, $count);
   foreach ($prepared as $key => $item) {
     $record = array(
-      'sitename' => ($item != $primary)?ucwords(str_replace(".$primary", '', $item)) : config_get('system.performance', 'site_name'),
+      'sitename' => ($item != $primary)?ucwords(str_replace(".$primary", '', $item)) : config_get('system.core', 'site_name'),
       'subdomain' => strtolower($item),
       'scheme' => 'http',
       'valid' => 1,

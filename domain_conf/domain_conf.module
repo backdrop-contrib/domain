@@ -629,7 +629,7 @@ function domain_conf_default_language($value = NULL) {
  */
 function domain_conf_set_default_language($default_language) {
   if (!empty($default_language) && is_object($default_language)) {
-    config_set('system.performance', 'language_default', $default_language);
+    config_set('system.core', 'language_default', $default_language);
   }
 }
 
