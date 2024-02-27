@@ -5042,7 +5042,7 @@ function domain_get_node_defaults($type, $fallback_domains = array()) {
   // Assign the currently active domain, if not disabled by user.
 
 
-  if (isset($settings['DOMAIN_ACTIVE'])) {
+  if (isset($settings['DOMAIN_ACTIVE']) && !empty($_domain['domain_id'])) {
     $defaults['domain_id'][$_domain['domain_id']] = $_domain['domain_id'];
   }
   // Assign the default affiliates.
