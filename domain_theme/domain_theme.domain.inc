@@ -51,7 +51,7 @@ function domain_theme_domain_batch() {
     '#domain_action' => 'custom',
     '#lookup' => 'domain_theme_batch_lookup',
     '#submit' => 'domain_theme_batch_submit',
-    '#system_default' => config_get('system.performance', 'theme_default'),
+    '#system_default' => config_get('system.core', 'theme_default'),
     '#variable' => 'theme_default',
     '#meta_description' => t('Change the themes for all domains.'),
     '#data_type' => 'string',

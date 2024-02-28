@@ -10,10 +10,6 @@
  */
 function domain_install() {
   domain_set_primary_domain();
-  // Dynamically generated variable data was detected on the following lines.
-  // /domain/domain.install line 393
-  // /domain/domain.module line 1298
-  // /domain/domain.module line 4332
 }
 
 /**
@@ -171,42 +167,6 @@ function domain_schema() {
     ),
   );
   return $schema;
-}
-
-/**
- * Implements hook_uninstall().
- */
-function domain_uninstall() {
-  $variables = array(
-    'domain_bootstrap_modules',
-    'domain_classes',
-    'domain_cron_rule',
-    'domain_debug',
-    'domain_default_source',
-    'domain_edit_on_primary',
-    'domain_force_admin',
-    'domain_grant_all',
-    'domain_list_size',
-    'domain_paths',
-    'domain_search',
-    'domain_select_format',
-    'domain_sitename_override',
-    'domain_seo',
-    'domain_vertical_tab',
-    'domain_www',
-    'domain_xmlrpc_rule',
-  );
-  if (function_exists('node_type_get_types')) {
-    $types = node_type_get_types();
-    foreach ($types as $key => $type) {
-      $variables[] = 'domain_node_' . $key;
-    }
-  }
-  foreach ($variables as $variable) {
-    // TODO This variable was probably removed in Backdrop without replacement.
-
-    variable_del($variable);
-  }
 }
 
 /**
@@ -379,12 +339,14 @@ function domain_update_1000() {
   $config->set('domain_roles', update_variable_get('domain_roles', array()));
   $config->set('domain_mymodule', update_variable_get('domain_mymodule', '0'));
   $config->set('domain_behavior', update_variable_get('domain_behavior', '0'));
-  $config->set('domain_node_key', update_variable_get('domain_node_key', 'dynamic variable in file /domain/domain.install line 393'));
+  // @TODO For upgrade path - Loop through node types to set this  
+  // $config->set('domain_node_key', update_variable_get('domain_node_key', 'dynamic variable in file /domain/domain.install line 393'));
   $config->set('domain_hide_errors', update_variable_get('domain_hide_errors', ''));
-  $config->set('domain_select_format', update_variable_get('domain_select_format', 'dynamic value in file /domain/domain.module line 1298'));
+  $config->set('domain_select_format', update_variable_get('domain_select_format', '0'));
   $config->set('domain_scheme', update_variable_get('domain_scheme', 'http://'));
   $config->set('domain_skip_domain_check', update_variable_get('domain_skip_domain_check', '0'));
-  $config->set('domain_node_type', update_variable_get('domain_node_type', 'dynamic variable in file /domain/domain.module line 4332'));
+  // @TODO For upgrade path - Loop through node types to set this 
+  // $config->set('domain_node_type', update_variable_get('domain_node_type', 'dynamic variable in file /domain/domain.module line 4332'));
   $config->save();
 
   update_variable_del('domain_list_size');

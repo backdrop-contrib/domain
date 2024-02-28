@@ -234,7 +234,7 @@ function domain_theme_batch_submit($values) {
       }
     }
     else {
-      config_set('system.performance', 'theme_default', $value);
+      config_set('system.core', 'theme_default', $value);
     }
   }
 }
