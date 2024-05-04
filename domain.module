@@ -92,7 +92,6 @@ function domain_init() {
     $_domain = array();
   }
 
-
   $_domain = domain_default(TRUE);
 
   // Error handling in case the module is not installed correctly.
@@ -102,7 +101,6 @@ function domain_init() {
     $_domain['error'] = 'bootstrap include';
   }
   // If $_domain['error'] is present, then set a message and stop.
-
 
   if (!isset($error) && isset($_domain['error'])) {
     $error = 'Domain access failed to load during phase: ' . $_domain['error'] . '. Please check your settings.php file and site configuration.';
@@ -664,6 +662,7 @@ function domain_user_save(&$edit) {
   db_delete('domain_editor')
     ->condition('uid', $account->uid)
     ->execute();
+  // Store the new domains.
 
   $values = array();
   foreach ($edit->domain_user as $domain_id => $status) {
@@ -1073,7 +1072,6 @@ function domain_save($values, $form_values = array()) {
 
   // Ensure we have a machine name.
 
-
   if (!isset($values['machine_name'])) {
     $values['machine_name'] = domain_machine_name($values['subdomain']);
   }
@@ -1091,7 +1089,6 @@ function domain_save($values, $form_values = array()) {
 
   // If this is the default domain, reset other domains.
 
-
   if (!empty($values['is_default'])) {
     db_update('domain')
       ->fields(array('is_default' => 0))
@@ -1103,7 +1100,6 @@ function domain_save($values, $form_values = array()) {
 
 
   // Note that we _must_ have a numeric key for {node_access}.
-
 
   backdrop_write_record('domain_export', $values, $update_id);
   backdrop_write_record('domain', $values, $update_id);
@@ -1158,7 +1154,6 @@ function domain_static_reset() {
 function domain_delete($domain, $values = array()) {
   // Let other modules act to reassign data.
 
-
   foreach (array('domain_access', 'domain_editor') as $table) {
     if (isset($values[$table]) && $values[$table] != 'none') {
       $new_domain = domain_lookup($values[$table]);
@@ -1170,11 +1165,9 @@ function domain_delete($domain, $values = array()) {
 
   // Inform other modules of the deletion.
 
-
   module_invoke_all('domain_delete', $domain, $values);
 
   // Remove domain-specific entries from tables and clear the cache.
-
 
   db_delete('domain_access')
     ->condition('gid', $domain['domain_id'])
@@ -1562,7 +1555,6 @@ function domain_valid_domain($subdomain) {
   }
   // If a colon, make sure it is only followed by numbers.
 
-
   elseif (substr_count($subdomain, ':') == 1) {
     $parts = explode(':', $subdomain);
     $port = (int) $parts[1];
@@ -1741,7 +1733,6 @@ function domain_api($domain, $reset = FALSE) {
     }
     // If the function is missing, settings.php is likely not configured.
 
-
     elseif (!config_get('domain.settings', 'domain_hide_errors')) {
       // Not reporting an error during install makes it easier for scripts.
 
@@ -1761,7 +1752,6 @@ function domain_api($domain, $reset = FALSE) {
 
       if (module_exists($module)) {
         // Cannot use module_invoke_all() since these are passed by reference.
-
 
         $function = $module . '_domain_load';
         module_load_include('inc', $module, $module . '.domain');
@@ -1876,10 +1866,8 @@ function domain_check_primary($msg = 'default') {
 function domain_domain_load($domain) {
   // Get the path to the home page for this domain.
 
-
   $domain['path'] = domain_get_path($domain);
   // Grant access to all affiliates.
-
 
   $domain['site_grant'] = DOMAIN_SITE_GRANT;
 }
