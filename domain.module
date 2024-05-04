@@ -640,21 +640,27 @@ function domain_user_insert(&$edit) {
   domain_user_save($edit);
 }
 
-// /**
-//  * Implements hook_user_update().
-//  */
+/**
+* Implements hook_user_update().
+*/
 function domain_user_update(&$edit) {
   domain_user_save($edit);
 }
 
+/**
+ * TODO: Is this help text correct?
+ * Helper function called by both hook_user_insert() and hook_user_update().
+ */
 function domain_user_save(&$edit) {
   // If our field element is missing, do nothing.
 
   if (!isset($edit->domain_user)) {
     return;
   }
+
   $account = $edit;
 
+  // Clear and reset the {domain_editor} table.
   db_delete('domain_editor')
     ->condition('uid', $account->uid)
     ->execute();
@@ -676,6 +682,7 @@ function domain_user_save(&$edit) {
     }
     $query->execute();
   }
+  // Clear the $edit field.
   $edit->domain_user = NULL;
 }
 
@@ -1244,6 +1251,7 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
       $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default FROM {domain}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAllAssoc('domain_id');
     }
   }
+  // If both are NULL, no lookup can be run.
 
   if ((is_null($domain_id) && is_null($subdomain)) || $domain_id < 0) {
     $domains[$key] = -1;
