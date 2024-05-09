@@ -1,6 +1,6 @@
 {
     "_config_name": "domain.settings",
-    "domain_list_size": "DOMAIN_LIST_SIZE",
+    "domain_list_size": "5",
     "domain_sitename_override": 1,
     "domain_debug": "0",
     "domain_force_admin": "0",
