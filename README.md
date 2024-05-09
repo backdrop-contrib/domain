@@ -1,20 +1,10 @@
 Domain
 ========
 <!--
-The first paragraph of this file should be kept short as it will be used as the
-project summary on BackdropCMS.org. Aim for about 240 characters (three lines at
-80 characters each).
-
-All lines in this file should be no more than 80 characters long for legibility,
-unless including a URL or example that requires the line to not wrap.
 |<- - - - - - - This line is exactly 80 characters for reference - - - - - - ->|
-
-Detail in READMEs should be limited to the minimum required for installation and
-getting started. More detailed documentation should be moved to a GitHub wiki
-page; for example: https://github.com/backdrop-contrib/setup/wiki/Documentation.
 -->
-WORK IN PROGRESS - not ready for installation unless you are testing or helping
-to fix issues.
+WORK IN PROGRESS - this module is very buggy, please do not use on production
+sites. However, please DO test this module, report bugs, and submit PRs. 
 
 
 Installation
