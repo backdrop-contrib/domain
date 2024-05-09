@@ -92,6 +92,7 @@ function domain_init() {
     $_domain = array();
   }
 
+
   $_domain = domain_default(TRUE);
 
   // Error handling in case the module is not installed correctly.
@@ -635,38 +636,37 @@ function domain_user_set($account) {
 /**
  * Implements hook_user_insert().
  */
-function domain_user_insert(&$edit, $account, $category) {
-  domain_user_save($edit, $account, $category);
+function domain_user_insert(&$edit) {
+  domain_user_save($edit);
 }
 
 /**
- * Implements hook_user_update().
- */
-function domain_user_update(&$edit, $account, $category) {
-  domain_user_save($edit, $account, $category);
+* Implements hook_user_update().
+*/
+function domain_user_update(&$edit) {
+  domain_user_save($edit);
 }
 
 /**
+ * TODO: Is this help text correct?
  * Helper function called by both hook_user_insert() and hook_user_update().
  */
-function domain_user_save(&$edit, $account, $category) {
+function domain_user_save(&$edit) {
   // If our field element is missing, do nothing.
 
-
-  if (!isset($edit['domain_user'])) {
+  if (!isset($edit->domain_user)) {
     return;
   }
+
+  $account = $edit;
+
   // Clear and reset the {domain_editor} table.
-
-
   db_delete('domain_editor')
     ->condition('uid', $account->uid)
     ->execute();
-  // Store the new domains.
-
 
   $values = array();
-  foreach ($edit['domain_user'] as $domain_id => $status) {
+  foreach ($edit->domain_user as $domain_id => $status) {
     if ($status != 0) {
       $values[] = array(
         'uid' => $account->uid,
@@ -674,6 +674,7 @@ function domain_user_save(&$edit, $account, $category) {
       );
     }
   }
+
   if (!empty($values)) {
     $query = db_insert('domain_editor')->fields(array('uid', 'domain_id'));
     foreach ($values as $record) {
@@ -682,9 +683,7 @@ function domain_user_save(&$edit, $account, $category) {
     $query->execute();
   }
   // Clear the $edit field.
-
-
-  $edit['domain_user'] = NULL;
+  $edit->domain_user = NULL;
 }
 
 /**
@@ -1060,6 +1059,7 @@ function domain_load($domain_id = NULL, $reset = FALSE) {
  *   $domain array on success or -1 on failure.
  */
 function domain_save($values, $form_values = array()) {
+
   // Must this be the default domain?
 
 
@@ -1112,6 +1112,7 @@ function domain_save($values, $form_values = array()) {
 
 
   $domain = domain_lookup(NULL, $values['subdomain'], TRUE);
+  
   module_invoke_all($action, $domain, $form_values);
   // Lookup the modified record and return it.
 
@@ -1231,7 +1232,6 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
   $result = backdrop_static(__FUNCTION__ . '_result');
   // Create a unique key so we can static cache all requests.
 
-
   $key = $domain_id . $subdomain;
   // Shortcut if we know the data.
 
@@ -1241,10 +1241,8 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
   }
   // Get the data from the database. Doing this prevents extra queries.
 
-
   if (!isset($result) || $reset) {
     // Temporary hack for update to 7.x.3.
-
 
     if (db_table_exists('domain_export')) {
       $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAllAssoc('domain_id');
@@ -1255,12 +1253,11 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
   }
   // If both are NULL, no lookup can be run.
 
-
   if ((is_null($domain_id) && is_null($subdomain)) || $domain_id < 0) {
     $domains[$key] = -1;
   }
-  // Run the lookup, if needed.
 
+  // Run the lookup, if needed.
 
   elseif (!isset($domains[$key]) || $reset) {
     if ($subdomain) {
@@ -1310,6 +1307,9 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
  * @return
  *   The domain array for the default domain.
  */
+
+ //This is domain default
+
 function domain_default($reset = FALSE, $alter = TRUE) {
   $default = backdrop_static(__FUNCTION__);
   $altered = backdrop_static(__FUNCTION__ . '_altered');
@@ -1317,17 +1317,30 @@ function domain_default($reset = FALSE, $alter = TRUE) {
   if (empty($default) || $reset) {
     $altered = FALSE;
 
-    // Temporary hack for update to 7.x.3.
-
+    $defaults = array();
 
     if (db_table_exists('domain_export')) {
-      $default = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain} WHERE is_default = 1")->fetchAssoc();
+      $defaults = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain}")->fetchAllAssoc('domain_id');
     }
-    else {
-      $default = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default FROM {domain} WHERE is_default = 1")->fetchAssoc();
-    }
-    // Let submodules overwrite the defaults, if they wish.
 
+    $current_domain = $_SERVER['HTTP_HOST'];
+    $current_domain_default = null;
+
+    foreach ($defaults as $domain_id => $domain_info) {
+        if ($domain_info->subdomain == $current_domain) {
+            $current_domain_default = array(
+                'domain_id' => $domain_info->domain_id,
+                'subdomain' => $domain_info->subdomain,
+                'sitename' => $domain_info->sitename,
+                'scheme' => $domain_info->scheme,
+                'valid' => $domain_info->valid,
+                'weight' => $domain_info->weight,
+                'is_default' => $domain_info->is_default,
+                'machine_name' => $domain_info->machine_name
+            );
+            break;
+        }
+    }
 
     if (empty($default)) {
       $default = array(
@@ -1351,8 +1364,8 @@ function domain_default($reset = FALSE, $alter = TRUE) {
 
     $default = domain_api($default, $reset);
   }
-
-  return $default;
+  
+  return $current_domain_default;
 }
 
 /**
@@ -2027,6 +2040,7 @@ function domain_node_load($nodes, $types) {
 
 
     $nodes[$node->nid]->domains = isset($domains[$node->nid]['domain_id']) ? $domains[$node->nid]['domain_id'] : array();
+
     // If the node is not assigned, grant to all domains to prevent errors.
 
 
@@ -2052,11 +2066,37 @@ function domain_node_load($nodes, $types) {
  *
  * Display debugging information for a node.
  */
+
 function domain_node_view($node, $view_mode) {
   if (empty($node->nid) || !in_array($view_mode, array('full', 'teaser'))) {
     return;
   }
   $output = '';
+  
+  $subdomains = !empty($node->subdomains) ? $node->subdomains : array();
+
+  // Get the current domain
+  $current_domain = domain_get_domain();
+
+  // Flag to track if the current domain matches any of the subdomains
+  $match_found = false;
+
+  // Check if the current domain matches any of the subdomains
+  foreach ($subdomains as $subdomain) {
+    if ($current_domain['sitename'] === $subdomain) {
+      // Access granted if the current domain matches any subdomain
+      $match_found = true;
+      break;
+    }
+  }
+
+  if ($match_found || user_access('set domain access')) {
+    // Access granted
+    // $node->content['domain'] = array('#markup' => $current_domain['sitename']);
+  } else {
+    // Access denied
+    backdrop_access_denied();
+  }
 
   if (config_get('domain.settings', 'domain_debug') && user_access('set domain access')) {
     if (!empty($node->subdomains)) {
@@ -2079,6 +2119,7 @@ function domain_node_view($node, $view_mode) {
     $node->content['domain'] = array('#markup' => $output);
   }
 }
+
 
 /**
  * Implements hook_node_delete().
@@ -5137,5 +5178,18 @@ function domain_autoload_info() {
     'MigrateDestinationDomain' => 'domain.migrate.inc',
     'DomainNodeHandler' => 'domain.migrate.inc',
     'DomainUserHandler' => 'domain.migrate.inc',
+    'DomainLayoutAccess' => 'plugins/access/domain_layout_access.inc',
   );
+}
+
+/**
+ * Implements hook_layout_access_info().
+ */
+function domain_layout_access_info() {
+  $info['domain'] = array(
+    'title' => t('Domain'),
+    'description' => t('Control access by Domain'),
+    'class' => 'DomainLayoutAccess',
+  );
+  return $info;
 }
