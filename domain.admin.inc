@@ -1300,8 +1300,7 @@ function theme_domain_overview_form($variables) {
     return $output;
   }
   // Add table javascript.
-
-  backdrop_add_js('misc/tableheader.js');
+  backdrop_add_js('core/misc/tableheader.js');
   backdrop_add_tabledrag('domains', 'order', 'sibling', 'domain-weight');
 
   $header = $form['header']['#value'];
