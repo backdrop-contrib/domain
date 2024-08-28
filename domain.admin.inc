@@ -414,7 +414,33 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
       $func($form);
     }
   }
-  return system_settings_form($form);
+  $form['#submit'][] = 'domain_configure_form_submit';
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  ];
+  return $form;
+}
+
+function domain_configure_form_submit($form, &$form_state, $user_submitted = FALSE) {
+  config_set('domain.settings', 'domain_sitename_override', $form_state['values']['domain_sitename_override']);
+  config_set('domain.settings', 'domain_debug', $form_state['values']['domain_debug']);
+  config_set('domain.settings', 'domain_force_admin', $form_state['values']['domain_force_admin']);
+  config_set('domain.settings', 'domain_list_size', $form_state['values']['domain_list_size']);
+  config_set('domain.settings', 'domain_vertical_tab', $form_state['values']['domain_vertical_tab']);
+  config_set('domain.settings', 'domain_collapse_options', $form_state['values']['domain_collapse_options']);
+  config_set('domain.settings', 'domain_select_format', $form_state['values']['domain_select_format']);
+  config_set('domain.settings', 'domain_www', $form_state['values']['domain_www']);
+  config_set('domain.settings', 'domain_search', $form_state['values']['domain_search']);
+  config_set('domain.settings', 'domain_seo', $form_state['values']['domain_seo']);
+  config_set('domain.settings', 'domain_edit_on_primary', $form_state['values']['domain_edit_on_primary']);
+  config_set('domain.settings', 'domain_default_source', $form_state['values']['domain_default_source']);
+  config_set('domain.settings', 'domain_grant_all', $form_state['values']['domain_grant_all']);
+  config_set('domain.settings', 'domain_cron_rule', $form_state['values']['domain_cron_rule']);
+  config_set('domain.settings', 'domain_xmlrpc_rule', $form_state['values']['domain_xmlrpc_rule']);
+  config_set('domain.settings', 'domain_paths', $form_state['values']['domain_paths']);
+  config_set('domain.settings', 'domain_classes', $form_state['values']['domain_classes']);
 }
 
 /**
@@ -1105,10 +1131,27 @@ function domain_nodes_form($form, &$form_state) {
     ];
   }
 
-  $form = system_settings_form($form);
+
+  $form['#submit'][] = 'domain_nodes_form_submit';
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  ];
   // System settings form adds a theme we cannot use.
   unset($form['#theme']);
   return $form;
+}
+
+function domain_nodes_form_submit($form, &$form_state) {
+  $config = config_get('domain.settings', 'domain_node_');
+  $var = [];
+  $node_types = node_type_get_names();
+  foreach ($node_types as $type => $name) {
+    $var['domain_node_' . $type] = $form_state['values']['domain_node_' . $type];
+
+  }
+  config_set('domain.settings', 'domain_node_', $var);
 }
 
 /**
@@ -1209,10 +1252,20 @@ function domain_roles_form($form, &$form_state) {
     }
   }
 
-  $form = system_settings_form($form);
+  $form['#submit'][] = 'domain_roles_form_submit';
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  ];
   // System settings form adds a theme we cannot use.
   unset($form['#theme']);
   return $form;
+}
+
+function domain_roles_form_submit($form, &$form_state) {
+  config_set('domain.settings', 'domain_add_roles', $form_state['values']['domain_add_roles']);
+  config_set('domain.settings', 'domain_roles', $form_state['values']['domain_roles']);
 }
 
 /**

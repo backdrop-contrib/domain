@@ -26,8 +26,6 @@ try {
   domain_bootstrap();
 }
 catch(Exception $e) {
-//  print_r($e);
-//  die;
   // No error logging is available yet, assume we are installing Drupal.
   // See https://www.drupal.org/node/1559486.
 }

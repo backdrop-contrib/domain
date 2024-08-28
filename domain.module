@@ -77,7 +77,7 @@ function domain_init() {
   global $_domain, $conf;
 
   if (!is_array($_domain)) {
-    $_domain = array();
+    $_domain = [];
   }
   // Error handling in case the module is not installed correctly.
   if (!isset($_domain['domain_id'])) {
@@ -149,7 +149,7 @@ function domain_init() {
  *
  * @see domain_init()
  */
-function domain_initial_domain($domain = array()) {
+function domain_initial_domain($domain = []) {
   $initial = &backdrop_static(__FUNCTION__);
   if (!isset($initial) && !empty($domain)) {
     $initial = $domain;
@@ -187,125 +187,125 @@ function domain_unserialize($object) {
  * Implements hook_menu().
  */
 function domain_menu() {
-  $items = array();
+  $items = [];
   $admin = user_access('administer domains');
-  $items['admin/structure/domain'] = array(
+  $items['admin/structure/domain'] = [
     'title' => 'Domains',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_overview_form'),
+    'page arguments' => ['domain_overview_form'],
     'file' => 'domain.admin.inc',
     'description' => 'Manage and configure domains.',
-  );
-  $items['admin/structure/domain/view'] = array(
+  ];
+  $items['admin/structure/domain/view'] = [
     'title' => 'Domain list',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_overview_form'),
+    'page arguments' => ['domain_overview_form'],
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'file' => 'domain.admin.inc',
     'description' => 'View domains for the site.',
     'weight' => -50,
-  );
-  $items['admin/structure/domain/settings'] = array(
+  ];
+  $items['admin/structure/domain/settings'] = [
     'title' => 'Settings',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'domain_configure',
     'file' => 'domain.admin.inc',
     'description' => 'Configure Domain Access settings.',
     'weight' => -20,
-  );
-  $items['admin/structure/domain/create'] = array(
+  ];
+  $items['admin/structure/domain/create'] = [
     'title' => 'Create domain',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'type' => MENU_LOCAL_ACTION,
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_form'),
+    'page arguments' => ['domain_form'],
     'file' => 'domain.admin.inc',
     'description' => 'Create new domain record.',
-  );
+  ];
   // Register the batch actions as menu callbacks
   $batch = module_invoke_all('domain_batch');
   if (!empty($batch)) {
-    $items['admin/structure/domain/batch'] = array(
+    $items['admin/structure/domain/batch'] = [
       'title' => 'Batch updating',
-      'access arguments' => array('administer domains'),
+      'access arguments' => ['administer domains'],
       'type' => MENU_LOCAL_TASK,
       'page callback' => 'domain_batch',
       'file' => 'domain.admin.inc',
       'description' => 'Batch update domain settings.',
       'weight' => -15,
-    );
+    ];
     // Get the submenu items
     foreach ($batch as $key => $value) {
-      $items['admin/structure/domain/batch/' . $key] = array(
+      $items['admin/structure/domain/batch/' . $key] = [
         'title' => $value['#form']['#title'],
-        'access arguments' => isset($value['#permission']) ? array($value['#permission']) : array('administer domains'),
+        'access arguments' => isset($value['#permission']) ? [$value['#permission']] : ['administer domains'],
         'type' => MENU_VISIBLE_IN_BREADCRUMB,
         'page callback' => 'domain_batch',
-        'page arguments' => array($key),
+        'page arguments' => [$key],
         'file' => 'domain.admin.inc',
         'description' => isset($value['#description']) ? $value['#description'] : '',
         'weight' => isset($value['#weight']) ? $value['#weight'] : 0,
-      );
+      ];
     }
   }
-  $items['admin/structure/domain/nodes'] = array(
+  $items['admin/structure/domain/nodes'] = [
     'title' => 'Content defaults',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_nodes_form'),
+    'page arguments' => ['domain_nodes_form'],
     'file' => 'domain.admin.inc',
     'description' => 'Default domain settings for content.',
     'weight' => -10,
-  );
-  $items['admin/structure/domain/roles'] = array(
+  ];
+  $items['admin/structure/domain/roles'] = [
     'title' => 'User defaults',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_roles_form'),
+    'page arguments' => ['domain_roles_form'],
     'file' => 'domain.admin.inc',
     'description' => 'Default domain settings for users.',
     'weight' => -5,
-  );
-  $items['admin/structure/domain/view/%domain'] = array(
+  ];
+  $items['admin/structure/domain/view/%domain'] = [
     'title' => 'View',
     'title callback' => 'domain_title',
-    'title arguments' => array(4),
-    'access arguments' => array('administer domains'),
+    'title arguments' => [4],
+    'access arguments' => ['administer domains'],
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_form', 4),
+    'page arguments' => ['domain_form', 4],
     'description' => 'Edit domain record.',
     'file' => 'domain.admin.inc',
     'weight' => -10,
-  );
-  $items['admin/structure/domain/view/%domain/edit'] = array(
+  ];
+  $items['admin/structure/domain/view/%domain/edit'] = [
     'title' => 'Edit',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
-  );
-  $items['admin/structure/domain/view/%domain/delete'] = array(
+  ];
+  $items['admin/structure/domain/view/%domain/delete'] = [
     'title' => 'Delete',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_delete_form', 4),
+    'page arguments' => ['domain_delete_form', 4],
     'description' => 'Delete domain record.',
     'file' => 'domain.admin.inc',
     'weight' => 50,
-  );
-  $items['admin/structure/domain/repair'] = array(
+  ];
+  $items['admin/structure/domain/repair'] = [
     'title' => 'Domain update database',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('domain_repair_form'),
+    'page arguments' => ['domain_repair_form'],
     'type' => MENU_CALLBACK,
     'file' => 'domain.admin.inc',
-  );
+  ];
   return $items;
 }
 
@@ -326,40 +326,40 @@ function domain_title($domain) {
  * Implements hook_permission().
  */
 function domain_permission() {
-  $permissions = array(
-    'administer domains' => array(
+  $permissions = [
+    'administer domains' => [
       'title' => t('Administer domain records and settings'),
       'restrict access' => TRUE,
-    ),
-    'access inactive domains' => array(
+    ],
+    'access inactive domains' => [
       'title' => t('Access inactive domains'),
       'restrict access' => TRUE,
-    ),
-    'assign domain editors' => array(
+    ],
+    'assign domain editors' => [
       'title' => t('Assign editors to domains'),
-    ),
-    'set domain access' => array(
+    ],
+    'set domain access' => [
       'title' => t('Set domain access status for all content'),
-    ),
-    'publish to any assigned domain' => array(
+    ],
+    'publish to any assigned domain' => [
       'title' => t('Publish content to any assigned domain'),
-    ),
-    'publish from assigned domain' => array(
+    ],
+    'publish from assigned domain' => [
       'title' => t('Publish content only from assigned domain'),
-    ),
-    'publish from default domain' => array(
+    ],
+    'publish from default domain' => [
       'title' => t('Publish content only from the default domain'),
-    ),
-    'edit domain content' => array(
+    ],
+    'edit domain content' => [
       'title' => t('Edit any content on assigned domains'),
-    ),
-    'delete domain content' => array(
+    ],
+    'delete domain content' => [
       'title' => t('Delete any content on assigned domains'),
-    ),
-    'view unpublished domain content' => array(
+    ],
+    'view unpublished domain content' => [
       'title' => t('View unpublished content on assigned domains'),
-    ),
-  );
+    ],
+  ];
 
   // Generate standard node permissions for all applicable node types.
   foreach (node_permissions_get_configured_types() as $type) {
@@ -376,6 +376,7 @@ function domain_permission() {
  *
  * @param $type
  *   The machine-readable name of the node type.
+ *
  * @return array
  *   An array of permission names and descriptions.
  */
@@ -384,17 +385,17 @@ function domain_editor_list_permissions($type) {
   $type = check_plain($info->type);
 
   // Build standard list of node permissions for this type.
-  $perms = array(
-    "create $type content on assigned domains" => array(
-      'title' => t('%type_name: Create new content on assigned domains', array('%type_name' => $info->name)),
-    ),
-    "update $type content on assigned domains" => array(
-      'title' => t('%type_name: Edit any content on assigned domains', array('%type_name' => $info->name)),
-    ),
-    "delete $type content on assigned domains" => array(
-      'title' => t('%type_name: Delete any content on assigned domains', array('%type_name' => $info->name)),
-    ),
-  );
+  $perms = [
+    "create $type content on assigned domains" => [
+      'title' => t('%type_name: Create new content on assigned domains', ['%type_name' => $info->name]),
+    ],
+    "update $type content on assigned domains" => [
+      'title' => t('%type_name: Edit any content on assigned domains', ['%type_name' => $info->name]),
+    ],
+    "delete $type content on assigned domains" => [
+      'title' => t('%type_name: Delete any content on assigned domains', ['%type_name' => $info->name]),
+    ],
+  ];
 
   return $perms;
 }
@@ -403,28 +404,28 @@ function domain_editor_list_permissions($type) {
  * Implements hook_theme().
  */
 function domain_theme($existing, $type, $theme, $path) {
-  $themes = array(
-    'domain_batch_form' => array(
+  $themes = [
+    'domain_batch_form' => [
       'render element' => 'form',
       'file' => 'domain.admin.inc',
-    ),
-    'domain_batch_title' => array(
-      'variables' => array('batch' => array()),
+    ],
+    'domain_batch_title' => [
+      'variables' => ['batch' => []],
       'file' => 'domain.admin.inc',
-    ),
-    'domain_nodes_form' => array(
+    ],
+    'domain_nodes_form' => [
       'render element' => 'form',
       'file' => 'domain.admin.inc',
-    ),
-    'domain_roles_form' => array(
+    ],
+    'domain_roles_form' => [
       'render element' => 'form',
       'file' => 'domain.admin.inc',
-    ),
-    'domain_overview_form' => array(
+    ],
+    'domain_overview_form' => [
       'render element' => 'form',
       'file' => 'domain.admin.inc',
-    ),
-  );
+    ],
+  ];
   return $themes;
 }
 
@@ -434,75 +435,75 @@ function domain_theme($existing, $type, $theme, $path) {
  * Allows the use of $module.domain.inc files.
  */
 function domain_hook_info() {
-  $hooks['domain_load'] = array(
+  $hooks['domain_load'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_insert'] = array(
+  ];
+  $hooks['domain_insert'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_update'] = array(
+  ];
+  $hooks['domain_update'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_delete'] = array(
+  ];
+  $hooks['domain_delete'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_reassign'] = array(
+  ];
+  $hooks['domain_reassign'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_cron'] = array(
+  ];
+  $hooks['domain_cron'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_features_rebuild'] = array(
+  ];
+  $hooks['domain_features_rebuild'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_install'] = array(
+  ];
+  $hooks['domain_install'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_ignore'] = array(
+  ];
+  $hooks['domain_ignore'] = [
     'group' => 'domain',
-  );
+  ];
   // Replace with form alter?
-  $hooks['domain_form'] = array(
+  $hooks['domain_form'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_warning'] = array(
+  ];
+  $hooks['domain_warning'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_source_alter'] = array(
+  ];
+  $hooks['domain_source_alter'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_source_path_alter'] = array(
+  ];
+  $hooks['domain_source_path_alter'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_batch'] = array(
+  ];
+  $hooks['domain_batch'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_batch_alter'] = array(
+  ];
+  $hooks['domain_batch_alter'] = [
     'group' => 'domain',
-  );
+  ];
   // Test that these work.
-  $hooks['domain_bootstrap_lookup'] = array(
+  $hooks['domain_bootstrap_lookup'] = [
     'group' => 'domain',
-  );
+  ];
   // Test that these work.
-  $hooks['domain_bootstrap_full'] = array(
+  $hooks['domain_bootstrap_full'] = [
     'group' => 'domain',
-  );
+  ];
   // Rename to hook_domain_path
-  $hooks['domain_path'] = array(
+  $hooks['domain_path'] = [
     'group' => 'domain',
-  );
+  ];
   // Rename to hook_domain_warning_alter
-  $hooks['domain_warning_alter'] = array(
+  $hooks['domain_warning_alter'] = [
     'group' => 'domain',
-  );
+  ];
   // Replace with form_alter?
-  $hooks['domain_settings'] = array(
+  $hooks['domain_settings'] = [
     'group' => 'domain',
-  );
-  $hooks['domain_validate_alter'] = array(
+  ];
+  $hooks['domain_validate_alter'] = [
     'group' => 'domain',
-  );
+  ];
   return $hooks;
 }
 
@@ -510,17 +511,17 @@ function domain_hook_info() {
  * Implements hook_block_info().
  */
 function domain_block_info() {
-  $blocks = array();
-  $blocks['information'] = array(
+  $blocks = [];
+  $blocks['information'] = [
     'info' => t('Domain access information'),
-  );
-  $blocks['server'] = array(
+  ];
+  $blocks['server'] = [
     'info' => t('Domain access server information'),
     'cache' => BACKDROP_NO_CACHE,
-  );
-  $blocks['switcher'] = array(
+  ];
+  $blocks['switcher'] = [
     'info' => t('Domain switcher'),
-  );
+  ];
   return $blocks;
 }
 
@@ -545,7 +546,8 @@ function domain_block_view($delta = '') {
  *
  * Attached domain_id records to all registering users.  These
  * are used to determine which 'domain_editor' group that users
- * with the 'edit domain content' and 'delete domain content' permissions are in.
+ * with the 'edit domain content' and 'delete domain content' permissions are
+ * in.
  */
 function domain_user_load($users) {
   foreach ($users as $uid => $account) {
@@ -561,7 +563,7 @@ function domain_user_load($users) {
  */
 function domain_user_set($account) {
   if (!isset($account->domain_user)) {
-    $accounts = array($account->uid => $account);
+    $accounts = [$account->uid => $account];
     domain_user_load($accounts);
   }
 }
@@ -593,14 +595,14 @@ function domain_user_save(&$edit, $account, $category) {
     ->condition('uid', $account->uid)
     ->execute();
   // Store the new domains.
-  $values = array();
+  $values = [];
   foreach ($edit['domain_user'] as $domain_id => $status) {
     if ($status != 0) {
-      $values[] = array('uid' => $account->uid, 'domain_id' => $domain_id);
+      $values[] = ['uid' => $account->uid, 'domain_id' => $domain_id];
     }
   }
   if (!empty($values)) {
-    $query = db_insert('domain_editor')->fields(array('uid', 'domain_id'));
+    $query = db_insert('domain_editor')->fields(['uid', 'domain_id']);
     foreach ($values as $record) {
       $query->values($record);
     }
@@ -634,27 +636,27 @@ function domain_user_view($account, $view_mode) {
     return;
   }
   $output = '';
-  $account->content['domain'] = array(
+  $account->content['domain'] = [
     '#type' => 'user_profile_category',
     '#weight' => 10,
     '#title' => t('Domain status'),
-  );
+  ];
   if (empty($account->domain_user)) {
     $output = t('This user is not assigned to a domain.');
   }
   else {
-    $items = array();
+    $items = [];
     foreach (array_filter($account->domain_user) as $id) {
       $domain = domain_lookup($id);
       $items[] = check_plain($domain['sitename']);
     }
-    $output = theme('item_list', array('items' => $items));
+    $output = theme('item_list', ['items' => $items]);
   }
-  $account->content['domain']['domain_settings'] = array(
+  $account->content['domain']['domain_settings'] = [
     '#type' => 'user_profile_item',
     '#title' => t('Assigned domains'),
     '#markup' => $output,
-  );
+  ];
 }
 
 /**
@@ -676,7 +678,10 @@ function domain_form_user_register_form_alter(&$form, &$form_state) {
  */
 function domain_form_user_form_alter(&$form, &$form_state) {
   // Only act on our forms.
-  if (is_null($form['#user_category']) || !in_array($form['#user_category'], array('account', 'register'))) {
+  if (is_null($form['#user_category']) || !in_array($form['#user_category'], [
+      'account',
+      'register',
+    ])) {
     return;
   }
 
@@ -692,7 +697,7 @@ function domain_form_user_form_alter(&$form, &$form_state) {
   $account->domain_user = domain_get_user_domains($account, $add_roles);
   // By default, the requesting domain is assigned on registration.
   if (empty($account->uid)) {
-    $default = array($_domain['domain_id'] => $_domain['domain_id']);
+    $default = [$_domain['domain_id'] => $_domain['domain_id']];
   }
   else {
     $default = $account->domain_user;
@@ -700,37 +705,37 @@ function domain_form_user_form_alter(&$form, &$form_state) {
   if (user_access('assign domain editors')) {
     // Set the form options.
     $domains = domain_domains();
-    $options = array();
+    $options = [];
     foreach ($domains as $domain) {
       $options[$domain['domain_id']] = check_plain($domain['sitename']);
     }
     $format = domain_select_format();
 
-    $form['domain'] = array(
+    $form['domain'] = [
       '#type' => 'fieldset',
       '#title' => t('Domain access'),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
-    );
-    $form['domain']['domain_user'] = array(
+    ];
+    $form['domain']['domain_user'] = [
       '#type' => empty($format) ? 'checkboxes' : 'select',
       '#options' => $options,
       '#title' => t('Domain access settings'),
       '#description' => t('Select the affiliates that this user belongs to.  Used to grant editing permissions for users with the "edit domain content" permission.'),
-      '#default_value' => $default
-    );
+      '#default_value' => $default,
+    ];
     if ($format) {
       $form['domain']['domain_user']['#multiple'] = TRUE;
       $form['domain']['domain_user']['#size'] = count($options) > 10 ? 10 : count($options);
     }
   }
   else {
-    $form['domain'] = array(
-      'domain_user' => array(
+    $form['domain'] = [
+      'domain_user' => [
         '#type' => 'value',
-        '#value' => $default
-      ),
-    );
+        '#value' => $default,
+      ],
+    ];
   }
 }
 
@@ -741,12 +746,12 @@ function domain_user_operations() {
   if (!user_access('assign domain editors')) {
     return;
   }
-  return array(
-    'domain' => array(
+  return [
+    'domain' => [
       'label' => t('Assign users to domains'),
       'callback' => 'domain_user_operation_assign',
-    ),
-  );
+    ],
+  ];
 }
 
 /**
@@ -759,7 +764,7 @@ function domain_form_user_admin_account_alter(&$form, $form_state) {
   }
   $form['options']['#weight'] = -2;
   $_domain = domain_get_domain();
-  $options = array();
+  $options = [];
   $format = domain_select_format();
   foreach (domain_domains() as $data) {
     // The domain must be valid.
@@ -768,38 +773,42 @@ function domain_form_user_admin_account_alter(&$form, $form_state) {
       $options[$data['domain_id']] = empty($format) ? check_plain($data['sitename']) : $data['sitename'];
     }
   }
-  $form['domain'] = array(
+  $form['domain'] = [
     '#type' => 'fieldset',
     '#title' => t('Affiliate editor options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#prefix' => '<div class="description">' . t('If you select <em>Assign users to domains</em> above, you should confirm the <em>Affiliate editor options</em> settings below.') . '</div>',
     '#weight' => -1,
-  );
-  $form['domain']['behavior'] = array(
+  ];
+  $form['domain']['behavior'] = [
     '#type' => 'radios',
     '#title' => t('Update behavior'),
-    '#options' => array(0 => t('Replace old values with new settings'), 1 => t('Add new settings to existing values'), 2 => t('Remove selected domains from existing values')),
+    '#options' => [
+      0 => t('Replace old values with new settings'),
+      1 => t('Add new settings to existing values'),
+      2 => t('Remove selected domains from existing values'),
+    ],
     '#description' => t('Defines how new grants will be applied to the updated users.'),
     '#default_value' => 0,
-  );
-  $form['domain']['domains'] = array(
+  ];
+  $form['domain']['domains'] = [
     '#type' => empty($format) ? 'checkboxes' : 'select',
     '#title' => t('Assign to'),
     '#options' => $options,
     '#required' => FALSE,
     '#description' => t('Select which affiliates these users should belong to. <em>Note: this will erase any current assignment for the selected users.</em>'),
-    '#default_value' => array($_domain['domain_id']),
-  );
+    '#default_value' => [$_domain['domain_id']],
+  ];
   if ($format) {
     $form['domain']['domains']['#multiple'] = TRUE;
     $form['domain']['domains']['#size'] = count($options) > 10 ? 10 : count($options);
   }
   // Add our domain elements.
   $ops = array_pop($form['accounts']['#header']);
-  $form['accounts']['#header']['domain_user'] = array('data' => t('Assigned Domains'));
+  $form['accounts']['#header']['domain_user'] = ['data' => t('Assigned Domains')];
   foreach (array_keys($form['accounts']['#options']) as $uid) {
-    $form['accounts']['#options'][$uid]['domain_user'] = theme('item_list', array('items' => _domain_user_list($uid)));
+    $form['accounts']['#options'][$uid]['domain_user'] = theme('item_list', ['items' => _domain_user_list($uid)]);
   }
   $form['accounts']['#header']['operations'] = $ops;
   $form['#submit'][] = 'domain_update_users';
@@ -819,7 +828,7 @@ function _domain_user_list($uid) {
   $temp_account->uid = $uid;
   $list = domain_get_user_domains($temp_account, FALSE);
   $domains = domain_domains();
-  $user_domains = array();
+  $user_domains = [];
   foreach ($list as $domain_id) {
     $user_domains[] = check_plain($domains[$domain_id]['sitename']);
   }
@@ -872,13 +881,13 @@ function domain_update_users($form, &$form_state) {
       ->execute();
     foreach ($domains as $domain_id) {
       db_insert('domain_editor')
-        ->fields(array('uid' => $uid, 'domain_id' => $domain_id))
+        ->fields(['uid' => $uid, 'domain_id' => $domain_id])
         ->execute();
     }
   }
 }
 
- /**
+/**
  * Implements hook_cron().
  *
  * This function invokes hook_domain_cron() and allows
@@ -939,7 +948,7 @@ function domain_load($domain_id = NULL, $reset = FALSE) {
  * @return
  *   $domain array on success or -1 on failure.
  */
-function domain_save($values, $form_values = array()) {
+function domain_save($values, $form_values = []) {
   // Must this be the default domain?
   // Used in cases where there are no domains present.
   $count = (bool) db_query("SELECT COUNT(domain_id) FROM {domain} WHERE is_default = 1")->fetchField();
@@ -954,17 +963,17 @@ function domain_save($values, $form_values = array()) {
   // Update or insert a record?
   if (!empty($values['domain_id'])) {
     $action = 'domain_update';
-    $update_id = array('domain_id');
+    $update_id = ['domain_id'];
   }
   else {
     $action = 'domain_insert';
-    $update_id = array();
+    $update_id = [];
   }
 
   // If this is the default domain, reset other domains.
   if (!empty($values['is_default'])) {
     db_update('domain')
-      ->fields(array('is_default' => 0))
+      ->fields(['is_default' => 0])
       ->condition('machine_name', $values['machine_name'], '<>')
       ->execute();
   }
@@ -1010,9 +1019,9 @@ function domain_static_reset() {
  *   content from a domain, look for the 'domain_access' and 'domain_editor'
  *   keys, which are the domains ids for re-assignment.
  */
-function domain_delete($domain, $values = array()) {
+function domain_delete($domain, $values = []) {
   // Let other modules act to reassign data.
-  foreach (array('domain_access', 'domain_editor') as $table) {
+  foreach (['domain_access', 'domain_editor'] as $table) {
     if (isset($values[$table]) && $values[$table] != 'none') {
       $new_domain = domain_lookup($values[$table]);
       if ($new_domain != -1) {
@@ -1081,10 +1090,10 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
   if (!isset($result) || $reset) {
     // Temporary hack for update to 7.x.3.
     if (db_table_exists('domain_export')) {
-      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAllAssoc('domain_id');
+      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain}", [], ['fetch' => PDO::FETCH_ASSOC])->fetchAllAssoc('domain_id');
     }
     else {
-      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default FROM {domain}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAllAssoc('domain_id');
+      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default FROM {domain}", [], ['fetch' => PDO::FETCH_ASSOC])->fetchAllAssoc('domain_id');
     }
   }
   // If both are NULL, no lookup can be run.
@@ -1131,10 +1140,10 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
  *   Drupal does not behave as expected and we cannot trigger this
  *   API call.
  *
- * @see domain_request_name()
- *
  * @return
  *   The domain array for the default domain.
+ * @see domain_request_name()
+ *
  */
 function domain_default($reset = FALSE, $alter = TRUE) {
   $default = &backdrop_static(__FUNCTION__);
@@ -1152,7 +1161,7 @@ function domain_default($reset = FALSE, $alter = TRUE) {
     }
     // Let submodules overwrite the defaults, if they wish.
     if (empty($default)) {
-      $default = array(
+      $default = [
         'domain_id' => 0, // Indicates we have not set a real domain.
         'subdomain' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '',
         'sitename' => config_get('system.core', 'site_name'),
@@ -1160,7 +1169,7 @@ function domain_default($reset = FALSE, $alter = TRUE) {
         'valid' => 1,
         'is_default' => 1,
         'machine_name' => domain_machine_name($default['subdomain']),
-      );
+      ];
     }
   }
 
@@ -1225,7 +1234,7 @@ function domain_set_primary_domain() {
   }
   $check = (bool) db_query("SELECT COUNT(domain_id) FROM {domain} WHERE is_default = 1")->fetchField();
   if (empty($check)) {
-    $domain = array(
+    $domain = [
       'subdomain' => $root,
       'sitename' => $site,
       'scheme' => $scheme,
@@ -1233,10 +1242,10 @@ function domain_set_primary_domain() {
       'valid' => 1,
       'is_default' => 1,
       'machine_name' => domain_machine_name($root),
-    );
+    ];
     backdrop_write_record('domain_export', $domain);
     backdrop_write_record('domain', $domain);
-    module_invoke_all('domain_insert', $domain, array());
+    module_invoke_all('domain_insert', $domain, []);
   }
 }
 
@@ -1252,7 +1261,7 @@ function domain_set_primary_domain() {
 function domain_domains($reset = FALSE) {
   $domains = &backdrop_static(__FUNCTION__);
   if (empty($domains) || $reset) {
-    $domains = array();
+    $domains = [];
     // Query the db for active domain records.
     $result = domain_id_list($reset);
     foreach ($result as $domain_id) {
@@ -1277,7 +1286,7 @@ function domain_id_list($reset = FALSE) {
   if (isset($list) && empty($reset)) {
     return $list;
   }
-  $list = array();
+  $list = [];
   $result = db_query("SELECT domain_id, machine_name FROM {domain} ORDER BY weight");
   foreach ($result as $data) {
     $list[$data->machine_name] = $data->domain_id;
@@ -1307,7 +1316,7 @@ function domain_select_format() {
  *   List of error messages or empty array.
  */
 function domain_validate($subdomain) {
-  $error_list = array();
+  $error_list = [];
   // Validate the domains format generically for now.
   $error = domain_valid_domain($subdomain);
   if (!empty($error)) {
@@ -1332,7 +1341,7 @@ function domain_validate($subdomain) {
  *   Empty if valid, error message on invalid.
  */
 function domain_valid_domain($subdomain) {
-  $error_list = array();
+  $error_list = [];
   // Check for at least one dot or the use of 'localhost'.
   // Note that localhost can specify a port.
   $localhost_check = explode(':', $subdomain);
@@ -1380,7 +1389,7 @@ function domain_valid_domain($subdomain) {
   backdrop_alter('domain_validate', $error_list, $subdomain);
   // Return the errors, if any.
   if (!empty($error_list)) {
-    return t('The domain string is invalid for %subdomain:', array('%subdomain' => $subdomain)) . theme('item_list', array('items' => $error_list));
+    return t('The domain string is invalid for %subdomain:', ['%subdomain' => $subdomain]) . theme('item_list', ['items' => $error_list]);
   }
 }
 
@@ -1394,7 +1403,7 @@ function domain_valid_domain($subdomain) {
  *   TRUE if unique; FALSE if duplicate.
  */
 function domain_unique_domain($subdomain) {
-  $count = db_query("SELECT COUNT(domain_id) FROM {domain} WHERE subdomain = :subdomain", array(':subdomain' => $subdomain))->fetchField();
+  $count = db_query("SELECT COUNT(domain_id) FROM {domain} WHERE subdomain = :subdomain", [':subdomain' => $subdomain])->fetchField();
   return empty($count);
 }
 
@@ -1414,22 +1423,22 @@ function domain_unique_domain($subdomain) {
 function domain_get_user_domains($account, $add_roles = TRUE) {
   if (empty($account)) {
     // This may happen when creating a new user.
-    return array();
+    return [];
   }
   $uid = (int) $account->uid;
-  $user_domains = array();
-  $result = db_query("SELECT domain_id FROM {domain_editor} WHERE uid = :uid", array(':uid' => $uid));
+  $user_domains = [];
+  $result = db_query("SELECT domain_id FROM {domain_editor} WHERE uid = :uid", [':uid' => $uid]);
   foreach ($result as $data) {
     $user_domains[$data->domain_id] = $data->domain_id;
   }
   if ($add_roles) {
     if (empty($account->roles)) {
-      $account->roles = array(0 => 'new user');
+      $account->roles = [0 => 'new user'];
     }
     // Add the role-based additions.
     $defaults = config_get('domain.settings', 'domain_roles');
     foreach ($account->roles as $rid => $role) {
-      $filter = array();
+      $filter = [];
       if (isset($defaults[$rid])) {
         $filter = array_filter($defaults[$rid]);
       }
@@ -1468,7 +1477,8 @@ function domain_get_user_domains($account, $add_roles = TRUE) {
  *   A boolean flag indicating whether to reset the static array or not.
  *
  * @return
- *   The $domain array, modified by reference by hook_domain_load() implementations.
+ *   The $domain array, modified by reference by hook_domain_load()
+ *   implementations.
  */
 function domain_api($domain, $reset = FALSE) {
   $modules = &backdrop_static(__FUNCTION__);
@@ -1542,15 +1552,15 @@ function domain_set_domain($domain_id, $bootstrap = FALSE) {
  * If domain_set_domain() invoked TRUE, then this matching
  * function should as well. Otherwise, pass FALSE or empty.
  *
- * @see domain_initial_domain()
- * @see domain_set_domain()
- *
  * @param $bootstrap
  *   Boolean flag that indicates whether to run domain bootstrap load.
  *
  * @return
  *   No return value. The global $_domain value is altered, and domain-specific
  *   data functions are loaded.
+ * @see domain_initial_domain()
+ * @see domain_set_domain()
+ *
  */
 function domain_reset_domain($bootstrap = FALSE) {
   $domain = domain_initial_domain();
@@ -1583,7 +1593,8 @@ function domain_get_domain() {
  * If TRUE, issue a redirect and print a message.
  *
  * @param $msg
- *   The message to print. Optional. If passed, this string must be translated and safe.
+ *   The message to print. Optional. If passed, this string must be translated
+ *   and safe.
  */
 function domain_check_primary($msg = 'default') {
   $_domain = domain_get_domain();
@@ -1616,6 +1627,7 @@ function domain_domain_load(&$domain) {
  *
  * @param $domain
  *   The currently active $domain array, provided by domain_lookup().
+ *
  * @return
  *   The base url of the requested domain.
  */
@@ -1630,7 +1642,7 @@ function domain_get_path($domain) {
   // See http://drupal.org/node/848856.
   // With PHP > 5.1.2 we can pass a component parameter, too, but Drupal 6
   // still supports PHP 4 and this code was originally tested there.
-  $url = array();
+  $url = [];
   if ($_url = @parse_url($base_url)) {
     $url = $_url;
   }
@@ -1662,7 +1674,7 @@ function domain_get_uri($domain) {
     // request_path() does not include base_path, which will be added by the
     // call to url() below.
     $request_uri = request_path();
-    $options = array();
+    $options = [];
     // If needed, let modules modify the path alias.
     // We cannot use URL here because we need the domain_id data.
     // TODO: use url() but pass a domain_id option?
@@ -1728,10 +1740,10 @@ function domain_node_load($nodes, $types) {
     // Get default settings.
     $defaults = domain_get_node_defaults($node->type);
     // Append the domain grants to the node for editing.
-    $nodes[$node->nid]->domains = isset($domains[$node->nid]['domain_id']) ? $domains[$node->nid]['domain_id'] : array();
+    $nodes[$node->nid]->domains = isset($domains[$node->nid]['domain_id']) ? $domains[$node->nid]['domain_id'] : [];
     // If the node is not assigned, grant to all domains to prevent errors.
     $nodes[$node->nid]->domain_site = isset($domains[$node->nid]['domain_site']) ? $domains[$node->nid]['domain_site'] : $defaults['domain_site'];
-    $nodes[$node->nid]->subdomains = array();
+    $nodes[$node->nid]->subdomains = [];
     if (!empty($nodes[$node->nid]->domain_site)) {
       $nodes[$node->nid]->subdomains[] = t('All affiliates');
     }
@@ -1753,30 +1765,36 @@ function domain_node_load($nodes, $types) {
  * Display debugging information for a node.
  */
 function domain_node_view($node, $view_mode) {
-  if (empty($node->nid) || !in_array($view_mode, array('full', 'teaser'))) {
+  if (empty($node->nid) || !in_array($view_mode, ['full', 'teaser'])) {
     return;
   }
   $output = '';
 
   if (config_get('domain.settings', 'domain_debug') && user_access('set domain access')) {
     if (!empty($node->subdomains)) {
-      $items = array();
+      $items = [];
       foreach ($node->subdomains as $name) {
         $items[] = check_plain($name);
       }
-      $output .= theme('item_list', array('items' => $items, 'title' => t('Assigned domains')));
+      $output .= theme('item_list', [
+        'items' => $items,
+        'title' => t('Assigned domains'),
+      ]);
     }
     if (!empty($node->editors)) {
-      $items = array();
+      $items = [];
       foreach ($node->editors as $name) {
         $items[] = check_plain($name);
       }
-      $output .= theme('item_list', array('items' => $items, 'title' => t('Editors')));
+      $output .= theme('item_list', [
+        'items' => $items,
+        'title' => t('Editors'),
+      ]);
     }
     if (empty($output)) {
       $output = t('This node is not assigned to a domain.');
     }
-    $node->content['domain'] = array('#markup' => $output);
+    $node->content['domain'] = ['#markup' => $output];
   }
 }
 
@@ -1812,7 +1830,7 @@ function domain_node_presave($node) {
     // is chosen) for randomization (-1 guarantees at least one domain).
     if (count($domains) > 1) {
       $howmany = rand(0, count($domains) - 1);
-      for ($i=0; $i < $howmany; $i++) {
+      for ($i = 0; $i < $howmany; $i++) {
         array_pop($domains);
       }
     }
@@ -1823,7 +1841,7 @@ function domain_node_presave($node) {
     // domain_site is set to TRUE or FALSE based on "all", "never" or "random flag"
     $node->domain_site = $node->devel_generate['domain_site'] == 'all' ? 1 : ($node->devel_generate['domain_site'] == 'random' ? rand(0, 1) == 1 : 0);
     // Set subdomains according to the domains in $domains
-    $node->domains = array();
+    $node->domains = [];
     foreach ($domains as $id) {
       $node->domains[$id] = $id;
     }
@@ -1851,8 +1869,8 @@ function domain_node_update($node) {
  */
 function domain_node_type_delete($info) {
   $arr = config_get('domain.settings', 'domain_node_');
-  if (isset($arr[$info->type])) {
-    unset($arr[$info->type]);
+  if (isset($arr['domain_node_' . $info->type])) {
+    unset($arr['domain_node_' . $info->type]);
     config_set('domain.settings', 'domain_node_', $arr);
   }
 }
@@ -1867,12 +1885,15 @@ function domain_node_type_delete($info) {
  *   The domain array for the best matching domain for links to this node.
  */
 function domain_get_node_match($nid) {
-  $domain = &backdrop_static(__FUNCTION__, array());
+  $domain = &backdrop_static(__FUNCTION__, []);
   if (isset($domain[$nid])) {
     return $domain[$nid];
   }
   // Load the domain data for this node -- but only take the first match.
-  $id = db_query("SELECT gid FROM {domain_access} WHERE nid = :nid AND realm = :realm ORDER BY gid", array(':nid' => $nid, ':realm' => 'domain_id'))->fetchField();
+  $id = db_query("SELECT gid FROM {domain_access} WHERE nid = :nid AND realm = :realm ORDER BY gid", [
+    ':nid' => $nid,
+    ':realm' => 'domain_id',
+  ])->fetchField();
 
   // If a match was found, return it. Otherwise, we may be saving a node
   // in which case, let it fall through. See http://drupal.org/node/624360.
@@ -1902,7 +1923,7 @@ function domain_get_node_match($nid) {
  *   as the first element of the array.
  */
 function domain_get_content_urls($node) {
-  $urls = array();
+  $urls = [];
   // If not set, return normal absolute url.
   if (empty($node->domains)) {
     $options['absolute'] = TRUE;
@@ -1973,11 +1994,12 @@ function domain_get_path_match($path) {
  *
  * @return
  *   An array of data, keyed by node id, or a single array for a single node.
- *   The data array, consists of two parts. 'domain_id' is an array of active domain ids.
+ *   The data array, consists of two parts. 'domain_id' is an array of active
+ *   domain ids.
  *   'domain_site' is a TRUE/FALSE boolean indicating affiliate status.
  */
 function domain_get_node_domains($nodes) {
-  $lookup = &backdrop_static(__FUNCTION__, array());
+  $lookup = &backdrop_static(__FUNCTION__, []);
   // Ensure we form our data properly.
   if (!is_array($nodes)) {
     $node_ids[$nodes] = $nodes;
@@ -1992,9 +2014,9 @@ function domain_get_node_domains($nodes) {
     return $lookup[$nodes];
   }
   // Set the proper value for the node, but include a default.
-  $domains = array('domain_id' => array(), 'domain_site' => FALSE);
-  $records = array();
-  $result = db_query("SELECT nid, gid, realm FROM {domain_access} WHERE nid IN (:nid)", array(':nid' => array_keys($node_ids)));
+  $domains = ['domain_id' => [], 'domain_site' => FALSE];
+  $records = [];
+  $result = db_query("SELECT nid, gid, realm FROM {domain_access} WHERE nid IN (:nid)", [':nid' => array_keys($node_ids)]);
   // While this should return records for every node, we cannot guarantee success.
   foreach ($result as $data) {
     if ($data->realm == 'domain_id') {
@@ -2007,7 +2029,7 @@ function domain_get_node_domains($nodes) {
   // Run through the nodes and ensure they have proper data.
   foreach ($node_ids as $nid => $value) {
     $lookup[$nid] = $domains;
-    foreach (array('domain_id', 'domain_site') as $key) {
+    foreach (['domain_id', 'domain_site'] as $key) {
       if (isset($records[$nid][$key])) {
         $lookup[$nid][$key] = $records[$nid][$key];
       }
@@ -2037,7 +2059,7 @@ function domain_get_node_domains($nodes) {
  */
 function domain_node_grants($account, $op) {
   $_domain = domain_get_domain();
-  $grants = array();
+  $grants = [];
 
   // In some edge cases, the $account may not have domain information loaded,
   // so get it.
@@ -2059,7 +2081,7 @@ function domain_node_grants($account, $op) {
     // we simply get out of the way of other node_access rules.
     // We do this with the universal 'domain_all' grant.
     if (domain_grant_all()) {
-      $grants = array('domain_all' => array(0));
+      $grants = ['domain_all' => [0]];
     }
   }
   else {
@@ -2111,13 +2133,13 @@ function domain_node_grants($account, $op) {
  */
 function domain_node_access_records($node) {
   // Define the $grants array.
-  $grants = array();
+  $grants = [];
   // Check to see if the node domains were set properly.
   // If not, we are dealing with an automated node process, which
   // means we have to add the logic from hook_form_alter() here.
   if (!isset($node->domain_site)) {
     // We came from a separate source, so let's set the proper defaults.
-    $defaults = domain_get_node_defaults($node->type, array(domain_get_domain()));
+    $defaults = domain_get_node_defaults($node->type, [domain_get_domain()]);
     $node->domain_site = $defaults['domain_site'];
     $node->domains = $defaults['domain_id'];
   }
@@ -2127,7 +2149,7 @@ function domain_node_access_records($node) {
   // stored values.  See the logic for 'view domain publishing' in domain_form_alter().
   if (!empty($node->domains_raw)) {
     if (!isset($node->domains)) {
-      $node->domains = array();
+      $node->domains = [];
     }
     foreach ($node->domains_raw as $value) {
       // Only add this if it is not present already.
@@ -2140,14 +2162,15 @@ function domain_node_access_records($node) {
   // If set, grant access to the core site, otherwise
   // The grant must be explicitly given to a domain.
   if (!empty($node->domain_site)) {
-    $grants[] = array(
+    $grants[] = [
       'realm' => 'domain_site',
       'gid' => 0,
       'grant_view' => $node->status,
       'grant_update' => 0,
       'grant_delete' => 0,
-      'priority' => 0, // If this value is > 0, then other grants will not be recorded
-    );
+      'priority' => 0,
+      // If this value is > 0, then other grants will not be recorded
+    ];
   }
   // Set the domain-specific grants.
   if (!empty($node->domains)) {
@@ -2163,14 +2186,14 @@ function domain_node_access_records($node) {
   // Set the specified domains.
   if (!empty($domains)) {
     foreach (array_filter($node->domains) as $key => $value) {
-      $grants[] = array(
+      $grants[] = [
         'realm' => $realm,
         'gid' => $key,
         'grant_view' => 1,
         'grant_update' => 1,
         'grant_delete' => 1,
         'priority' => 0,
-      );
+      ];
     }
   }
   // At least one option must be present, and it is the default site
@@ -2179,14 +2202,14 @@ function domain_node_access_records($node) {
   // default domain of all existing nodes to the root domain.
   else {
     $default = domain_default();
-    $grants[] = array(
+    $grants[] = [
       'realm' => $realm,
       'gid' => $default['domain_id'],
       'grant_view' => 1,
       'grant_update' => 1,
       'grant_delete' => 1,
       'priority' => 0,
-    );
+    ];
   }
 
   // Store our records in the {domain_access} table.
@@ -2203,25 +2226,25 @@ function domain_node_access_records($node) {
  * @param $grants
  *   The grants passed by hook_node_access_records().
  */
-function _domain_store_grants($nid, $grants = array()) {
+function _domain_store_grants($nid, $grants = []) {
   // Store the grants records.
   if ($nid > 0 && !empty($grants)) {
     db_delete('domain_access')
       ->condition('nid', $nid)
       ->execute();
-    $values = array();
+    $values = [];
     foreach ($grants as $grant) {
       // Always store unpublished nodes under domain_id.
       if ($grant['realm'] == 'domain_unpublished') {
         $grant['realm'] = 'domain_id';
       }
-      $values[] = array(
+      $values[] = [
         'nid' => $nid,
         'gid' => $grant['gid'],
         'realm' => $grant['realm'],
-      );
+      ];
     }
-    $query = db_insert('domain_access')->fields(array('nid', 'gid', 'realm'));
+    $query = db_insert('domain_access')->fields(['nid', 'gid', 'realm']);
     foreach ($values as $record) {
       $query->values($record);
     }
@@ -2246,21 +2269,21 @@ function domain_set_default_grant($reset = FALSE) {
   $check = &backdrop_static(__FUNCTION__, NULL);
   if (is_null($check) || $reset) {
     $check = (bool) db_query_range("SELECT 1 FROM {node_access} WHERE realm = :realm AND gid = :gid", 0, 1,
-      array(
+      [
         ':realm' => 'domain_all',
         ':gid' => 0,
-      )
+      ]
     )->fetchField();
     if (empty($check)) {
       db_insert('node_access')
-        ->fields(array(
-            'nid' => 0,
-            'gid' => 0,
-            'realm' => 'domain_all',
-            'grant_view' => 1,
-            'grant_update' => 0,
-            'grant_delete' => 0,
-        ))
+        ->fields([
+          'nid' => 0,
+          'gid' => 0,
+          'realm' => 'domain_all',
+          'grant_view' => 1,
+          'grant_update' => 0,
+          'grant_delete' => 0,
+        ])
         ->execute();
     }
   }
@@ -2396,25 +2419,25 @@ function domain_enable() {
   if (empty($count)) {
     $rule = DOMAIN_INSTALL_RULE;
     $site = DOMAIN_SITE_GRANT;
-    $values = array();
+    $values = [];
     $result = db_query("SELECT nid FROM {node}");
     foreach ($result as $node) {
       if (!empty($site)) {
-        $values[] = array(
+        $values[] = [
           'nid' => $node->nid,
           'gid' => 0,
           'realm' => 'domain_site',
-        );
+        ];
       }
       if (!empty($rule)) {
-        $values[] = array(
+        $values[] = [
           'nid' => $node->nid,
           'gid' => $default['domain_id'],
           'realm' => 'domain_id',
-        );
+        ];
       }
     }
-    $query = db_insert('domain_access')->fields(array('nid', 'gid', 'realm'));
+    $query = db_insert('domain_access')->fields(['nid', 'gid', 'realm']);
     foreach ($values as $record) {
       $query->values($record);
     }
@@ -2425,19 +2448,19 @@ function domain_enable() {
     return;
   }
   $result = db_query("SELECT uid FROM {users} WHERE uid > 0");
-  $values = array();
+  $values = [];
   foreach ($result as $account) {
     $check = (bool) db_query_range("SELECT COUNT(uid) FROM {domain_editor} WHERE uid = :uid", 0, 1,
-      array(':uid' => $account->uid)
+      [':uid' => $account->uid]
     )->fetchField();
     if (empty($check)) {
-      $values[] = array(
+      $values[] = [
         'domain_id' => $default['domain_id'],
         'uid' => $account->uid,
-      );
+      ];
     }
   }
-  $query = db_insert('domain_editor')->fields(array('domain_id', 'uid'));
+  $query = db_insert('domain_editor')->fields(['domain_id', 'uid']);
   foreach ($values as $record) {
     $query->values($record);
   }
@@ -2475,7 +2498,7 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
     // We cannot reset this if it has already been set by another module.
     // See http://drupal.org/node/306551
     if (empty($action['host'])) {
-      $form['#action'] =  $domain['scheme'] . '://' . $domain['subdomain'] . $action['path'] . $action['query'];
+      $form['#action'] = $domain['scheme'] . '://' . $domain['subdomain'] . $action['path'] . $action['query'];
     }
   }
 
@@ -2504,7 +2527,7 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
     $raw = $defaults['domain_id'];
   }
 
-  $options = array();
+  $options = [];
   // Get the display format of the form element.
   $format = domain_select_format();
   foreach (domain_domains() as $data) {
@@ -2516,43 +2539,43 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
   }
   // If the user is a site admin, show the form, otherwise pass it silently.
   if (user_access('set domain access')) {
-    $form['domain'] = array(
+    $form['domain'] = [
       '#type' => 'fieldset',
       '#title' => t('Domain access options'),
       '#collapsible' => TRUE,
       '#collapsed' => config_get('domain.settings', 'domain_collapse_options'),
-    );
+    ];
     // Display in vertical tab group, if required
     if (config_get('domain.settings', 'domain_vertical_tab')) {
       $form['domain']['#group'] = 'additional_settings';
-      $form['domain']['#attributes'] = array(
-        'class' => array('domain-access-options-form'),
-      );
-      $form['domain']['#attached'] = array(
-        'js' => array(
+      $form['domain']['#attributes'] = [
+        'class' => ['domain-access-options-form'],
+      ];
+      $form['domain']['#attached'] = [
+        'js' => [
           backdrop_get_path('module', 'domain') . '/domain.node.js',
-          array(
-            'data' => array('domain' => array('fieldType' => $format)),
+          [
+            'data' => ['domain' => ['fieldType' => $format]],
             'type' => 'setting',
-          ),
-        ),
-      );
+          ],
+        ],
+      ];
     }
-    $form['domain']['domain_site'] = array(
+    $form['domain']['domain_site'] = [
       '#type' => 'checkbox',
       '#title' => t('Send to all affiliates'),
       '#required' => FALSE,
       '#description' => t('Select if this content can be shown to all affiliates. This setting will override the options below, but you must still select a domain that "owns" this content.'),
       '#default_value' => (isset($form['#node']->domain_site)) ? $form['#node']->domain_site : $default_domain_site,
-    );
-    $form['domain']['domains'] = array(
+    ];
+    $form['domain']['domains'] = [
       '#type' => empty($format) ? 'checkboxes' : 'select',
       '#title' => t('Publish to'),
       '#options' => $options,
       '#required' => TRUE,
       '#description' => t('Select which affiliates can access this content.'),
       '#default_value' => (isset($form['#node']->domains)) ? $form['#node']->domains : $defaults['domain_id'],
-    );
+    ];
     if ($format) {
       $form['domain']['domains']['#multiple'] = TRUE;
       $form['domain']['domains']['#size'] = count($options) > 10 ? 10 : count($options);
@@ -2564,10 +2587,10 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
     if (!empty($action)) {
       // hook_user() has not run, so get the domain data for this user.
       $user->domain_user = domain_get_user_domains($user);
-      $user_domains = array();
-      $default_options = array();
-      $user_options = array();
-      $raw_options = array();
+      $user_domains = [];
+      $default_options = [];
+      $user_options = [];
+      $raw_options = [];
       if (!empty($user->domain_user)) {
         foreach ($user->domain_user as $key => $value) {
           if (abs($value) > 0) {
@@ -2626,28 +2649,28 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
             backdrop_access_denied();
             backdrop_exit();
           }
-          $form['domain'] = array(
+          $form['domain'] = [
             '#type' => 'fieldset',
             '#title' => t('Affiliate publishing options'),
             '#collapsible' => TRUE,
             '#collapsed' => config_get('domain.settings', 'domain_collapse_options'),
-          );
+          ];
           // Display in vertical tab group, if required
           if (config_get('domain.settings', 'domain_vertical_tab')) {
             $form['domain']['#group'] = 'additional_settings';
-            $form['domain']['#attributes'] = array(
-              'class' => array('domain-access-options-form'),
-            );
+            $form['domain']['#attributes'] = [
+              'class' => ['domain-access-options-form'],
+            ];
             $format = domain_select_format();
-            $form['domain']['#attached'] = array(
-              'js' => array(
+            $form['domain']['#attached'] = [
+              'js' => [
                 backdrop_get_path('module', 'domain') . '/domain.node.js',
-                array(
-                  'data' => array('domain' => array('fieldType' => $format)),
+                [
+                  'data' => ['domain' => ['fieldType' => $format]],
                   'type' => 'setting',
-                ),
-              ),
-            );
+                ],
+              ],
+            ];
           }
           // We must preserve publishing options that the user cannot access, but only for
           // existing nodes.
@@ -2655,25 +2678,25 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
             $raw = $raw_options;
           }
           else {
-            $raw = array();
+            $raw = [];
           }
           // If the raw options are being passed, then no input is technically required.
           (empty($raw)) ? $required = TRUE : $required = FALSE;
 
-          $form['domain']['domains'] = array(
+          $form['domain']['domains'] = [
             '#type' => empty($format) ? 'checkboxes' : 'select',
             '#title' => t('Publish to'),
             '#options' => $user_options,
             '#required' => $required,
             '#description' => t('Select which affiliates can access this content.'),
             '#default_value' => (isset($form['#node']->domains)) ? $form['#node']->domains : $default_options,
-          );
+          ];
           if ($format) {
             $form['domain']['domains']['#multiple'] = TRUE;
             $form['domain']['domains']['#size'] = count($user_options) > 10 ? 10 : count($user_options);
           }
           // Show the options that cannot be changed.
-          $list = array();
+          $list = [];
           if (!empty($form['#node']->domain_site)) {
             $list[]['data'] = t('All affiliates');
           }
@@ -2684,26 +2707,26 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
             }
           }
           if (!empty($list)) {
-            $form['domain']['domains_notes'] = array(
+            $form['domain']['domains_notes'] = [
               '#type' => 'item',
               '#title' => t('Publishing status'),
-              '#markup' => theme('item_list', array('items' => $list)),
+              '#markup' => theme('item_list', ['items' => $list]),
               '#description' => t('This content has also been published to these affiliates.'),
-            );
+            ];
           }
           break;
       }
     }
     // These form elements are hidden from non-privileged users, by design.
-    $form['domain_site'] = array(
+    $form['domain_site'] = [
       '#type' => 'value',
       '#value' => (isset($form['#node']->domain_site)) ? $form['#node']->domain_site : $default_domain_site,
-    );
+    ];
     // Domains that have been assigned and cannot be changed.
-    $form['domains_raw'] = array(
+    $form['domains_raw'] = [
       '#type' => 'value',
       '#value' => $raw,
-    );
+    ];
   }
 }
 
@@ -2714,27 +2737,30 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
  *
  */
 function domain_form_node_type_form_alter(&$form, &$form_state, $form_id) {
-  $options = array(DOMAIN_ALL => t('All domains'), DOMAIN_ACTIVE => t('Author\'s currently active domain'));
+  $options = [
+    DOMAIN_ALL => t('All domains'),
+    DOMAIN_ACTIVE => t('Author\'s currently active domain'),
+  ];
   foreach (domain_domains() as $key => $value) {
     $options[$value['machine_name']] = $value['sitename'];
   }
   $default_values = domain_default_node_access_settings($form['#node_type']->type);
-  $form['domain'] = array(
+  $form['domain'] = [
     '#type' => 'fieldset',
     '#title' => t('Domain access settings'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#group' => 'additional_settings',
     '#access' => user_access('set domain access'),
-  );
-  $form['domain']['domain_node'] = array(
+  ];
+  $form['domain']['domain_node'] = [
     '#title' => t('Publish to'),
     '#description' => t('You may set default domain publishing options when new content of this type will be created. When you publish to <em>All domains</em>, you can additionally define domain memberships.'),
     '#type' => 'checkboxes',
     '#tree' => TRUE,
     '#options' => $options,
     '#default_value' => $default_values,
-  );
+  ];
 }
 
 /**
@@ -2756,9 +2782,9 @@ function domain_form_sitename_submit($form, &$form_state) {
   }
   db_update('domain')
     ->condition('domain_id', 0)
-    ->fields(array(
+    ->fields([
       'sitename' => $form_state['values']['site_name'],
-    ))
+    ])
     ->execute();
   backdrop_set_message(t('Primary domain settings updated.'));
 }
@@ -2770,11 +2796,11 @@ function domain_form_sitename_submit($form, &$form_state) {
  * domain access'. Note that the most permissive permission wins.
  */
 function domain_form_permission_check() {
-  $perms = array(
+  $perms = [
     'publish from default domain' => 1,
     'publish from assigned domain' => 2,
     'publish to any assigned domain' => 3,
-  );
+  ];
   // By default, we will hide the form by returning NULL.
   $action = NULL;
   foreach ($perms as $perm => $value) {
@@ -2790,23 +2816,23 @@ function domain_form_permission_check() {
  */
 function domain_form_devel_generate_content_form_alter(&$form, &$form_state) {
   $form['submit']['#weight'] = 10;
-  $form['domain'] = array(
+  $form['domain'] = [
     '#type' => 'fieldset',
     '#title' => t('Domain Access Options'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#weight' => 9,
-  );
-  $form['domain']['domain_site'] = array(
+  ];
+  $form['domain']['domain_site'] = [
     '#type' => 'select',
     '#title' => t('Send to all affiliates'),
-    '#options' => array(
+    '#options' => [
       'none' => t('Never'),
       'all' => t('Always'),
       'random' => t('Randomly decide'),
-    ),
-    '#description'  => t('If you choose "always" or "randomly" you must select at least one domain below.'),
-  );
+    ],
+    '#description' => t('If you choose "always" or "randomly" you must select at least one domain below.'),
+  ];
   // Get the display format of the form element.
   $format = domain_select_format();
   foreach (domain_domains() as $data) {
@@ -2816,12 +2842,12 @@ function domain_form_devel_generate_content_form_alter(&$form, &$form_state) {
       $options[$data['domain_id']] = empty($format) ? check_plain($data['sitename']) : $data['sitename'];
     }
   }
-  $form['domain']['domains'] = array(
+  $form['domain']['domains'] = [
     '#type' => empty($format) ? 'checkboxes' : 'select',
     '#title' => t('Publish to'),
     '#options' => $options,
     '#description' => t('Generated content will be accessible on any or all of the domains checked above.'),
-  );
+  ];
   if ($format) {
     $form['domain']['domains']['#multiple'] = TRUE;
     $form['domain']['domains']['#size'] = count($options) > 10 ? 10 : count($options);
@@ -2839,9 +2865,9 @@ function domain_form_devel_generate_content_form_alter(&$form, &$form_state) {
  *   TRUE or FALSE, depending on whether the grants should be executed for this
  *   page.
  */
-function domain_grant_all($reset= FALSE) {
+function domain_grant_all($reset = FALSE) {
   $grant = &backdrop_static(__FUNCTION__);
-  $options = array();
+  $options = [];
   if (!isset($grant) || $reset) {
     $grant = FALSE;
 
@@ -2873,7 +2899,15 @@ function domain_grant_all($reset= FALSE) {
       // We check the paths registered by the special pages setting.
       $pages = config_get('domain.settings', 'domain_grant_all');
       $options['pages'] = $pages;
-      $regexp = '/^(' . preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1' . preg_quote(config_get('system.core', 'site_frontpage'), '/') . '\2'), preg_quote($pages, '/')) . ')$/';
+      $regexp = '/^(' . preg_replace([
+          '/(\r\n?|\n)/',
+          '/\\\\\*/',
+          '/(^|\|)\\\\<front\\\\>($|\|)/',
+        ], [
+          '|',
+          '.*',
+          '\1' . preg_quote(config_get('system.core', 'site_frontpage'), '/') . '\2',
+        ], preg_quote($pages, '/')) . ')$/';
       // Compare with the internal and path alias (if any).
       $page_match = preg_match($regexp, $_GET['q']);
       if (!$page_match && function_exists('backdrop_get_path_alias')) {
@@ -2945,7 +2979,7 @@ function domain_modules_disabled() {
  * Stores results in the 'domain_bootstrap_modules' variable.
  */
 function domain_bootstrap_register() {
-  $modules = array();
+  $modules = [];
   $lookup = module_implements('domain_bootstrap_lookup');
   $full = module_implements('domain_bootstrap_full');
   $modules = array_merge($lookup, $full);
@@ -2977,10 +3011,10 @@ function domain_resolve_host($name = '') {
  * Relies on $_SERVER['HTTP_HOST'] being set. Note that this value has already
  * been security checked by Drupal core. Otherwise, we never get this far.
  *
- * @see conf_init()
- *
  * @return
  * The current (host) domain name as a String.
+ * @see conf_init()
+ *
  */
 function domain_request_name() {
   // An empty host (provided by some bots) always fails, so don't bother
@@ -3031,7 +3065,11 @@ function domain_invalid_domain_requested() {
     }
     $default = domain_default();
     // Log the access attempt.
-    watchdog('domain', 'Invalid domain requested by %user on %domain; redirected to %default.', array('%user' => isset($user->name) ? $user->name : t(config_get('domain.settings', 'anonymous')), '%domain' => $_domain['sitename'], '%default' => $default['sitename']), WATCHDOG_WARNING);
+    watchdog('domain', 'Invalid domain requested by %user on %domain; redirected to %default.', [
+      '%user' => isset($user->name) ? $user->name : t(config_get('domain.settings', 'anonymous')),
+      '%domain' => $_domain['sitename'],
+      '%default' => $default['sitename'],
+    ], WATCHDOG_WARNING);
     backdrop_goto($default['path'] . backdrop_get_path_alias($path));
   }
   // Try to find the proper redirect for a node.
@@ -3059,7 +3097,11 @@ function domain_invalid_domain_requested() {
     $extra = '.';
   }
   // Log the access attempt.
-  watchdog('domain', 'Invalid domain requested by %user on %domain, redirected to %redirect', array('%user' => isset($user->name) ? $user->name : t(config_get('domain.settings', 'anonymous')), '%domain' => $_domain['sitename'], '%redirect' => $redirect['sitename'] . $extra), WATCHDOG_WARNING);
+  watchdog('domain', 'Invalid domain requested by %user on %domain, redirected to %redirect', [
+    '%user' => isset($user->name) ? $user->name : t(config_get('domain.settings', 'anonymous')),
+    '%domain' => $_domain['sitename'],
+    '%redirect' => $redirect['sitename'] . $extra,
+  ], WATCHDOG_WARNING);
   backdrop_goto($redirect['path'] . backdrop_get_path_alias($path));
 }
 
@@ -3123,20 +3165,21 @@ function domain_node_save_redirect() {
  *   Set TRUE to ignore cached versions and look the name up again. Optional.
  *
  * @return
- *   An array containing a domain_id from {domain} matching the given domain name
+ *   An array containing a domain_id from {domain} matching the given domain
+ *   name
  */
 function domain_lookup_simple($name, $reset = FALSE) {
-  $cache = &backdrop_static(__FUNCTION__, array());
+  $cache = &backdrop_static(__FUNCTION__, []);
 
   if (empty($name)) {
-    return array();
+    return [];
   }
 
   if ($reset || !isset($cache[$name])) {
     // Lookup the given domain name against our allowed hosts record.
-    $domain = db_query("SELECT domain_id, subdomain, sitename FROM {domain} WHERE subdomain = :subdomain", array(':subdomain' => $name))->fetchAssoc();
+    $domain = db_query("SELECT domain_id, subdomain, sitename FROM {domain} WHERE subdomain = :subdomain", [':subdomain' => $name])->fetchAssoc();
     if (!is_array($domain)) {
-      $domain = array();
+      $domain = [];
     }
     // If no match => use default domain.
     if (!isset($domain['domain_id'])) {
@@ -3152,14 +3195,17 @@ function domain_lookup_simple($name, $reset = FALSE) {
             $domain_new[$key] = $value[0];
           }
         }
-        $modules = array();
+        $modules = [];
         foreach (_domain_bootstrap_modules() as $module) {
           if (function_exists($module . '_domain_bootstrap_lookup')) {
             $modules[] = $module;
           }
         }
         $lookup = domain_lookup($domain_new['domain_id']);
-        $domain_new['error'] = t('domain lookup. More than one registered domain was returned. Defaulting to %domain. The likely cause is a conflict between %modules', array('%domain' => $lookup['sitename'], '%modules' => implode(', ', $modules)));
+        $domain_new['error'] = t('domain lookup. More than one registered domain was returned. Defaulting to %domain. The likely cause is a conflict between %modules', [
+          '%domain' => $lookup['sitename'],
+          '%modules' => implode(', ', $modules),
+        ]);
       }
       $domain = array_merge($domain, $domain_new);
     }
@@ -3181,68 +3227,68 @@ function domain_domain_install() {
  */
 function domain_domain_batch() {
   // Change all the domain names at once.
-  $batch = array();
-  $batch['subdomain'] = array(
-    '#form' => array(
+  $batch = [];
+  $batch['subdomain'] = [
+    '#form' => [
       '#title' => t('Domains'),
       '#type' => 'textfield',
       '#size' => 40,
       '#maxlength' => 80,
       '#description' => t('Enter the host value of the domain.  No http:// or slashes.'),
       '#required' => TRUE,
-    ),
+    ],
     '#domain_action' => 'domain',
     '#meta_description' => t('Edit all domain values.'),
     '#data_type' => 'string',
     '#update_all' => FALSE,
     '#weight' => -10,
-  );
+  ];
   //Change all the site names at once.
-  $batch['sitename'] = array(
-    '#form' => array(
+  $batch['sitename'] = [
+    '#form' => [
       '#title' => t('Names'),
       '#type' => 'textfield',
       '#size' => 40,
       '#maxlength' => 80,
       '#description' => t('The human-readable name for this domain.'),
       '#required' => TRUE,
-    ),
+    ],
     '#domain_action' => 'domain',
     '#meta_description' => t('Edit all domain names.'),
     '#data_type' => 'string',
     '#update_all' => FALSE,
     '#weight' => -10,
-  );
+  ];
   // Change all the schemes at once.
-  $batch['scheme'] = array(
-    '#form' => array(
+  $batch['scheme'] = [
+    '#form' => [
       '#title' => t('URL schemes'),
       '#type' => 'radios',
-      '#options' => array('http' => 'http://', 'https' => 'https://'),
-      '#description' => t('The URL scheme for accessing this domain.')
-    ),
+      '#options' => ['http' => 'http://', 'https' => 'https://'],
+      '#description' => t('The URL scheme for accessing this domain.'),
+    ],
     '#domain_action' => 'domain',
     '#meta_description' => t('Edit all domain URL schemes.'),
     '#system_default' => config_get('domain.settings', 'domain_scheme'),
     '#data_type' => 'string',
     '#update_all' => TRUE,
     '#weight' => -10,
-  );
+  ];
   // Change all the valid flags at once.
-  $batch['valid'] = array(
-    '#form' => array(
+  $batch['valid'] = [
+    '#form' => [
       '#title' => t('Valid domains'),
       '#type' => 'radios',
-      '#options' => array(1 => t('Active'), 0 => t('Inactive')),
-      '#description' => t('Allows users to access this domain.')
-    ),
+      '#options' => [1 => t('Active'), 0 => t('Inactive')],
+      '#description' => t('Allows users to access this domain.'),
+    ],
     '#domain_action' => 'domain',
     '#meta_description' => t('Edit all domain status flags.'),
     '#system_default' => 1,
     '#data_type' => 'integer',
     '#update_all' => TRUE,
     '#weight' => -10,
-  );
+  ];
   foreach ($batch as $key => $value) {
     $batch[$key]['#module'] = t('Domain Access');
   }
@@ -3267,7 +3313,7 @@ function domain_warning_check($form_id) {
   if (empty($_POST) && empty($_warning)) {
     global $_domain;
     // Add the list of forms
-    $forms = array();
+    $forms = [];
     $forms = module_invoke_all('domain_warning');
     backdrop_alter('domain_warnings', $forms);
     if ($form_id == 'domain_batch_form' || (arg(2) != 'domain' && in_array($form_id, array_keys($forms)))) {
@@ -3275,7 +3321,7 @@ function domain_warning_check($form_id) {
       $link_text = '';
       $link = isset($forms[$form_id]) ? $forms[$form_id] : NULL;
       if (!empty($link)) {
-        $elements = array();
+        $elements = [];
         foreach ($_domain as $key => $value) {
           if (!is_array($value)) {
             $elements[$key] = $value;
@@ -3284,18 +3330,27 @@ function domain_warning_check($form_id) {
         $replace = explode('|', '%' . implode('|%', array_keys($elements)));
         $values = explode('|', implode('|', $elements));
         $link = str_replace($replace, $values, $link);
-        $link_text = t('You may submit changes to the current domain at <a href="!url">%link</a>.', array('!url' => url($link), '%link' => $link));
+        $link_text = t('You may submit changes to the current domain at <a href="!url">%link</a>.', [
+          '!url' => url($link),
+          '%link' => $link,
+        ]);
       }
       $_path = domain_get_uri($default);
       $message = '';
       if ($_domain['domain_id'] != $default['domain_id']) {
-        $message = ' ' . t('and <a href="!url">may need to be entered from !domain</a>', array('!url' => $_path, '!domain' => $default['subdomain']));
+        $message = ' ' . t('and <a href="!url">may need to be entered from !domain</a>', [
+            '!url' => $_path,
+            '!domain' => $default['subdomain'],
+          ]);
       }
       else {
         $link_text = '';
       }
       backdrop_set_message(t('This form submits changes to your default
-      configuration!message. !link', array('!message' => $message, '!link' => $link_text)), 'warning', FALSE);
+      configuration!message. !link', [
+        '!message' => $message,
+        '!link' => $link_text,
+      ]), 'warning', FALSE);
     }
     $_warning = TRUE;
   }
@@ -3341,10 +3396,10 @@ function _domain_path_modules() {
  */
 function domain_domain_ignore() {
   // We cannot interfere with update processes.
-  return array(
+  return [
     'update_script_selection_form',
     'authorize_filetransfer_form',
-  );
+  ];
 }
 
 /**
@@ -3362,10 +3417,10 @@ function domain_node_access_explain($row) {
       }
       else {
         if (!empty($_domain['site_grant'])) {
-          $return .= t('False: Only allows content from the active domain (%domain) or from all affiliates.', array('%domain' => $active));
+          $return .= t('False: Only allows content from the active domain (%domain) or from all affiliates.', ['%domain' => $active]);
         }
         else {
-          $return .= t('False: Only allows content from the active domain (%domain).', array('%domain' => $active));
+          $return .= t('False: Only allows content from the active domain (%domain).', ['%domain' => $active]);
         }
       }
       break;
@@ -3373,10 +3428,10 @@ function domain_node_access_explain($row) {
       $return .= t('Viewable on all affiliate sites.');
       break;
     case 'domain_id':
-      $return .= t('Viewable on %domain<br />%domain privileged editors may edit and delete', array('%domain' => $domain['subdomain']));
+      $return .= t('Viewable on %domain<br />%domain privileged editors may edit and delete', ['%domain' => $domain['subdomain']]);
       break;
     case 'domain_unpublished':
-      $return .= t('Unpublished node. Viewable on %domain<br />%domain privileged editors may edit and delete', array('%domain' => $domain['subdomain']));
+      $return .= t('Unpublished node. Viewable on %domain<br />%domain privileged editors may edit and delete', ['%domain' => $domain['subdomain']]);
       break;
     default:
       // This is not our grant, do not return anything.
@@ -3401,18 +3456,18 @@ function domain_node_access_acknowledge($grant) {
  * Field hook to allow sorting of the domain settings field.
  */
 function domain_field_extra_fields() {
-  $base = array(
-    'domain' => array(
+  $base = [
+    'domain' => [
       'label' => t('Domain access'),
       'description' => t('Domain Access settings.'),
       'weight' => 1,
-    ),
-  );
+    ],
+  ];
   $base_display = $base;
   $base_display['domain']['label'] .= ' ' . t('(debugging only)');
 
   // Node settings.
-  $extra = array();
+  $extra = [];
   foreach (node_type_get_names() as $name => $value) {
     $extra['node'][$name]['form'] = $base;
     $extra['node'][$name]['display'] = $base_display;
@@ -3536,7 +3591,7 @@ function domain_alter_node_query(QueryAlterableInterface $query, $type) {
           if (isset($schema['fields']['nid'])) {
             if (isset($schema['foreign keys'])) {
               foreach ($schema['foreign keys'] as $relation) {
-                if ($relation['table'] === 'node' && $relation['columns'] === array('nid' => 'nid')) {
+                if ($relation['table'] === 'node' && $relation['columns'] === ['nid' => 'nid']) {
                   $base_table = $table;
                 }
               }
@@ -3553,7 +3608,7 @@ function domain_alter_node_query(QueryAlterableInterface $query, $type) {
     // If there is nothing else, use the fallback.
     if (!$base_table) {
       if ($fallback) {
-        watchdog('security', 'Your node listing query is using @fallback as a base table in a query tagged for node access. This might not be secure and might not even work. Specify foreign keys in your schema to node.nid ', array('@fallback' => $fallback), WATCHDOG_WARNING);
+        watchdog('security', 'Your node listing query is using @fallback as a base table in a query tagged for node access. This might not be secure and might not even work. Specify foreign keys in your schema to node.nid ', ['@fallback' => $fallback], WATCHDOG_WARNING);
         $base_table = $fallback;
       }
       else {
@@ -3593,7 +3648,7 @@ function domain_alter_node_query(QueryAlterableInterface $query, $type) {
     if (!($table instanceof SelectQueryInterface) && $table == $base_table) {
       // Set the subquery.
       $subquery = db_select('node_access', 'na')
-       ->fields('na', array('nid'));
+        ->fields('na', ['nid']);
 
       $grant_conditions = db_or();
       // If any grant exists for the specified user, then user has access
@@ -3651,7 +3706,8 @@ function domain_alter_node_query(QueryAlterableInterface $query, $type) {
  * for a request to a domain.
  *
  * If the domain_skip_domain_check variable is not 0, the response will
- * be assumed to be valid and a warning will be set using backdrop_set_message().
+ * be assumed to be valid and a warning will be set using
+ * backdrop_set_message().
  *
  * @param $domain
  *   An array containing the record from the {domain} table.
@@ -3670,10 +3726,13 @@ function domain_check_response($domain, $drush = FALSE) {
     return FALSE;
   }
   $url = domain_get_path($domain) . backdrop_get_path('module', 'domain') . '/tests/200.png';
-  $response = backdrop_http_request($url, array('method' => 'HEAD', 'absolute' => TRUE));
+  $response = backdrop_http_request($url, [
+    'method' => 'HEAD',
+    'absolute' => TRUE,
+  ]);
   if ($response->code != 200) {
     return $t('!server is not responding as expected and may not be configured correctly at the server level. Server code !code was returned.',
-      array('!server' => $url, '!code' => $response->code)
+      ['!server' => $url, '!code' => $response->code]
     );
   }
   return FALSE;
@@ -3697,11 +3756,11 @@ function domain_reassign($old_domain, $new_domain, $table) {
   $old_id = $old_domain['domain_id'];
   $new_id = $new_domain['domain_id'];
   if ($table == 'domain_access') {
-    $nids = db_query("SELECT nid FROM {domain_access} WHERE realm = 'domain_id' AND gid = :domain_id", array(':domain_id' => $new_id))->fetchAllAssoc('nid');
+    $nids = db_query("SELECT nid FROM {domain_access} WHERE realm = 'domain_id' AND gid = :domain_id", [':domain_id' => $new_id])->fetchAllAssoc('nid');
     $query = db_update('domain_access')
       ->condition('gid', $old_id)
       ->condition('realm', 'domain_id')
-      ->fields(array('gid' => $new_id));
+      ->fields(['gid' => $new_id]);
     // We cannot update using a subquery, so be sure to exclude duplicates.
     if (!empty($nids)) {
       $query->condition('nid', array_keys($nids), 'NOT IN');
@@ -3709,10 +3768,10 @@ function domain_reassign($old_domain, $new_domain, $table) {
     $query->execute();
   }
   elseif ($table == 'domain_editor') {
-    $uids = db_query("SELECT uid FROM {domain_editor} WHERE domain_id = :domain_id", array(':domain_id' => $new_id))->fetchAllAssoc('uid');
+    $uids = db_query("SELECT uid FROM {domain_editor} WHERE domain_id = :domain_id", [':domain_id' => $new_id])->fetchAllAssoc('uid');
     $query = db_update('domain_editor')
       ->condition('domain_id', $old_id)
-      ->fields(array('domain_id' => $new_id));
+      ->fields(['domain_id' => $new_id]);
     // We cannot update using a subquery, so be sure to exclude duplicates.
     if (!empty($uids)) {
       $query->condition('uid', array_keys($uids), 'NOT IN');
@@ -3734,16 +3793,16 @@ function domain_reassign($old_domain, $new_domain, $table) {
  * Implements hook_features_api().
  */
 function domain_features_api() {
-  $components = array(
-    'domain' => array(
+  $components = [
+    'domain' => [
       'name' => t('Domains'),
       'default_hook' => 'domain_default_domains',
       'default_file' => FEATURES_DEFAULTS_CUSTOM,
       'default_filename' => 'domains',
       'feature_source' => TRUE,
       'file' => backdrop_get_path('module', 'domain') . '/domain.features.inc',
-    ),
-  );
+    ],
+  ];
   return $components;
 }
 
@@ -3759,7 +3818,7 @@ function domain_features_api() {
  *  A Domain array or -1 on failure.
  */
 function domain_machine_name_load($machine_name, $full = FALSE) {
-  $domain = db_query('SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain} WHERE machine_name = :machine_name', array(':machine_name' => $machine_name))->fetchAssoc();
+  $domain = db_query('SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain} WHERE machine_name = :machine_name', [':machine_name' => $machine_name])->fetchAssoc();
   if ($full && !empty($domain)) {
     $domain = domain_api($domain, TRUE);
   }
@@ -3790,8 +3849,8 @@ function domain_machine_name($subdomain) {
  */
 function domain_check_machine_name($machine_name) {
   return (bool) db_query("SELECT COUNT(1) FROM {domain} WHERE machine_name = :machine_name",
-    array(':machine_name' => $machine_name)
-    )->fetchField();
+    [':machine_name' => $machine_name]
+  )->fetchField();
 }
 
 /**
@@ -3853,7 +3912,7 @@ function domain_machine_names() {
  *  A Domain machine name.
  */
 function domain_load_machine_name($domain_id) {
-  return db_query('SELECT machine_name FROM {domain_export} WHERE domain_id = :domain_id', array(':domain_id' => $domain_id))->fetchField();
+  return db_query('SELECT machine_name FROM {domain_export} WHERE domain_id = :domain_id', [':domain_id' => $domain_id])->fetchField();
 }
 
 /**
@@ -3885,10 +3944,10 @@ function domain_features_load($module, $hook, $return = TRUE) {
  *  An array of form options. Not that we cannot use _ in keys.
  */
 function domain_features_get_options() {
-  $options = array(
+  $options = [
     'wipe-domain-tables' => t('Wipe tables on revert/rebuild'),
     'all-domains' => t('Export all domains'),
-  );
+  ];
   foreach (domain_domains() as $domain) {
     $options[$domain['machine_name']] = $domain['subdomain'];
   }
@@ -3905,9 +3964,9 @@ function domain_features_get_options() {
  *  An array of domains, keyed by machine_name.
  */
 function domain_features_selection($data) {
-  $list = array();
+  $list = [];
   if (!empty($data['all-domains'])) {
-    $data = array();
+    $data = [];
     $domains = domain_domains(TRUE);
     foreach ($domains as $domain) {
       $data[] = $domain['machine_name'];
@@ -3984,7 +4043,7 @@ function domain_features_export_set_wipe_tables(&$export, $data, $type) {
  *  name.
  */
 function domain_update_module_check() {
-  $list = array();
+  $list = [];
   $modules = system_rebuild_module_data();
   $dependencies = $modules['domain']->required_by;
   $enabled_dependencies = array_intersect_key($dependencies, module_list());
@@ -4012,8 +4071,8 @@ function domain_update_module_check() {
  * @return $tables
  *  An array of matching tables.
  */
-function domain_test_schema($schema = array()) {
-  $tables = array();
+function domain_test_schema($schema = []) {
+  $tables = [];
   foreach ($schema as $name => $table) {
     if (db_table_exists($name) && isset($table['fields']['domain_id']['type']) && $table['fields']['domain_id']['type'] == 'int') {
       $query = db_select($name)
@@ -4037,7 +4096,7 @@ function domain_test_schema($schema = array()) {
  *  An array of tables to modify.
  */
 function domain_update_tables($list) {
-  $tables = array();
+  $tables = [];
   foreach ($list as $module) {
     $tables = array_merge($tables, $module['tables']);
   }
@@ -4060,14 +4119,13 @@ function domain_update_zero_records($tables) {
     $transaction = db_transaction();
     try {
       db_update($table)
-        ->fields(array('domain_id' => $default_id))
+        ->fields(['domain_id' => $default_id])
         ->condition('domain_id', 0)
         ->execute();
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('domain_repair', $e);
-      backdrop_set_message(t('The update failed due to a duplicate record. You must manually correct the {@table} table in your database.', array('@table' => $table)), 'error');
+      backdrop_set_message(t('The update failed due to a duplicate record. You must manually correct the {@table} table in your database.', ['@table' => $table]), 'error');
       $success = FALSE;
     }
   }
@@ -4080,12 +4138,13 @@ function domain_update_zero_records($tables) {
  * This function may be called during module installation, so we use $t to
  * ensure that we use the correct translation function.
  *
- * @see domain_requirements()
- *
  * @param &$messages
  *  An array of translated status messages, passed by reference.
  * @param $list
  *  An array of modules that require updates.
+ *
+ * @see domain_requirements()
+ *
  */
 function domain_update_messages(&$messages, $list) {
   $t = get_t();
@@ -4094,7 +4153,10 @@ function domain_update_messages(&$messages, $list) {
     if (user_access('administer domains')) {
       $updated = l($t('updated for compatibility'), 'admin/structure/domain/repair');
     }
-    $messages[] = $t('@module has a domain_id of 0 and needs to be !updated.', array('@module' => $data['name'], '!updated' => $updated));
+    $messages[] = $t('@module has a domain_id of 0 and needs to be !updated.', [
+      '@module' => $data['name'],
+      '!updated' => $updated,
+    ]);
   }
 }
 
@@ -4105,10 +4167,10 @@ function domain_check_for_update() {
   $list = domain_update_module_check();
 
   if (!empty($list)) {
-    $messages = array();
+    $messages = [];
     domain_update_messages($messages, $list);
     if (!backdrop_is_cli()) {
-      backdrop_set_message(theme('item_list', array('items' => $messages)), 'error', FALSE);
+      backdrop_set_message(theme('item_list', ['items' => $messages]), 'error', FALSE);
     }
     elseif (function_exists('drush_print')) {
       foreach ($messages as $message) {
@@ -4154,7 +4216,7 @@ function domain_preprocess_html(&$variables) {
  *  An array of domain-specific HTML-safe class names.
  */
 function domain_page_classes() {
-  $classes = array();
+  $classes = [];
   $settings = config_get('domain.settings', 'domain_classes');
   if (!empty($settings)) {
     $vars = check_plain(token_replace($settings));
@@ -4171,14 +4233,14 @@ function domain_page_classes() {
  * Implements hook_filter_info().
  */
 function domain_filter_info() {
-  $filters['domain_url'] = array(
+  $filters['domain_url'] = [
     'title' => t('Insert domain-sensitive URLs'),
     'description' => t('Transforms relative URLs in the format <em>[canonical-url:path/to/item]</em> to canonical URLs.'),
     'process callback' => 'domain_url_filter_process',
     'tips callback' => 'domain_url_filter_tips',
     'cache' => FALSE, // These cannot be cached.
     'weight' => -10,
-  );
+  ];
   return $filters;
 }
 
@@ -4194,13 +4256,13 @@ function domain_url_filter_process($text, $filter, $format, $langcode, $cache, $
 /**
  * Processes pattern matches for the url filter.
  *
- * @see domain_url_filter_process()
- *
  * @param $matches
  *  An array of matching elements. Item 1 is the path string.
  *
  * @return
  *  A Drupal-processed url string.
+ * @see domain_url_filter_process()
+ *
  */
 function domain_url_replace($matches) {
   return url($matches[1]);
@@ -4231,15 +4293,18 @@ function domain_metatag_page_cache_cid_parts_alter(&$cid_parts) {
  * @return
  *  An array of token data formatted as explained above.
  */
-function domain_get_tokens($prefixes = array()) {
+function domain_get_tokens($prefixes = []) {
   if (empty($prefixes)) {
-    $prefixes = array('current-domain', 'default-domain');
+    $prefixes = ['current-domain', 'default-domain'];
   }
   module_load_include('inc', 'domain', 'domain.tokens');
   $info = domain_token_info();
   foreach ($prefixes as $prefix) {
     foreach ($info['tokens']['domain'] as $token => $data) {
-      $tokens["$prefix:$token"] = t('!token : !description', array('!token' => "[$prefix:$token]", '!description' => $data['description']));
+      $tokens["$prefix:$token"] = t('!token : !description', [
+        '!token' => "[$prefix:$token]",
+        '!description' => $data['description'],
+      ]);
     }
   }
   return $tokens;
@@ -4249,13 +4314,13 @@ function domain_get_tokens($prefixes = array()) {
  * Implements hook_migrate_api().
  */
 function domain_migrate_api() {
-  $api = array(
+  $api = [
     'api' => 2,
-    'destination handlers' => array(
+    'destination handlers' => [
       'DomainNodeHandler',
       'DomainUserHandler',
-    ),
-  );
+    ],
+  ];
   return $api;
 }
 
@@ -4274,9 +4339,6 @@ function domain_migrate_api() {
  * defined this. Use $fallback_domains to prevent zero assignments.
  * See domain_default() as an example for a possible fallback domain.
  *
- * @see domain_default_node_access_settings()
- * @see domain_default()
- *
  * @param $type
  *  The type of the node (like 'article').
  * @param $fallback_domains (optional)
@@ -4284,10 +4346,13 @@ function domain_migrate_api() {
  *
  * @return
  *  An array of default settings, formatted as explained above.
+ * @see domain_default()
+ *
+ * @see domain_default_node_access_settings()
  */
-function domain_get_node_defaults($type, $fallback_domains = array()) {
+function domain_get_node_defaults($type, $fallback_domains = []) {
   $_domain = domain_get_domain();
-  $defaults = array('domain_id' => array());
+  $defaults = ['domain_id' => []];
   // We use array_flip for compatibility with node_type_form_submit().
   $settings = array_flip(domain_default_node_access_settings($type));
 
@@ -4321,22 +4386,29 @@ function domain_get_node_defaults($type, $fallback_domains = array()) {
  * access settings in general.
  * Use domain_get_node_defaults() when you need an array for a node object.
  *
- * @see domain_get_node_defaults()
- *
  * @param $type
  *  The node type (like 'article').
  *
  * @return
  *  An array of default settings.
+ * @see domain_get_node_defaults()
+ *
  */
 function domain_default_node_access_settings($type) {
   // We need to know if there are user-defined settings.
   // If so, we get an array, though it could be empty.
-  $settings = !isset(config_get('domain.settings', 'domain_node_')[$type]) || empty(config_get('domain.settings', 'domain_node_')[$type]) || count(config_get('domain.settings', 'domain_node_')[$type]) == 0 ? null: config_get('domain.settings', 'domain_node_')[$type];
+  $settings = NULL;
+  $config = config_get('domain.settings', 'domain_node_');
+  if (count($config) > 0) {
+    if (isset($config['domain_node_' . $type])) {
+      $settings = $config['domain_node_' . $type];
+    }
+  }
   // Append default behavior, if there are no user-defined settings.
+
   if (is_null($settings)) {
     // Assign the currently active domain.
-    $settings = array(0 => 'DOMAIN_ACTIVE');
+    $settings = [0 => 'DOMAIN_ACTIVE'];
     // And publish to all domains when rule allows it.
     if (DOMAIN_INSTALL_RULE) {
       $settings[] = 'DOMAIN_ALL';
@@ -4347,7 +4419,7 @@ function domain_default_node_access_settings($type) {
   elseif (isset($settings['DOMAIN_ALL'])) {
     $old_settings = $settings;
     // Reset settings array and fill it with correct pattern.
-    $settings = array();
+    $settings = [];
     foreach ($old_settings as $key => $value) {
       // Machine_name could be of value 0. The second condition covers this special case.
       if ($value !== 0 || ($key === 0 && $value === 0)) {
@@ -4362,20 +4434,20 @@ function domain_default_node_access_settings($type) {
  * Implements hook_autoload_info().
  */
 function domain_autoload_info() {
-  return array(
+  return [
     'MigrateDestinationDomain' => 'domain.migrate.inc',
     'DomainNodeHandler' => 'domain.migrate.inc',
     'DomainUserHandler' => 'domain.migrate.inc',
-  );
+  ];
 }
 
 /**
  * Implements hook_config_info().
  */
 function domain_config_info() {
-  $prefixes['domain.settings'] = array(
+  $prefixes['domain.settings'] = [
     'label' => t('domain settings'),
     'group' => t('Configuration'),
-  );
+  ];
   return $prefixes;
 }
