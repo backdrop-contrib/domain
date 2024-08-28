@@ -160,7 +160,7 @@ function hook_domain_cron($domain) {
   $nid = $select->execute()->fetchCol();
   if ($node = node_load($nid)) {
     // Set a variable for each domain containing the last node updated.
-    variable_set('domain_' . $domain['domain_id'] . '_lastnode', $node->nid);
+    config_set('domain.settings', 'domain_last_node_update', $node->nid);
   }
 }
 
@@ -178,7 +178,7 @@ function hook_domain_cron($domain) {
 function hook_domain_install() {
   // If MyModule is being used, check to see that it is installed correctly.
   if (module_exists('mymodule') && !function_exists('_mymodule_load')) {
-    drupal_set_message(t('MyModule is not installed correctly.  Please edit your settings.php file as described in <a href="!url">INSTALL.txt</a>', array('!url' => drupal_get_path('module', 'mymodule') . '/INSTALL.txt')));
+    backdrop_set_message(t('MyModule is not installed correctly.  Please edit your settings.php file as described in <a href="!url">INSTALL.txt</a>', array('!url' => backdrop_get_path('module', 'mymodule') . '/INSTALL.txt')));
   }
 }
 
@@ -201,12 +201,12 @@ function hook_domain_form(&$form) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE
   );
-  $options = drupal_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
+  $options = backdrop_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
   $form['domain_mymodule']['domain_mymodule'] = array(
     '#type' => 'select',
     '#title' => t('Mymodule settings variable'),
     '#options' => $options,
-    '#default_value' => variable_get('domain_mymodule', 0),
+    '#default_value' => config_get('domain.settings', 'domain_mymodule'),
     '#description' => t('You description goes here.')
   );
 }
@@ -345,7 +345,7 @@ function hook_domain_conf() {
   $form['pictures']['user_picture_default'] = array(
     '#type' => 'textfield',
     '#title' => t('Default picture'),
-    '#default_value' => variable_get('user_picture_default', ''),
+    '#default_value' => config_get('domain.settings', 'user_picture_default'),
     '#size' => 30,
     '#maxlength' => 255,
     '#description' => t('URL of picture to display for users with no custom picture selected. Leave blank for none.')
@@ -489,7 +489,7 @@ function hook_domain_batch() {
 /**
  * Allow modules to modify the batch editing functions.
  *
- * @see drupal_alter()
+ * @see backdrop_alter()
  *
  * @param &$batch
  *   An array of batch editing functions, passed by reference.
@@ -520,8 +520,8 @@ function hook_domain_ignore() {
  * stages to the Drupal bootstrap process.
  *
  * These processes are initiated after settings.php is loaded, during
- * DRUPAL_BOOTSTRAP_CONFIGURATION. We skip ahead and
- * load DRUPAL_BOOTSTRAP_DATABASE to access db_query() and
+ * backdrop_BOOTSTRAP_CONFIGURATION. We skip ahead and
+ * load backdrop_BOOTSTRAP_DATABASE to access db_query() and
  * similar functions.  However, the majority of Drupal functions are
  * not yet available.
  *
@@ -597,7 +597,7 @@ function hook_domain_bootstrap_lookup($domain) {
  *   No return value. However, if you wish to set an error message on failure,
  *   you should load and modify the $_domain global and add an 'error' element
  *   to the array. This element should only include the name of your module.
- *   We do this because drupal_set_message() and t() are not yet loaded.
+ *   We do this because backdrop_set_message() and t() are not yet loaded.
  *
  *   Normally, you do not need to validate errors, since this function will not
  *   be called unless $domain is set properly.
@@ -637,7 +637,7 @@ function hook_domain_bootstrap_full($domain) {
  */
 function hook_domain_path($domain_id, &$path, &$options, $original_path) {
   // Give a normal path alias
-  $path = drupal_get_path_alias($path);
+  $path = backdrop_get_path_alias($path);
   // In D7, path alias lookups are done after url_alter, so if the
   // alias is set, the option must be flagged.
   $options['alias'] = TRUE;
@@ -678,14 +678,14 @@ function mymodule_form_submit($form_state) {
 /**
  * Allow modules to alter access to Domain Navigation items.
  *
- * This drupal_alter hook exposes the $options array before
+ * This backdrop_alter hook exposes the $options array before
  * Domain Nav passes its links to the theme layer. You can use it
  * to introduce additional access controls on those links.
  *
  * Note that "inactive" domains are already filtered before this
  * hook is called, so you would have to explicitly add them again.
  *
- * @see drupal_alter()
+ * @see backdrop_alter()
  * @see theme_domain_nav_default()
  *
  * @param &$options
@@ -750,7 +750,7 @@ function hook_domain_settings($domain_id, $values) {
   // Sync domain 2 with the primary domain in all cases.
   if ($domain_id == 2) {
     foreach($values as $name => $value) {
-      variable_set($name, $value);
+      config_set('domain.settings', $name, $value);
     }
   }
 }

@@ -33,7 +33,7 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
   // Are we viewing nodes from all sites?
   $check = domain_grant_all();
   // Are we forcing path rewrites?
-  $seo = variable_get('domain_seo', 0);
+  $seo = config_get('domain.settings', 'domain_seo');
   // Check for source rewrites.
   if (!isset($use_source)) {
     $use_source = (bool) count(module_implements('domain_source_alter'));
@@ -48,7 +48,7 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
   }
   // Get the root url.
   if (!isset($root)) {
-    $root = domain_lookup(variable_get('domain_default_source', 0));
+    $root = domain_lookup(config_get('domain.settings', 'domain_default_source'));
   }
   // Set the target domain for this url.
   $target_domain_id = $_domain['domain_id'];
@@ -62,7 +62,7 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
 
       // Advanced pattern matching, we find the node id based on token %n in the path string.
       if (!isset($nodepaths)) {
-        $pathdata = variable_get('domain_paths', "node/%n\r\nnode/%n/edit\r\ncomment/reply/%n\r\nnode/add/book/parent/%n\r\nbook/export/html/%n\r\nnode/%n/outline");
+        $pathdata = config_get('domain.settings', 'domain_paths');
         $path_match = preg_replace('/(\r\n?|\n)/', '|', $pathdata);
         $nodepaths = explode("|", $path_match);
       }

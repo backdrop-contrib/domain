@@ -79,7 +79,6 @@ function domain_init() {
   if (!is_array($_domain)) {
     $_domain = array();
   }
-
   // Error handling in case the module is not installed correctly.
   if (!isset($_domain['domain_id'])) {
     $_domain = domain_default(TRUE);
@@ -94,9 +93,9 @@ function domain_init() {
       // You may disable this warning by adding:
       // $conf['domain_hide_errors'] = TRUE;
       // to the bottom of settings.php.
-      $hide = variable_get('domain_hide_errors', FALSE);
+      $hide = config_get('domain.settings', 'domain_hide_errors');
       if (user_access('administer domains') && empty($hide)) {
-        drupal_set_message($error, 'error');
+        backdrop_set_message($error, 'error');
       }
       if (empty($hide)) {
         watchdog('domain', $error, NULL, WATCHDOG_ERROR);
@@ -110,7 +109,7 @@ function domain_init() {
 
   // Strip the www. off the domain, if required by the module settings.
   $www_replaced = FALSE;
-  if (variable_get('domain_www', 0) && strpos($_domain['subdomain'], 'www.') !== FALSE) {
+  if (config_get('domain.settings', 'domain_www') && strpos($_domain['subdomain'], 'www.') !== FALSE) {
     $_domain['subdomain'] = str_replace('www.', '', $_domain['subdomain']);
     $www_replaced = TRUE;
   }
@@ -125,7 +124,7 @@ function domain_init() {
 
   // If we have replaced 'www.' in the url, redirect to the clean domain.
   if ($www_replaced) {
-    drupal_goto(domain_get_uri($_domain));
+    backdrop_goto(domain_get_uri($_domain));
   }
 
   // For Domain User, we check the validity of accounts, so the 'valid' flag must be TRUE.
@@ -134,7 +133,7 @@ function domain_init() {
   }
 
   // Set the site name to the domain-specific name.
-  if (variable_get('domain_sitename_override', 1)) {
+  if (config_get('domain.settings', 'domain_sitename_override')) {
     $conf['site_name'] = $_domain['sitename'];
   }
 }
@@ -151,7 +150,7 @@ function domain_init() {
  * @see domain_init()
  */
 function domain_initial_domain($domain = array()) {
-  $initial = &drupal_static(__FUNCTION__);
+  $initial = &backdrop_static(__FUNCTION__);
   if (!isset($initial) && !empty($domain)) {
     $initial = $domain;
   }
@@ -193,7 +192,7 @@ function domain_menu() {
   $items['admin/structure/domain'] = array(
     'title' => 'Domains',
     'access arguments' => array('administer domains'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_overview_form'),
     'file' => 'domain.admin.inc',
     'description' => 'Manage and configure domains.',
@@ -201,7 +200,7 @@ function domain_menu() {
   $items['admin/structure/domain/view'] = array(
     'title' => 'Domain list',
     'access arguments' => array('administer domains'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_overview_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'file' => 'domain.admin.inc',
@@ -221,7 +220,7 @@ function domain_menu() {
     'title' => 'Create domain',
     'access arguments' => array('administer domains'),
     'type' => MENU_LOCAL_ACTION,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_form'),
     'file' => 'domain.admin.inc',
     'description' => 'Create new domain record.',
@@ -256,7 +255,7 @@ function domain_menu() {
     'title' => 'Content defaults',
     'access arguments' => array('administer domains'),
     'type' => MENU_LOCAL_TASK,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_nodes_form'),
     'file' => 'domain.admin.inc',
     'description' => 'Default domain settings for content.',
@@ -266,7 +265,7 @@ function domain_menu() {
     'title' => 'User defaults',
     'access arguments' => array('administer domains'),
     'type' => MENU_LOCAL_TASK,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_roles_form'),
     'file' => 'domain.admin.inc',
     'description' => 'Default domain settings for users.',
@@ -277,7 +276,7 @@ function domain_menu() {
     'title callback' => 'domain_title',
     'title arguments' => array(4),
     'access arguments' => array('administer domains'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_form', 4),
     'description' => 'Edit domain record.',
     'file' => 'domain.admin.inc',
@@ -293,7 +292,7 @@ function domain_menu() {
     'title' => 'Delete',
     'access arguments' => array('administer domains'),
     'type' => MENU_LOCAL_TASK,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_delete_form', 4),
     'description' => 'Delete domain record.',
     'file' => 'domain.admin.inc',
@@ -302,7 +301,7 @@ function domain_menu() {
   $items['admin/structure/domain/repair'] = array(
     'title' => 'Domain update database',
     'access arguments' => array('administer domains'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('domain_repair_form'),
     'type' => MENU_CALLBACK,
     'file' => 'domain.admin.inc',
@@ -517,7 +516,7 @@ function domain_block_info() {
   );
   $blocks['server'] = array(
     'info' => t('Domain access server information'),
-    'cache' => DRUPAL_NO_CACHE,
+    'cache' => BACKDROP_NO_CACHE,
   );
   $blocks['switcher'] = array(
     'info' => t('Domain switcher'),
@@ -684,7 +683,7 @@ function domain_form_user_form_alter(&$form, &$form_state) {
   $_domain = domain_get_domain();
 
   // Get the domains for this user, but ignore roles unless told to use them.
-  $add_roles = variable_get('domain_add_roles', 0);
+  $add_roles = config_get('domain.settings', 'domain_add_roles');
   // In the register case, we take the 'new user' settings.
   if ($form['#user_category'] == 'register') {
     $add_roles = TRUE;
@@ -845,7 +844,7 @@ function domain_update_users($form, &$form_state) {
     return;
   }
   // Get the domains for this user, but ignore roles unless told to use them.
-  $add_roles = variable_get('domain_add_roles', 0);
+  $add_roles = config_get('domain.settings', 'domain_add_roles');
   // Loop through the selected accounts.
   $domains = array_filter($values['domains']);
   foreach ($values['accounts'] as $uid) {
@@ -972,8 +971,8 @@ function domain_save($values, $form_values = array()) {
 
   // Store the data, using the machine_name to generate a numeric id.
   // Note that we _must_ have a numeric key for {node_access}.
-  drupal_write_record('domain_export', $values, $update_id);
-  drupal_write_record('domain', $values, $update_id);
+  backdrop_write_record('domain_export', $values, $update_id);
+  backdrop_write_record('domain', $values, $update_id);
 
   // Let other modules act on a proper copy of the domain.
   $domain = domain_lookup(NULL, $values['subdomain'], TRUE);
@@ -985,7 +984,7 @@ function domain_save($values, $form_values = array()) {
   domain_static_reset();
 
   // In all cases, we need to force a menu rebuild, which also clears the cache.
-  variable_set('menu_rebuild_needed', TRUE);
+  state_set('menu_rebuild_needed', TRUE);
 
   return $domain;
 }
@@ -994,11 +993,11 @@ function domain_save($values, $form_values = array()) {
  * Clear static caches used for domain listings.
  */
 function domain_static_reset() {
-  drupal_static_reset('domain_lookup_domains');
-  drupal_static_reset('domain_lookup_result');
-  drupal_static_reset('domain_id_list');
-  drupal_static_reset('domain_domains');
-  drupal_static_reset('domain_list_by_machine_name');
+  backdrop_static_reset('domain_lookup_domains');
+  backdrop_static_reset('domain_lookup_result');
+  backdrop_static_reset('domain_id_list');
+  backdrop_static_reset('domain_domains');
+  backdrop_static_reset('domain_list_by_machine_name');
 }
 
 /**
@@ -1042,7 +1041,7 @@ function domain_delete($domain, $values = array()) {
     ->execute();
 
   // In all cases, we need to force a menu rebuild, which also clears the cache.
-  variable_set('menu_rebuild_needed', TRUE);
+  state_set('menu_rebuild_needed', TRUE);
 
   // Notify that node access needs to be rebuilt.
   node_access_needs_rebuild(TRUE);
@@ -1070,8 +1069,8 @@ function domain_delete($domain, $values = array()) {
  *   elements added by hook_domain_load().  Returns -1 on failure.
  */
 function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
-  $domains = &drupal_static(__FUNCTION__ . '_domains');
-  $result = &drupal_static(__FUNCTION__ . '_result');
+  $domains = &backdrop_static(__FUNCTION__ . '_domains');
+  $result = &backdrop_static(__FUNCTION__ . '_result');
   // Create a unique key so we can static cache all requests.
   $key = $domain_id . $subdomain;
   // Shortcut if we know the data.
@@ -1138,8 +1137,8 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
  *   The domain array for the default domain.
  */
 function domain_default($reset = FALSE, $alter = TRUE) {
-  $default = &drupal_static(__FUNCTION__);
-  $altered = &drupal_static(__FUNCTION__ . '_altered');
+  $default = &backdrop_static(__FUNCTION__);
+  $altered = &backdrop_static(__FUNCTION__ . '_altered');
 
   if (empty($default) || $reset) {
     $altered = FALSE;
@@ -1156,7 +1155,7 @@ function domain_default($reset = FALSE, $alter = TRUE) {
       $default = array(
         'domain_id' => 0, // Indicates we have not set a real domain.
         'subdomain' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '',
-        'sitename' => variable_get('site_name', 'Drupal'),
+        'sitename' => config_get('system.core', 'site_name'),
         'scheme' => empty($_SERVER['HTTPS']) ? 'http' : 'https',
         'valid' => 1,
         'is_default' => 1,
@@ -1184,7 +1183,7 @@ function domain_default($reset = FALSE, $alter = TRUE) {
  *   The domain_id of the default domain.
  */
 function domain_default_id() {
-  $id = &drupal_static(__FUNCTION__);
+  $id = &backdrop_static(__FUNCTION__);
   if (!isset($id)) {
     // Do not allow domain_api() to run here, else we break the registry.
     // See http://drupal.org/node/1140898.
@@ -1201,7 +1200,7 @@ function domain_default_id() {
  *   The machine_name of the default domain.
  */
 function domain_default_machine_name() {
-  $id = &drupal_static(__FUNCTION__);
+  $id = &backdrop_static(__FUNCTION__);
   if (!isset($id)) {
     // Do not allow domain_api() to run here, else we break the registry.
     // See http://drupal.org/node/1140898.
@@ -1219,7 +1218,7 @@ function domain_set_primary_domain() {
   if ($error = domain_valid_domain($root)) {
     return;
   }
-  $site = variable_get('site_name', 'Drupal');
+  $site = config_get('system.core', 'site_name');
   $scheme = 'http';
   if (!empty($_SERVER['HTTPS'])) {
     $scheme = 'https';
@@ -1235,8 +1234,8 @@ function domain_set_primary_domain() {
       'is_default' => 1,
       'machine_name' => domain_machine_name($root),
     );
-    drupal_write_record('domain_export', $domain);
-    drupal_write_record('domain', $domain);
+    backdrop_write_record('domain_export', $domain);
+    backdrop_write_record('domain', $domain);
     module_invoke_all('domain_insert', $domain, array());
   }
 }
@@ -1251,7 +1250,7 @@ function domain_set_primary_domain() {
  *   An array of all active domains, with the domain_id as the key.
  */
 function domain_domains($reset = FALSE) {
-  $domains = &drupal_static(__FUNCTION__);
+  $domains = &backdrop_static(__FUNCTION__);
   if (empty($domains) || $reset) {
     $domains = array();
     // Query the db for active domain records.
@@ -1274,7 +1273,7 @@ function domain_domains($reset = FALSE) {
  *   An array of domain_ids, keyed by machine_name.
  */
 function domain_id_list($reset = FALSE) {
-  $list = &drupal_static(__FUNCTION__);
+  $list = &backdrop_static(__FUNCTION__);
   if (isset($list) && empty($reset)) {
     return $list;
   }
@@ -1292,10 +1291,10 @@ function domain_id_list($reset = FALSE) {
 function domain_select_format() {
   $domains = domain_domains();
   $format = 0;
-  if (count($domains) > variable_get('domain_list_size', DOMAIN_LIST_SIZE)) {
+  if (count($domains) > config_get('domain.settings', 'domain_list_size')) {
     $format = 1;
   }
-  return variable_get('domain_select_format', $format);
+  return config_get('domain.settings', 'domain_select_format');
 }
 
 /**
@@ -1361,24 +1360,24 @@ function domain_valid_domain($subdomain) {
     $error_list[] = t('The domain must not end with a dot (.)');
   }
   // Check for valid characters, unless using non-ASCII domains.
-  if (!variable_get('domain_allow_non_ascii', FALSE)) {
+  if (!config_get('domain.settings', 'domain_allow_non_ascii')) {
     $pattern = '/^[a-z0-9\.\-:]*$/i';
     if (!preg_match($pattern, $subdomain)) {
       $error_list[] = t('Only alphanumeric characters, dashes, and a colon are allowed.');
     }
   }
   // Check for lower case.
-  if ($subdomain != drupal_strtolower($subdomain)) {
+  if ($subdomain != backdrop_strtolower($subdomain)) {
     $error_list[] = t('Only lower-case characters are allowed.');
   }
   // Check for 'www' prefix if redirection / handling is enabled under global domain settings.
   // Note that www prefix handling must be set explicitly in the UI.
   // See http://drupal.org/node/1529316 and http://drupal.org/node/1783042
-  if (variable_get('domain_www', 0) && (substr($subdomain, 0, strpos($subdomain, '.')) == 'www')) {
+  if (config_get('domain.settings', 'domain_www') && (substr($subdomain, 0, strpos($subdomain, '.')) == 'www')) {
     $error_list[] = t('WWW prefix handling: Domains must be registered without the www. prefix.');
   }
   // Allow modules to alter this behavior.
-  drupal_alter('domain_validate', $error_list, $subdomain);
+  backdrop_alter('domain_validate', $error_list, $subdomain);
   // Return the errors, if any.
   if (!empty($error_list)) {
     return t('The domain string is invalid for %subdomain:', array('%subdomain' => $subdomain)) . theme('item_list', array('items' => $error_list));
@@ -1428,7 +1427,7 @@ function domain_get_user_domains($account, $add_roles = TRUE) {
       $account->roles = array(0 => 'new user');
     }
     // Add the role-based additions.
-    $defaults = variable_get('domain_roles', array());
+    $defaults = config_get('domain.settings', 'domain_roles');
     foreach ($account->roles as $rid => $role) {
       $filter = array();
       if (isset($defaults[$rid])) {
@@ -1472,7 +1471,7 @@ function domain_get_user_domains($account, $add_roles = TRUE) {
  *   The $domain array, modified by reference by hook_domain_load() implementations.
  */
 function domain_api($domain, $reset = FALSE) {
-  $modules = &drupal_static(__FUNCTION__);
+  $modules = &backdrop_static(__FUNCTION__);
 
   // There are rare cases where the module_implements() cache is built too early.
   // In these cases, it is the pre-loaded bootstrap modules that can cause
@@ -1484,10 +1483,10 @@ function domain_api($domain, $reset = FALSE) {
       $modules = array_unique(array_merge($modules, $bootstrap));
     }
     // If the function is missing, settings.php is likely not configured.
-    elseif (!variable_get('domain_hide_errors')) {
+    elseif (!config_get('domain.settings', 'domain_hide_errors')) {
       // Not reporting an error during install makes it easier for scripts.
-      $severity = drupal_installation_attempted() ? 'warning' : 'error';
-      drupal_set_message(t('Domain module installation is incomplete. See INSTALL.txt and check your settings.php file.'), $severity, FALSE);
+      $severity = backdrop_installation_attempted() ? 'warning' : 'error';
+      backdrop_set_message(t('Domain module installation is incomplete. See INSTALL.txt and check your settings.php file.'), $severity, FALSE);
     }
   }
 
@@ -1591,10 +1590,10 @@ function domain_check_primary($msg = 'default') {
   $default = domain_default();
   if ($_domain['domain_id'] != $default['domain_id']) {
     if ($msg == 'default') {
-      drupal_set_message(t('You have been redirected: This page must be accessed from the primary domain.'));
+      backdrop_set_message(t('You have been redirected: This page must be accessed from the primary domain.'));
     }
     elseif (!empty($msg)) {
-      drupal_set_message($msg);
+      backdrop_set_message($msg);
     }
     domain_goto($default);
   }
@@ -1659,7 +1658,7 @@ function domain_get_path($domain) {
 function domain_get_uri($domain) {
   global $base_path;
   $modules = _domain_path_modules();
-  if (!empty($modules) && !drupal_is_front_page()) {
+  if (!empty($modules) && !backdrop_is_front_page()) {
     // request_path() does not include base_path, which will be added by the
     // call to url() below.
     $request_uri = request_path();
@@ -1700,7 +1699,7 @@ function domain_check_scheme($scheme) {
 /**
  * Determine if we must switch the active domain.
  *
- * This function will execute a drupal_goto() to pop users to the correct
+ * This function will execute a backdrop_goto() to pop users to the correct
  * domain.
  *
  * @param $domain
@@ -1711,7 +1710,7 @@ function domain_goto($domain) {
   // We must be on the proper domain, see http://drupal.org/node/186153.
   if ($domain != -1 && $_domain['domain_id'] != $domain['domain_id']) {
     $path = domain_get_uri($domain);
-    drupal_goto($path);
+    backdrop_goto($path);
   }
 }
 
@@ -1759,7 +1758,7 @@ function domain_node_view($node, $view_mode) {
   }
   $output = '';
 
-  if (variable_get('domain_debug', 0) && user_access('set domain access')) {
+  if (config_get('domain.settings', 'domain_debug') && user_access('set domain access')) {
     if (!empty($node->subdomains)) {
       $items = array();
       foreach ($node->subdomains as $name) {
@@ -1851,7 +1850,11 @@ function domain_node_update($node) {
  * Implements hook_node_type_delete().
  */
 function domain_node_type_delete($info) {
-  variable_del('domain_node_' . $info->type);
+  $arr = config_get('domain.settings', 'domain_node_');
+  if (isset($arr[$info->type])) {
+    unset($arr[$info->type]);
+    config_set('domain.settings', 'domain_node_', $arr);
+  }
 }
 
 /**
@@ -1864,7 +1867,7 @@ function domain_node_type_delete($info) {
  *   The domain array for the best matching domain for links to this node.
  */
 function domain_get_node_match($nid) {
-  $domain = &drupal_static(__FUNCTION__, array());
+  $domain = &backdrop_static(__FUNCTION__, array());
   if (isset($domain[$nid])) {
     return $domain[$nid];
   }
@@ -1882,7 +1885,7 @@ function domain_get_node_match($nid) {
   }
 
   // Allow other modules to intervene.
-  drupal_alter('domain_source', $source, $nid);
+  backdrop_alter('domain_source', $source, $nid);
   $domain[$nid] = $source;
 
   return $source;
@@ -1912,7 +1915,7 @@ function domain_get_content_urls($node) {
       continue;
     }
     // Calculate the proper path to the node.
-    $path = drupal_get_path_alias('node/' . $node->nid, $node->language);
+    $path = backdrop_get_path_alias('node/' . $node->nid, $node->language);
     $options['language'] = $node->language;
     domain_path($domain_id, $path, $options, $path);
 
@@ -1958,7 +1961,7 @@ function domain_get_path_match($path) {
     $_domain = domain_lookup($_domain['domain_id'], NULL, TRUE);
   }
   $source = $_domain;
-  drupal_alter('domain_source_path', $source, $path);
+  backdrop_alter('domain_source_path', $source, $path);
   return $source;
 }
 
@@ -1974,7 +1977,7 @@ function domain_get_path_match($path) {
  *   'domain_site' is a TRUE/FALSE boolean indicating affiliate status.
  */
 function domain_get_node_domains($nodes) {
-  $lookup = &drupal_static(__FUNCTION__, array());
+  $lookup = &backdrop_static(__FUNCTION__, array());
   // Ensure we form our data properly.
   if (!is_array($nodes)) {
     $node_ids[$nodes] = $nodes;
@@ -2226,8 +2229,8 @@ function _domain_store_grants($nid, $grants = array()) {
   }
 
   // Reset the node-related domain static variables.
-  drupal_static_reset('domain_get_node_domains');
-  drupal_static_reset('domain_get_node_match');
+  backdrop_static_reset('domain_get_node_domains');
+  backdrop_static_reset('domain_get_node_match');
 
   // Ensure that our default grant is present.
   domain_set_default_grant();
@@ -2240,7 +2243,7 @@ function _domain_store_grants($nid, $grants = array()) {
  *   A boolean flag indicating whether to reset the static variable or not.
  */
 function domain_set_default_grant($reset = FALSE) {
-  $check = &drupal_static(__FUNCTION__, NULL);
+  $check = &backdrop_static(__FUNCTION__, NULL);
   if (is_null($check) || $reset) {
     $check = (bool) db_query_range("SELECT 1 FROM {node_access} WHERE realm = :realm AND gid = :gid", 0, 1,
       array(
@@ -2458,7 +2461,7 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
   domain_warning_check($form_id);
   // If SEO is turned on, then form actions need to be absolute paths
   // to the currently active domain.  See http://drupal.org/node/196217.
-  $seo = variable_get('domain_seo', 0);
+  $seo = config_get('domain.settings', 'domain_seo');
   if ($seo && isset($form['#action'])) {
     // We cannot use the global domain here, since it can be modified.
     $domain = domain_initial_domain();
@@ -2517,17 +2520,17 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'fieldset',
       '#title' => t('Domain access options'),
       '#collapsible' => TRUE,
-      '#collapsed' => variable_get('domain_collapse_options', 0),
+      '#collapsed' => config_get('domain.settings', 'domain_collapse_options'),
     );
     // Display in vertical tab group, if required
-    if (variable_get('domain_vertical_tab', 0)) {
+    if (config_get('domain.settings', 'domain_vertical_tab')) {
       $form['domain']['#group'] = 'additional_settings';
       $form['domain']['#attributes'] = array(
         'class' => array('domain-access-options-form'),
       );
       $form['domain']['#attached'] = array(
         'js' => array(
-          drupal_get_path('module', 'domain') . '/domain.node.js',
+          backdrop_get_path('module', 'domain') . '/domain.node.js',
           array(
             'data' => array('domain' => array('fieldType' => $format)),
             'type' => 'setting',
@@ -2620,17 +2623,17 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
         case 3:
           // If the user has no available domains, then they cannot post.
           if (empty($user_options)) {
-            drupal_access_denied();
-            drupal_exit();
+            backdrop_access_denied();
+            backdrop_exit();
           }
           $form['domain'] = array(
             '#type' => 'fieldset',
             '#title' => t('Affiliate publishing options'),
             '#collapsible' => TRUE,
-            '#collapsed' => variable_get('domain_collapse_options', 0),
+            '#collapsed' => config_get('domain.settings', 'domain_collapse_options'),
           );
           // Display in vertical tab group, if required
-          if (variable_get('domain_vertical_tab', 0)) {
+          if (config_get('domain.settings', 'domain_vertical_tab')) {
             $form['domain']['#group'] = 'additional_settings';
             $form['domain']['#attributes'] = array(
               'class' => array('domain-access-options-form'),
@@ -2638,7 +2641,7 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
             $format = domain_select_format();
             $form['domain']['#attached'] = array(
               'js' => array(
-                drupal_get_path('module', 'domain') . '/domain.node.js',
+                backdrop_get_path('module', 'domain') . '/domain.node.js',
                 array(
                   'data' => array('domain' => array('fieldType' => $format)),
                   'type' => 'setting',
@@ -2738,7 +2741,7 @@ function domain_form_node_type_form_alter(&$form, &$form_state, $form_id) {
  * Update the default domain's sitename.
  */
 function domain_form_system_site_information_settings_alter(&$form, &$form_state) {
-  if (variable_get('domain_sitename_override', 1)) {
+  if (config_get('domain.settings', 'domain_sitename_override')) {
     $form['#submit'][] = 'domain_form_sitename_submit';
   }
 }
@@ -2757,7 +2760,7 @@ function domain_form_sitename_submit($form, &$form_state) {
       'sitename' => $form_state['values']['site_name'],
     ))
     ->execute();
-  drupal_set_message(t('Primary domain settings updated.'));
+  backdrop_set_message(t('Primary domain settings updated.'));
 }
 
 /**
@@ -2837,13 +2840,13 @@ function domain_form_devel_generate_content_form_alter(&$form, &$form_state) {
  *   page.
  */
 function domain_grant_all($reset= FALSE) {
-  $grant = &drupal_static(__FUNCTION__);
+  $grant = &backdrop_static(__FUNCTION__);
   $options = array();
   if (!isset($grant) || $reset) {
     $grant = FALSE;
 
     // Search is the easy case, so we check it first.
-    if (variable_get('domain_search', 0) && arg(0) == 'search') {
+    if (config_get('domain.settings', 'domain_search') && arg(0) == 'search') {
       $options['search'] = TRUE;
       $grant = TRUE;
     }
@@ -2856,11 +2859,11 @@ function domain_grant_all($reset= FALSE) {
       $script = array_pop($ref);
       // Note that cron can be invoked from services other than cron.php,
       // so we check for that case and set the script variable manually.
-      if (variable_get('domain_cron_rule', 1) && domain_cron_status()) {
+      if (config_get('domain.settings', 'domain_cron_rule') && domain_cron_status()) {
         $options['script'] = 'cron.php';
         $grant = TRUE;
       }
-      elseif (variable_get('domain_xmlrpc_rule', 0) && $script == 'xmlrpc.php') {
+      elseif (config_get('domain.settings', 'domain_xmlrpc_rule') && $script == 'xmlrpc.php') {
         $options['script'] = $script;
         $grant = TRUE;
       }
@@ -2868,13 +2871,13 @@ function domain_grant_all($reset= FALSE) {
 
     if (!$grant) {
       // We check the paths registered by the special pages setting.
-      $pages = variable_get('domain_grant_all', "user/*/track");
+      $pages = config_get('domain.settings', 'domain_grant_all');
       $options['pages'] = $pages;
-      $regexp = '/^(' . preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1' . preg_quote(variable_get('site_frontpage', 'node'), '/') . '\2'), preg_quote($pages, '/')) . ')$/';
+      $regexp = '/^(' . preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1' . preg_quote(config_get('system.core', 'site_frontpage'), '/') . '\2'), preg_quote($pages, '/')) . ')$/';
       // Compare with the internal and path alias (if any).
       $page_match = preg_match($regexp, $_GET['q']);
-      if (!$page_match && function_exists('drupal_get_path_alias')) {
-        $path = drupal_get_path_alias($_GET['q']);
+      if (!$page_match && function_exists('backdrop_get_path_alias')) {
+        $path = backdrop_get_path_alias($_GET['q']);
         if ($path != $_GET['q']) {
           $page_match = preg_match($regexp, $path);
         }
@@ -2886,7 +2889,7 @@ function domain_grant_all($reset= FALSE) {
     }
   }
   // Allow other modules to change the defaults.
-  drupal_alter('domain_grant_all', $grant, $options);
+  backdrop_alter('domain_grant_all', $grant, $options);
 
   return $grant;
 }
@@ -2912,7 +2915,7 @@ function domain_cron_queue_info_alter(&$queues) {
  *   Boolean TRUE or FALSE.
  */
 function domain_cron_status($status = NULL) {
-  $return = &drupal_static(__FUNCTION__, FALSE);
+  $return = &backdrop_static(__FUNCTION__, FALSE);
   if (is_null($status)) {
     return $return;
   }
@@ -2946,7 +2949,7 @@ function domain_bootstrap_register() {
   $lookup = module_implements('domain_bootstrap_lookup');
   $full = module_implements('domain_bootstrap_full');
   $modules = array_merge($lookup, $full);
-  variable_set('domain_bootstrap_modules', $modules);
+  config_set('domain.settings', 'domain_bootstrap_modules', $modules);
 }
 
 /**
@@ -3002,7 +3005,7 @@ function domain_request_name() {
  * domain. In the case of nodes, try to find another match.
  *
  * @return
- *   No return. This function issues a drupal_goto();
+ *   No return. This function issues a backdrop_goto();
  */
 function domain_invalid_domain_requested() {
   global $_domain, $user;
@@ -3012,7 +3015,7 @@ function domain_invalid_domain_requested() {
     return;
   }
 
-  $path = drupal_get_normal_path($_GET['q']);
+  $path = backdrop_get_normal_path($_GET['q']);
   $allow = array_filter(module_invoke_all('domain_invalid_request', $path, $_domain, $user));
   if (!empty($allow)) {
     return;
@@ -3023,13 +3026,13 @@ function domain_invalid_domain_requested() {
   if (empty($node->nid)) {
     $item = menu_get_item();
     $path = $item['href'];
-    if (drupal_is_front_page($item['href'])) {
+    if (backdrop_is_front_page($item['href'])) {
       $path = '';
     }
     $default = domain_default();
     // Log the access attempt.
-    watchdog('domain', 'Invalid domain requested by %user on %domain; redirected to %default.', array('%user' => isset($user->name) ? $user->name : variable_get('anonymous', t('Anonymous')), '%domain' => $_domain['sitename'], '%default' => $default['sitename']), WATCHDOG_WARNING);
-    drupal_goto($default['path'] . drupal_get_path_alias($path));
+    watchdog('domain', 'Invalid domain requested by %user on %domain; redirected to %default.', array('%user' => isset($user->name) ? $user->name : t(config_get('domain.settings', 'anonymous')), '%domain' => $_domain['sitename'], '%default' => $default['sitename']), WATCHDOG_WARNING);
+    backdrop_goto($default['path'] . backdrop_get_path_alias($path));
   }
   // Try to find the proper redirect for a node.
   $path = "node/$node->nid";
@@ -3056,8 +3059,8 @@ function domain_invalid_domain_requested() {
     $extra = '.';
   }
   // Log the access attempt.
-  watchdog('domain', 'Invalid domain requested by %user on %domain, redirected to %redirect', array('%user' => isset($user->name) ? $user->name : variable_get('anonymous', t('Anonymous')), '%domain' => $_domain['sitename'], '%redirect' => $redirect['sitename'] . $extra), WATCHDOG_WARNING);
-  drupal_goto($redirect['path'] . drupal_get_path_alias($path));
+  watchdog('domain', 'Invalid domain requested by %user on %domain, redirected to %redirect', array('%user' => isset($user->name) ? $user->name : t(config_get('domain.settings', 'anonymous')), '%domain' => $_domain['sitename'], '%redirect' => $redirect['sitename'] . $extra), WATCHDOG_WARNING);
+  backdrop_goto($redirect['path'] . backdrop_get_path_alias($path));
 }
 
 /**
@@ -3083,7 +3086,7 @@ function domain_domain_invalid_request($path, $_domain, $account) {
  * the node must be visible on that domain.
  *
  * @return
- *   No return value. Issue a drupal_goto() if needed.
+ *   No return value. Issue a backdrop_goto() if needed.
  */
 function domain_node_save_redirect() {
   global $_domain;
@@ -3123,7 +3126,7 @@ function domain_node_save_redirect() {
  *   An array containing a domain_id from {domain} matching the given domain name
  */
 function domain_lookup_simple($name, $reset = FALSE) {
-  $cache = &drupal_static(__FUNCTION__, array());
+  $cache = &backdrop_static(__FUNCTION__, array());
 
   if (empty($name)) {
     return array();
@@ -3220,7 +3223,7 @@ function domain_domain_batch() {
     ),
     '#domain_action' => 'domain',
     '#meta_description' => t('Edit all domain URL schemes.'),
-    '#system_default' => variable_get('domain_scheme', 'http://'),
+    '#system_default' => config_get('domain.settings', 'domain_scheme'),
     '#data_type' => 'string',
     '#update_all' => TRUE,
     '#weight' => -10,
@@ -3259,14 +3262,14 @@ function domain_domain_batch() {
  *  No return value. Set the proper message to the user.
  */
 function domain_warning_check($form_id) {
-  $_warning = &drupal_static(__FUNCTION__);
+  $_warning = &backdrop_static(__FUNCTION__);
   // If $_POST is set, we are submitting the form and should not set a message.
   if (empty($_POST) && empty($_warning)) {
     global $_domain;
     // Add the list of forms
     $forms = array();
     $forms = module_invoke_all('domain_warning');
-    drupal_alter('domain_warnings', $forms);
+    backdrop_alter('domain_warnings', $forms);
     if ($form_id == 'domain_batch_form' || (arg(2) != 'domain' && in_array($form_id, array_keys($forms)))) {
       $default = domain_default();
       $link_text = '';
@@ -3291,7 +3294,7 @@ function domain_warning_check($form_id) {
       else {
         $link_text = '';
       }
-      drupal_set_message(t('This form submits changes to your default
+      backdrop_set_message(t('This form submits changes to your default
       configuration!message. !link', array('!message' => $message, '!link' => $link_text)), 'warning', FALSE);
     }
     $_warning = TRUE;
@@ -3326,7 +3329,7 @@ function domain_path($domain_id, &$path, &$options, $original_path) {
  * Helper function for domain_path() checks.
  */
 function _domain_path_modules() {
-  $modules = &drupal_static(__FUNCTION__);
+  $modules = &backdrop_static(__FUNCTION__);
   if (!isset($modules)) {
     $modules = module_implements('domain_path');
   }
@@ -3424,7 +3427,7 @@ function domain_field_extra_fields() {
  * Simple function to clean strings for use in for example paths.
  */
 function domain_url_encode($string) {
-  $string = drupal_strtolower($string);
+  $string = backdrop_strtolower($string);
 
   // Remove slashes.
   $string = str_replace('/', '', $string);
@@ -3444,7 +3447,7 @@ function domain_url_encode($string) {
  */
 function domain_simpletest() {
   $module_name = 'domain';
-  $dir = drupal_get_path('module', $module_name) . '/tests';
+  $dir = backdrop_get_path('module', $module_name) . '/tests';
   $tests = file_scan_directory($dir, '/\.test$/');
   return array_keys($tests);
 }
@@ -3469,7 +3472,7 @@ function domain_query_node_access_alter(QueryAlterableInterface $query) {
 function domain_admin_filter() {
   static $return;
   if (!isset($return)) {
-    $admin_force = variable_get('domain_force_admin', FALSE);
+    $admin_force = config_get('domain.settings', 'domain_force_admin');
     // In any of the following cases, do not enforce any rules.
     if (empty($admin_force) || !user_access('bypass node access') || domain_grant_all()) {
       $return = FALSE;
@@ -3529,7 +3532,7 @@ function domain_alter_node_query(QueryAlterableInterface $query, $type) {
         // can triumph that.
         if (!$base_table) {
           // The schema is cached.
-          $schema = drupal_get_schema($table);
+          $schema = backdrop_get_schema($table);
           if (isset($schema['fields']['nid'])) {
             if (isset($schema['foreign keys'])) {
               foreach ($schema['foreign keys'] as $relation) {
@@ -3648,7 +3651,7 @@ function domain_alter_node_query(QueryAlterableInterface $query, $type) {
  * for a request to a domain.
  *
  * If the domain_skip_domain_check variable is not 0, the response will
- * be assumed to be valid and a warning will be set using drupal_set_message().
+ * be assumed to be valid and a warning will be set using backdrop_set_message().
  *
  * @param $domain
  *   An array containing the record from the {domain} table.
@@ -3662,12 +3665,12 @@ function domain_alter_node_query(QueryAlterableInterface $query, $type) {
 function domain_check_response($domain, $drush = FALSE) {
   // t() function name is different whether we are using drush or not.
   $t = empty($drush) ? 't' : 'dt';
-  if (variable_get('domain_skip_domain_check', 0)) {
-    drupal_set_message($t('Domain response checks have been disabled. Saving an incorrect domain may affect your site.'), 'warning', FALSE);
+  if (config_get('domain.settings', 'domain_skip_domain_check')) {
+    backdrop_set_message($t('Domain response checks have been disabled. Saving an incorrect domain may affect your site.'), 'warning', FALSE);
     return FALSE;
   }
-  $url = domain_get_path($domain) . drupal_get_path('module', 'domain') . '/tests/200.png';
-  $response = drupal_http_request($url, array('method' => 'HEAD', 'absolute' => TRUE));
+  $url = domain_get_path($domain) . backdrop_get_path('module', 'domain') . '/tests/200.png';
+  $response = backdrop_http_request($url, array('method' => 'HEAD', 'absolute' => TRUE));
   if ($response->code != 200) {
     return $t('!server is not responding as expected and may not be configured correctly at the server level. Server code !code was returned.',
       array('!server' => $url, '!code' => $response->code)
@@ -3738,7 +3741,7 @@ function domain_features_api() {
       'default_file' => FEATURES_DEFAULTS_CUSTOM,
       'default_filename' => 'domains',
       'feature_source' => TRUE,
-      'file' => drupal_get_path('module', 'domain') . '/domain.features.inc',
+      'file' => backdrop_get_path('module', 'domain') . '/domain.features.inc',
     ),
   );
   return $components;
@@ -3815,7 +3818,7 @@ function domain_load_domain_id($machine_name) {
  *  An array keyed by domain machine_name whose values are domain records.
  */
 function domain_list_by_machine_name() {
-  $domains = &drupal_static(__FUNCTION__);
+  $domains = &backdrop_static(__FUNCTION__);
   if (!isset($domains)) {
     $list = domain_domains();
     foreach ($list as $record) {
@@ -3829,7 +3832,7 @@ function domain_list_by_machine_name() {
  * Loads an array of all active machine names.
  */
 function domain_machine_names() {
-  $list = &drupal_static(__FUNCTION__);
+  $list = &backdrop_static(__FUNCTION__);
   if (isset($list)) {
     return $list;
   }
@@ -4064,7 +4067,7 @@ function domain_update_zero_records($tables) {
     catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('domain_repair', $e);
-      drupal_set_message(t('The update failed due to a duplicate record. You must manually correct the {@table} table in your database.', array('@table' => $table)), 'error');
+      backdrop_set_message(t('The update failed due to a duplicate record. You must manually correct the {@table} table in your database.', array('@table' => $table)), 'error');
       $success = FALSE;
     }
   }
@@ -4104,8 +4107,8 @@ function domain_check_for_update() {
   if (!empty($list)) {
     $messages = array();
     domain_update_messages($messages, $list);
-    if (!drupal_is_cli()) {
-      drupal_set_message(theme('item_list', array('items' => $messages)), 'error', FALSE);
+    if (!backdrop_is_cli()) {
+      backdrop_set_message(theme('item_list', array('items' => $messages)), 'error', FALSE);
     }
     elseif (function_exists('drush_print')) {
       foreach ($messages as $message) {
@@ -4123,14 +4126,14 @@ function domain_check_for_update() {
  *  An array of elements defined by hook_domain_batch().
  */
 function domain_batch_actions() {
-  $batch = &drupal_static(__FUNCTION__);
+  $batch = &backdrop_static(__FUNCTION__);
   if (!empty($batch)) {
     return $batch;
   }
   // Get all implementations.
   $batch = module_invoke_all('domain_batch');
   // Allow modules to alter the list.
-  drupal_alter('domain_batch', $batch);
+  backdrop_alter('domain_batch', $batch);
   return $batch;
 }
 
@@ -4152,13 +4155,13 @@ function domain_preprocess_html(&$variables) {
  */
 function domain_page_classes() {
   $classes = array();
-  $settings = variable_get('domain_classes', 'domain-[current-domain:machine_name]');
+  $settings = config_get('domain.settings', 'domain_classes');
   if (!empty($settings)) {
     $vars = check_plain(token_replace($settings));
     $vars = preg_replace('/(\r\n|\n)/', "\r\n", $vars);
     $vars = explode("\r\n", token_replace($vars));
     foreach ($vars as $var) {
-      $classes[] = drupal_clean_css_identifier(trim($var));
+      $classes[] = backdrop_clean_css_identifier(trim($var));
     }
   }
   return $classes;
@@ -4329,7 +4332,7 @@ function domain_get_node_defaults($type, $fallback_domains = array()) {
 function domain_default_node_access_settings($type) {
   // We need to know if there are user-defined settings.
   // If so, we get an array, though it could be empty.
-  $settings = variable_get('domain_node_' . $type, NULL);
+  $settings = !isset(config_get('domain.settings', 'domain_node_')[$type]) || empty(config_get('domain.settings', 'domain_node_')[$type]) || count(config_get('domain.settings', 'domain_node_')[$type]) == 0 ? null: config_get('domain.settings', 'domain_node_')[$type];
   // Append default behavior, if there are no user-defined settings.
   if (is_null($settings)) {
     // Assign the currently active domain.
@@ -4353,4 +4356,26 @@ function domain_default_node_access_settings($type) {
     }
   }
   return $settings;
+}
+
+/**
+ * Implements hook_autoload_info().
+ */
+function domain_autoload_info() {
+  return array(
+    'MigrateDestinationDomain' => 'domain.migrate.inc',
+    'DomainNodeHandler' => 'domain.migrate.inc',
+    'DomainUserHandler' => 'domain.migrate.inc',
+  );
+}
+
+/**
+ * Implements hook_config_info().
+ */
+function domain_config_info() {
+  $prefixes['domain.settings'] = array(
+    'label' => t('domain settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
 }

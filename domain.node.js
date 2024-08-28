@@ -5,37 +5,37 @@
 
 (function ($) {
 
-/**
-  * Provide the summary information for the domain access vertical tab
-  * on the node edit form.
-  */
-Drupal.behaviors.domainNodeFieldsetSummaries = {
-  attach: function (context) {
-    $('fieldset.domain-access-options-form').drupalSetSummary(function (context) {
+  /**
+   * Provide the summary information for the domain access vertical tab
+   * on the node edit form.
+   */
+  Backdrop.behaviors.domainNodeFieldsetSummaries = {
+    attach: function (context) {
+      $('fieldset.domain-access-options-form').backdropSetSummary(function (context) {
 
-      if (typeof Drupal.settings.domain !== 'undefined') {
-        var fieldTypeSelector = (Drupal.settings.domain.fieldType == 0) ? ':checked' : ':selected';
-        var allAffiliatesCheckbox = $('.form-item-domain-site input', context);
-        var domainInput = (fieldTypeSelector == ':checked') ? $('.form-item-domains input', context) : $('.form-item-domains select option', context);
-        domainInput = domainInput.filter(fieldTypeSelector);
-        var selectedDomainCount = domainInput.length;
+        if (typeof Backdrop.settings.domain !== 'undefined') {
+          var fieldTypeSelector = (Backdrop.settings.domain.fieldType == 0) ? ':checked' : ':selected';
+          var allAffiliatesCheckbox = $('.form-item-domain-site input', context);
+          var domainInput = (fieldTypeSelector == ':checked') ? $('.form-item-domains input', context) : $('.form-item-domains select option', context);
+          domainInput = domainInput.filter(fieldTypeSelector);
+          var selectedDomainCount = domainInput.length;
 
-        if (allAffiliatesCheckbox.is(':checked')) {
-          return Drupal.t('All affiliates');
+          if (allAffiliatesCheckbox.is(':checked')) {
+            return Backdrop.t('All affiliates');
+          }
+          else if (selectedDomainCount == 0) {
+            return Backdrop.t('No affiliates');
+          }
+          else if (selectedDomainCount == 1) {
+            return (fieldTypeSelector == ':checked') ? domainInput.siblings('label').first().text() : domainInput.first().text();
+          }
+          else {
+            return Backdrop.t('@count affiliates', {'@count': selectedDomainCount});
+          }
         }
-        else if (selectedDomainCount == 0) {
-          return Drupal.t('No affiliates');
-        }
-        else if (selectedDomainCount == 1) {
-          return (fieldTypeSelector == ':checked') ? domainInput.siblings('label').first().text() : domainInput.first().text();
-        }
-        else {
-          return Drupal.t('@count affiliates', {'@count': selectedDomainCount});
-        }
-      }
 
-    });
-  }
-};
+      });
+    }
+  };
 
 })(jQuery);

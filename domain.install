@@ -77,40 +77,6 @@ function domain_schema() {
 }
 
 /**
- * Implements hook_uninstall().
- */
-function domain_uninstall() {
-  $variables = array(
-    'domain_bootstrap_modules',
-    'domain_classes',
-    'domain_cron_rule',
-    'domain_debug',
-    'domain_default_source',
-    'domain_edit_on_primary',
-    'domain_force_admin',
-    'domain_grant_all',
-    'domain_list_size',
-    'domain_paths',
-    'domain_search',
-    'domain_select_format',
-    'domain_sitename_override',
-    'domain_seo',
-    'domain_vertical_tab',
-    'domain_www',
-    'domain_xmlrpc_rule',
-  );
-  if (function_exists('node_type_get_types')) {
-    $types = node_type_get_types();
-    foreach ($types as $key => $type) {
-      $variables[] = 'domain_node_' . $key;
-    }
-  }
-  foreach ($variables as $variable) {
-    variable_del($variable);
-  }
-}
-
-/**
  * Checks module requirements.
  */
 function domain_requirements($phase) {
@@ -167,21 +133,6 @@ function domain_requirements($phase) {
  *
  */
 
-/**
- * Update block deltas to Drupal 7.
- */
-function domain_update_7000(&$sandbox) {
-  // Get an array of the renamed block deltas, organized by module.
-  $renamed_deltas = array(
-    'domain' => array(
-      '0' => 'switcher',
-      '1' => 'information',
-    ),
-  );
-  $moved_deltas = array();
-  update_fix_d7_block_deltas($sandbox, $renamed_deltas, $moved_deltas);
-  return t('Domain Access blocks updated.');
-}
 
 /**
  * Change the edit and delete permissions.
@@ -207,7 +158,6 @@ function domain_update_7300(&$sandbox) {
   }
   db_add_field('domain', 'weight', array('type' => 'int', 'unsigned' => FALSE, 'not null' => TRUE, 'default' => 0), array());
   db_add_index('domain', 'weight', array('weight'));
-  variable_del('domain_sort');
   return t('Domain sorting added.');
 }
 
@@ -223,7 +173,6 @@ function domain_update_7301(&$sandbox) {
     ->fields(array('is_default' => 1, 'weight' => -1))
     ->condition('domain_id', 0)
     ->execute();
-  variable_del('domain_default');
 
   return t('Default domain updated.');
 }
@@ -283,10 +232,6 @@ function domain_update_7303(&$sandbox) {
     ->condition('gid', 0)
     ->condition('realm', 'domain_id')
     ->execute();
-  // Remove the old variables.
-  variable_del('domain_root');
-  variable_del('domain_sitename');
-  variable_del('domain_scheme');
   // Update message.
   return t('Domain Access updated domain 0 successfully');
 }
@@ -385,19 +330,22 @@ function domain_update_machine_name($subdomain) {
  * Replace domain_behavior with default node access settings.
  */
 function domain_update_7308(&$sandbox) {
-  $behavior = variable_get('domain_behavior', 0);
+  $behavior = config_get('domain.settings', 'domain_behavior');
   if (function_exists('node_type_get_types')) {
     $types = node_type_get_types();
     foreach ($types as $key => $type) {
       $node_access_values = array('DOMAIN_ACTIVE');
-      $all_sites = variable_get('domain_node_' . $key, 0);
+      $arr = array();
+
+      $all_sites = count(config_get('domain.settings', 'domain_node_')[$key]) == 0 || !isset(config_get('domain.settings', 'domain_node_')[$key]) ? 0 : config_get('domain.settings', 'domain_node_')[$key];
       if ($behavior == 1 || $all_sites == 1) {
         $node_access_values[] = 'DOMAIN_ALL';
       }
-      variable_set('domain_node_' . $key, $node_access_values);
+      $arr[$key] = $node_access_values;
+      config_set('domain.settings', 'domain_node_', $arr);
     }
   }
-  variable_del('domain_behavior');
+  config_clear('domain.settings','domain_behavior');
 
   return t('Ported domain behavior to default node access settings.');
 }
@@ -406,8 +354,8 @@ function domain_update_7308(&$sandbox) {
  * Updates domain_roles variable to use machine names.
  */
 function domain_update_7309(&$sandbox) {
-  drupal_load('module', 'domain');
-  $defaults = variable_get('domain_roles', array());
+  backdrop_load('module', 'domain');
+  $defaults = config_get('domain.settings', 'domain_roles');
   $new = array();
   foreach ($defaults as $rid => $domains) {
     // We cannot use a constant here. See https://drupal.org/node/2042461.
@@ -419,7 +367,7 @@ function domain_update_7309(&$sandbox) {
       }
     }
   }
-  variable_set('domain_roles', $new);
+  config_set('domain.settings','domain_roles', $new);
 }
 
 /**
@@ -446,8 +394,71 @@ function domain_update_7311(&$sandbox) {
 }
 
 /**
- * Removes deprecated setting 'domain_form_elements'.
+ * Migrate domain variables to config.
  */
-function domain_update_7312(&$sandbox) {
-  variable_del('domain_form_elements');
+function domain_update_1000() {
+  $config = config('domain.settings');
+  $config->set('domain_list_size', update_variable_get('domain_list_size', 25));
+  $config->set('domain_sitename_override', update_variable_get('domain_sitename_override', 1));
+  $config->set('domain_debug', update_variable_get('domain_debug', 0));
+  $config->set('domain_force_admin', update_variable_get('domain_force_admin', 0));
+  $config->set('domain_vertical_tab', update_variable_get('domain_vertical_tab', 0));
+  $config->set('domain_collapse_options', update_variable_get('domain_collapse_options', 0));
+  $config->set('domain_www', update_variable_get('domain_www', 0));
+  $config->set('domain_search', update_variable_get('domain_search', 0));
+  $config->set('domain_seo', update_variable_get('domain_seo', 0));
+  $config->set('domain_edit_on_primary', update_variable_get('domain_edit_on_primary', 1));
+  $config->set('domain_default_source', update_variable_get('domain_default_source', 0));
+  $config->set('domain_grant_all', update_variable_get('domain_grant_all', 'user/*/track'));
+  $config->set('domain_cron_rule', update_variable_get('domain_cron_rule', 1));
+  $config->set('domain_xmlrpc_rule', update_variable_get('domain_xmlrpc_rule', 0));
+  $config->set('domain_paths', update_variable_get('domain_paths', 'node/%n\r\nnode/%n/edit\r\ncomment/reply/%n\r\nnode/add/book/parent/%n\r\nbook/export/html/%n\r\nnode/%n/outline'));
+  $config->set('domain_classes', update_variable_get('domain_classes', 'domain-[current-domain:machine_name]'));
+  $config->set('domain_allow_non_ascii', update_variable_get('domain_allow_non_ascii', false));
+  $config->set('domain_add_roles', update_variable_get('domain_add_roles', 0));
+  $config->set('domain_roles', update_variable_get('domain_roles', array()));
+  $config->set('domain_mymodule', update_variable_get('domain_mymodule', 0));
+  $config->set('domain_behavior', update_variable_get('domain_behavior', 0));
+  $config->set('domain_hide_errors', update_variable_get('domain_hide_errors', false));
+  $config->set('domain_select_format', update_variable_get('domain_select_format', 0));
+  $config->set('domain_scheme', update_variable_get('domain_scheme', 'http://'));
+  $config->set('domain_skip_domain_check', update_variable_get('domain_skip_domain_check', 0));
+  $config->set('domain_node_', update_variable_get('domain_node_', array()));
+  $config->set('domain_last_node_update', update_variable_get('domain_last_node_update', 0));
+  $config->set('user_picture_default', update_variable_get('user_picture_default', ""));
+  $config->set('domain_bootstrap_modules', update_variable_get('domain_bootstrap_modules', array()));
+  $config->set('anonymous', update_variable_get('anonymous', 'Anonymous'));
+  $config->save();
+
+  update_variable_del('domain_list_size');
+  update_variable_del('domain_sitename_override');
+  update_variable_del('domain_debug');
+  update_variable_del('domain_force_admin');
+  update_variable_del('domain_vertical_tab');
+  update_variable_del('domain_collapse_options');
+  update_variable_del('domain_www');
+  update_variable_del('domain_search');
+  update_variable_del('domain_seo');
+  update_variable_del('domain_edit_on_primary');
+  update_variable_del('domain_default_source');
+  update_variable_del('domain_grant_all');
+  update_variable_del('domain_cron_rule');
+  update_variable_del('domain_xmlrpc_rule');
+  update_variable_del('domain_paths');
+  update_variable_del('domain_classes');
+  update_variable_del('domain_allow_non_ascii');
+  update_variable_del('domain_add_roles');
+  update_variable_del('domain_roles');
+  update_variable_del('domain_mymodule');
+  update_variable_del('domain_behavior');
+  update_variable_del('domain_node_key');
+  update_variable_del('domain_hide_errors');
+  update_variable_del('domain_select_format');
+  update_variable_del('domain_scheme');
+  update_variable_del('domain_skip_domain_check');
+  update_variable_del('domain_node_type');
+  update_variable_del('domain_last_node_update');
+  update_variable_del('user_picture_default');
+  update_variable_del('domain_bootstrap_modules');
+  update_variable_del('anonymous');
 }

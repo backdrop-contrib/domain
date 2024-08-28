@@ -186,7 +186,7 @@ class MigrateDestinationDomain extends MigrateDestination {
         domain_delete($domain);
       }
       else {
-        drupal_set_message(t('The default domain may not be rolled back.'), 'status', FALSE);
+        backdrop_set_message(t('The default domain may not be rolled back.'), 'status', FALSE);
       }
     }
     $this->completeRollback($domain_name);
