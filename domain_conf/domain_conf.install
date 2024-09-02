@@ -23,21 +23,6 @@ function domain_conf_schema() {
 }
 
 /**
- * Update block deltas to Drupal 7.
- */
-function domain_conf_update_7000() {
-  // Get an array of the renamed block deltas, organized by module.
-  $renamed_deltas = array(
-    'domain' => array(
-      'domain-primary-links' => 'domain-main-links',
-    ),
-  );
-  $moved_deltas = array();
-  update_fix_d7_block_deltas($sandbox, $renamed_deltas, $moved_deltas);
-  return t('Domain Conf blocks updated.');
-}
-
-/**
  * Some variable names changed in Drupal 7.
  */
 function domain_conf_update_7001() {

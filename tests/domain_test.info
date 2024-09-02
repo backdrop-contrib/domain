@@ -1,8 +1,6 @@
 name = Domain Access Test
 description = Support module for Domain Access testing.
 package = Testing
-core = 7.x
-hidden = TRUE
-
+backdrop = 1.x
+type = module
 dependencies[] = domain
-files[] = domain.test

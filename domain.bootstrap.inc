@@ -115,12 +115,12 @@ function _domain_bootstrap($phase) {
       // See http://drupal.org/node/1342740 for the latest background.
       $new_phase = FALSE;
       // If running from drush or update.php, we act differently.
-      if (function_exists('drush_verify_cli') || function_exists('update_prepare_d7_bootstrap')) {
+      if (function_exists('drush_verify_cli') || function_exists('update_prepare_bootstrap')) {
         $new_phase = TRUE;
       }
+
       backdrop_bootstrap(BACKDROP_BOOTSTRAP_DATABASE, $new_phase);
 
-      require_once BACKDROP_ROOT . '/' . settings_get('database_inc', 'core/includes/database/database.inc');
       // If the Domain Access module has been disabled, or if we're unable to interact with the database, stop loading.
       if (function_exists('db_query')) {
         $table = domain_get_primary_table('system');
@@ -162,7 +162,6 @@ function _domain_bootstrap($phase) {
     case DOMAIN_BOOTSTRAP_FULL:
       // Grant access to all affiliates. See http://drupal.org/node/770650
       $_domain['site_grant'] = DOMAIN_SITE_GRANT;
-
       // Load all bootstrap processes registered with the module.
       _domain_bootstrap_invoke_all('full', $_domain);
       break;
@@ -221,9 +220,10 @@ function _domain_bootstrap_modules_get() {
   global $conf;
   $key = 'domain_bootstrap_modules';
   $table = domain_get_primary_table('variable');
-  $result = db_query("SELECT value FROM $table WHERE name = :name", array(':name' => $key))->fetchField();
+
+  $result = config_get('domain.settings', 'domain_bootstrap_modules');
   if (!empty($result)) {
-    $conf[$key] = unserialize($result);
+    $conf[$key] = $result;
   }
   else {
     $conf[$key] = array('domain');
@@ -248,7 +248,9 @@ function _domain_bootstrap_modules_get() {
 function _domain_bootstrap_invoke_all() {
   $args = func_get_args();
   $hook = $args[0];
+
   unset($args[0]);
+
   $return = array();
   foreach (_domain_bootstrap_modules() as $module) {
     $function = $module . '_domain_bootstrap_' . $hook;
@@ -369,10 +371,12 @@ function domain_settings_initialize() {
       $cookie_domain = '.' . $cookie_domain[0];
     }
   }
+
   // Per RFC 2109, cookie domains must contain at least one dot other than the
   // first. For hosts such as 'localhost' or IP Addresses we don't set a cookie domain.
   if (count(explode('.', $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
     ini_set('session.cookie_domain', $cookie_domain);
+
   }
   // To prevent session cookies from being hijacked, a user can configure the
   // SSL version of their website to only transfer session cookies via SSL by

@@ -1,5 +1,6 @@
-name = "Domain Alias"
-description = "Advanced domain matching methods for Domain Access."
-core = 7.x
+name = Domain Alias
+description = Advanced domain matching methods for Domain Access.
 package = Domain Access
+backdrop = 1.x
+type = module
 dependencies[] = domain

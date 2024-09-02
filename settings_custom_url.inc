@@ -46,9 +46,10 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
   if (!isset($path_alter)) {
     $path_alter = (bool) count(module_implements('domain_source_path_alter'));
   }
+
   // Get the root url.
   if (!isset($root)) {
-    $root = domain_lookup(config_get('domain.settings', 'domain_default_source'));
+    $root = domain_lookup(config_get('domain.settings', 'domain_default'));
   }
   // Set the target domain for this url.
   $target_domain_id = $_domain['domain_id'];
@@ -133,6 +134,6 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
   }
   // Allow path changes, if needed. This changed significantly in D7.
   if ($path_rewrite > 0 && $path != '') {
-    domain_path($target_domain_id, $path, $options, $original_path);
+    //domain_path($target_domain_id, $path, $options, $original_path);
   }
 }

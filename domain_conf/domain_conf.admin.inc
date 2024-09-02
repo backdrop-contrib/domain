@@ -22,11 +22,11 @@ function domain_conf_page($domain) {
     return t('Invalid page requested.');
   }
   if ($domain['domain_id'] == domain_default_id()) {
-    drupal_set_message(t('This is your default domain. Use of this form is discouraged. Set these values through the standard interface.'), 'warning', FALSE);
+    backdrop_set_message(t('This is your default domain. Use of this form is discouraged. Set these values through the standard interface.'), 'warning', FALSE);
   }
   $output = theme('domain_conf_reset', array('domain' => $domain));
-  drupal_set_title(t('Settings for !site', array('!site' => $domain['subdomain'])));
-  $form = drupal_get_form('domain_conf_form', $domain);
+  backdrop_set_title(t('Settings for !site', array('!site' => $domain['subdomain'])));
+  $form = backdrop_get_form('domain_conf_form', $domain);
   $form['intro'] = array(
     '#weight' => -5,
     '#markup' => $output,
@@ -80,7 +80,7 @@ function domain_conf_form($form, &$form_state, $domain) {
   }
   $form['domain_id'] = array('#type' => 'value', '#value' => $domain['domain_id']);
   // Site name must be edited at the domain creation screen.
-  if (variable_get('domain_sitename_override', 1) && isset($form[$default_group]['site_name'])) {
+  if (config_get('domain.settings', 'domain_sitename_override') && isset($form[$default_group]['site_name'])) {
     $sitename = domain_conf_variable_get($domain['domain_id'], 'site_name');
     $form[$default_group]['site_name'] = array(
       '#disabled' => TRUE,
@@ -125,8 +125,9 @@ function domain_conf_form_submit($form, &$form_state) {
   }
 
   // Update configuration.
+
   domain_conf_data_set($form_state['values']['domain_id'], $new_settings);
-  drupal_set_message(t('Domain options saved successfully.'));
+  backdrop_set_message(t('Domain options saved successfully.'));
 
   // Clear the cache.
   cache_clear_all();
@@ -146,7 +147,7 @@ function domain_conf_reset($domain) {
   if ($domain == -1) {
     return t('Invalid page requested.');
   }
-  return drupal_get_form('domain_conf_reset_form', $domain);
+  return backdrop_get_form('domain_conf_reset_form', $domain);
 }
 
 /**
@@ -170,7 +171,7 @@ function domain_conf_reset_form($form, &$form_state, $domain) {
  */
 function domain_conf_reset_form_submit($form, &$form_state) {
   domain_conf_data_delete($form_state['values']['domain_id']);
-  drupal_set_message(t('Domain configuration settings have been reset.'));
+  backdrop_set_message(t('Domain configuration settings have been reset.'));
 
   $form_state['redirect'] = 'admin/structure/domain/view/' . $form_state['values']['domain_id'] . '/config';
 

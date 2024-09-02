@@ -17,7 +17,7 @@ function domain_alias($domain) {
   if (!is_array($domain)) {
     return t('Invalid page requested.');
   }
-  return drupal_get_form('domain_alias_form', $domain);
+  return backdrop_get_form('domain_alias_form', $domain);
 }
 
 /**
@@ -33,7 +33,7 @@ function domain_alias($domain) {
  */
 function domain_alias_form($form, &$form_state, $domain, $arguments = array()) {
   $form = array();
-  drupal_set_title(t('Aliases for !domain', array('!domain' => $domain['subdomain'])));
+  backdrop_set_title(t('Aliases for !domain', array('!domain' => $domain['subdomain'])));
   $form['domain_id'] = array('#type' => 'value', '#value' => $domain['domain_id']);
   $record_edit_url = 'admin/build/domain/' . ($domain['domain_id'] == 0 ? '' : 'edit/' . $domain['domain_id']);
   $form['domain_help'] = array(
@@ -198,7 +198,7 @@ function _domain_alias_validate($form, $alias, $id, $aliases, $type) {
   }
   // 4) Check that the alias doesn't contain any invalid characters.
   // Check for valid characters, unless using non-ASCII domains.
-  if (!variable_get('domain_allow_non_ascii', FALSE)) {
+  if (!config_get('domain.settings', 'domain_allow_non_ascii')) {
     $check = preg_match('/^[a-z0-9\.\+\-\*\?:]*$/', $alias);
     if ($check == 0) {
       form_error($form[$type][$id]['pattern'], t('%name contains invalid characters.', array('%name' => $alias)));
@@ -269,7 +269,7 @@ function domain_alias_form_submit($form, &$form_state) {
       }
     }
   }
-  drupal_set_message(t('Domain aliases updated successfully.'));
+  backdrop_set_message(t('Domain aliases updated successfully.'));
   // Clear the cache.
   cache_clear_all();
 }
@@ -282,8 +282,8 @@ function theme_domain_alias_form($variables) {
   $output = '';
 
   $redirect = t('Check the redirect box to send requests for an alias to the registered domain.');
-  $output .= drupal_render($form['domain_help']);
-  $output .= '<br /><h3>' . drupal_render($form['domain']) . '</h3>';
+  $output .= backdrop_render($form['domain_help']);
+  $output .= '<br /><h3>' . backdrop_render($form['domain']) . '</h3>';
   // Edit existing records.
   $elements = element_children($form['domain_alias']);
   if (!empty($elements)) {
@@ -292,9 +292,9 @@ function theme_domain_alias_form($variables) {
     foreach ($elements as $element) {
       $rows[] = array(
         $form['domain_alias'][$element]['alias_id']['#value'],
-        drupal_render($form['domain_alias'][$element]['redirect']),
-        drupal_render($form['domain_alias'][$element]['pattern']),
-        drupal_render($form['domain_alias'][$element]['delete']),
+        backdrop_render($form['domain_alias'][$element]['redirect']),
+        backdrop_render($form['domain_alias'][$element]['pattern']),
+        backdrop_render($form['domain_alias'][$element]['delete']),
       );
     }
     $output .= theme('table', array('header' => $header, 'rows' => $rows));
@@ -304,19 +304,19 @@ function theme_domain_alias_form($variables) {
     $output .= '<p>' . t('There are no aliases recorded for this domain.') . '</p>';
   }
   // Add new records.
-  $output .= '<br /><h3>' . drupal_render($form['domain_new']) . '</h3>';
-  $output .= '<p>' . drupal_render($form['domain_new_help']) . '</p>';
+  $output .= '<br /><h3>' . backdrop_render($form['domain_new']) . '</h3>';
+  $output .= '<p>' . backdrop_render($form['domain_new_help']) . '</p>';
   $header = array(t('Redirect'), t('Pattern'));
   $rows = array();
   foreach (element_children($form['domain_alias_new']) as $element) {
     $rows[] = array(
-      drupal_render($form['domain_alias_new'][$element]['redirect']),
-      drupal_render($form['domain_alias_new'][$element]['pattern']),
+      backdrop_render($form['domain_alias_new'][$element]['redirect']),
+      backdrop_render($form['domain_alias_new'][$element]['pattern']),
     );
   }
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
   $output .= '<p><em>' . $redirect . '</em></p>';
-  $output .= drupal_render_children($form);
+  $output .= backdrop_render_children($form);
   return $output;
 }
 

@@ -105,7 +105,7 @@ function domain_alias_features_rebuild($module) {
         foreach ($list as $alias) {
           $alias['domain_id'] = $domain_id;
           $alias['pattern'] = _domain_alias_placeholders_to_sql($alias['pattern']);
-          drupal_write_record('domain_alias', $alias);
+          backdrop_write_record('domain_alias', $alias);
         }
       }
     }

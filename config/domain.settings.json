@@ -11,6 +11,7 @@
     "domain_seo": 0,
     "domain_edit_on_primary": 1,
     "domain_default_source": 0,
+    "domain_default": 0,
     "domain_grant_all": "user/*/track",
     "domain_cron_rule": 1,
     "domain_xmlrpc_rule": 0,

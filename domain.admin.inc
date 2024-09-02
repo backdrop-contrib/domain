@@ -23,7 +23,7 @@ function domain_overview_form($form, &$form_state) {
   $default = domain_default();
   $active_domain = domain_get_domain();
   $form = [];
-
+  ;
   $form['top'] = [
     '#markup' => t('<p>The following domains have been created for your site.  The currently active domain <strong>is shown in boldface</strong>.  You
                     may click on a domain to change the currently active domain.  Your default domain is %name, which will be used for all requests that fail to resolve to a registered domain.</p>', ['%name' => $default['subdomain']]),
@@ -788,6 +788,7 @@ function domain_batch($action = NULL) {
   else {
     $allowed = $domains;
   }
+
   // If we passed all the checks, generate the form.
   return backdrop_get_form('domain_batch_form', $action, $batch[$action], $allowed);
 }

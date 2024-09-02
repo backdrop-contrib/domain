@@ -91,6 +91,7 @@ function domain_block_view_server() {
     t('HTTP_HOST request'),
     check_plain($_SERVER['HTTP_HOST']),
   );
+
   $check = domain_lookup(NULL, $_SERVER['HTTP_HOST']);
   $match = t('TRUE');
   if ($check == -1) {

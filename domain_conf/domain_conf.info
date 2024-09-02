@@ -1,7 +1,6 @@
 name = Domain Configuration
 description = Advanced site configuration options for Domain Access.
 package = Domain Access
+backdrop = 1.x
+type = module
 dependencies[] = domain
-core = 7.x
-
-files[] = tests/domain_conf.test

@@ -61,7 +61,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_name', ''),
+    '#system_default' => config_get('system.core', 'site_name'),
     '#variable' => 'site_name',
     '#meta_description' => t('Set the site name for all domains.'),
     '#data_type' => 'string',
@@ -80,7 +80,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_mail', ''),
+    '#system_default' => config_get('system.core', 'site_name'),
     '#variable' => 'site_mail',
     '#meta_description' => t('Set the email address for all domains.'),
     '#data_type' => 'string',
@@ -99,7 +99,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_slogan', ''),
+    '#system_default' => config_get('system.core', 'site_slogan'),
     '#variable' => 'site_slogan',
     '#meta_description' => t('Set the site slogan for all domains.'),
     '#data_type' => 'string',
@@ -118,7 +118,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('site_frontpage', 'node'),
+    '#system_default' => config_get('system.core', 'site_frontpage'),
     '#variable' => 'site_frontpage',
     '#meta_description' => t('Set the site frontpage for all domains.'),
     '#data_type' => 'string',
@@ -137,7 +137,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('anonymous', 'Anonymous'),
+    '#system_default' => config_get('system.core', 'anonymous'),
     '#variable' => 'anonymous',
     '#meta_description' => t('Set the anonymous user label for all domains.'),
     '#data_type' => 'string',
@@ -161,7 +161,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('admin_theme', 0),
+    '#system_default' => config_get('system.core', 'admin_theme'),
     '#variable' => 'admin_theme',
     '#meta_description' => t('Set the administrative theme for all domains.'),
     '#data_type' => 'string',
@@ -178,7 +178,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('node_admin_theme', 0),
+    '#system_default' => config_get('system.core', 'node_admin_theme'),
     '#variable' => 'node_admin_theme',
     '#meta_description' => t('Choose whether to use the administrative theme when editing or creating content on all domains.'),
     '#data_type' => 'boolean',
@@ -186,7 +186,7 @@ function domain_conf_domain_batch() {
     '#update_all' => TRUE,
     '#group' => t('Administrative theme'),
   );
-  
+
   // Change the timezone.
   $zones = system_time_zones();
   $batch['date_default_timezone'] = array(
@@ -198,7 +198,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('date_default_timezone', 0),
+    '#system_default' => date_default_timezone_get(),
     '#variable' => 'date_default_timezone',
     '#meta_description' => t('Set the default timezone for all domains.'),
     '#data_type' => 'string',
@@ -207,7 +207,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Timezone settings'),
   );
   // Change the caching mode.
-  $cache = variable_get('cache', 0);
+  $cache = config_get('system.core', 'cache');
   $batch['cache'] = array(
     '#form' => array(
       '#type' => 'checkbox',
@@ -225,19 +225,19 @@ function domain_conf_domain_batch() {
     '#group' => t('Performance'),
   );
   // Change the cache lifetime.
-  $period = drupal_map_assoc(array(0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
+  $period = backdrop_map_assoc(array(0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
   $period[0] = '<' . t('none') . '>';
   $batch['cache_lifetime'] = array(
     '#form' => array(
       '#type' => 'select',
       '#title' => t('Minimum cache lifetime'),
-      '#default_value' => variable_get('cache_lifetime', 0),
+      '#default_value' => config_get('system.core', 'page_cache_maximum_age'),
       '#options' => $period,
       '#description' => t('The minimum amount of time that will elapse before the caches are recreated.')
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('cache_lifetime', 0),
+    '#system_default' => config_get('system.core', 'page_cache_maximum_age'),
     '#variable' => 'cache_lifetime',
     '#meta_description' => t('Set the minimum cache lifetime for all domains.'),
     '#data_type' => 'integer',
@@ -250,12 +250,12 @@ function domain_conf_domain_batch() {
     '#form' => array(
       '#type' => 'checkbox',
       '#title' => t('Put site into maintenance mode'),
-      '#default_value' => variable_get('maintenance_mode', 0),
+      '#default_value' => state_get('maintenance_mode', FALSE),
       '#description' => t('When enabled, only users with the "Access site in maintenance mode" <a href="@permissions-url">permission</a> are able to access your site to perform maintenance; all other visitors see the maintenance mode message configured below. Authorized users can log in directly via the <a href="@user-login">user login</a> page.', array('@permissions-url' => url('admin/people/permissions'), '@user-login' => url('user'))),
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => variable_get('maintenance_mode', 0),
+    '#system_default' => state_get('maintenance_mode', FALSE),
     '#variable' => 'maintenance_mode',
     '#meta_description' => t('Set maintenance for all domains.'),
     '#data_type' => 'integer',
@@ -274,7 +274,7 @@ function domain_conf_domain_batch() {
     ),
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => t('@site is currently under maintenance. We should be back shortly. Thank you for your patience.', array('@site' => variable_get('site_name', 'Drupal'))),
+    '#system_default' => t('@site is currently under maintenance. We should be back shortly. Thank you for your patience.', array('@site' => config_get('system.core', 'site_name'))),
     '#variable' => 'maintenance_mode_message',
     '#meta_description' => t('Set the site offline message for all domains.'),
     '#data_type' => 'string',
@@ -311,7 +311,7 @@ function domain_conf_domain_batch() {
     $menus = menu_get_menus();
     $menu_options = $menus;
     $menus[0] = t('Do not use for this site');
-    $main = variable_get('menu_main_links_source', 'main-menu');
+    $main = 'main-menu';
     $batch['menu_main_links_source'] = array(
       '#form' => array(
         '#title' => t('Source for the Main links'),
@@ -339,7 +339,7 @@ function domain_conf_domain_batch() {
       ),
       '#permission' => 'administer menu',
       '#domain_action' => 'domain_conf',
-      '#system_default' => variable_get('menu_secondary_links_source', 0),
+      '#system_default' => 0,
       '#variable' => 'menu_secondary_links_source',
       '#meta_description' => t('Set the secondary links menu in all domains.'),
       '#data_type' => 'string',
@@ -381,7 +381,7 @@ function domain_conf_domain_batch() {
         '#form' => $form['menu']['menu_options'],
         '#permission' => 'administer menu',
         '#domain_action' => 'domain_conf',
-        '#system_default' => variable_get('menu_options_' . $type->type, array('main-menu')),
+        '#system_default' => array('main-menu'),
         '#variable' => 'menu_options_' . $type->type,
         '#meta_description' => t('The menus available to place links in for this content type.'),
         '#data_type' => 'string',
@@ -395,7 +395,7 @@ function domain_conf_domain_batch() {
         '#form' => $form['menu']['menu_parent'],
         '#permission' => 'administer menu',
         '#domain_action' => 'domain_conf',
-        '#system_default' => variable_get('menu_parent_' . $type->type, 'main-menu:0'),
+        '#system_default' => 'main-menu:0',
         '#variable' => 'menu_parent_' . $type->type,
         '#meta_description' => t('Choose the menu item to be the default parent for a new link in the content authoring form.'),
         '#data_type' => 'string',
