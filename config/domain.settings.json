@@ -30,5 +30,6 @@
     "domain_last_node_update": 0,
     "user_picture_default": "",
     "domain_bootstrap_modules": [],
-    "anonymous": "Anonymous"
+    "anonymous": "Anonymous",
+    "settings": []
 }

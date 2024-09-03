@@ -556,6 +556,7 @@ function domain_update_1000() {
   $config->set('user_picture_default', update_variable_get('user_picture_default', ""));
   $config->set('domain_bootstrap_modules', update_variable_get('domain_bootstrap_modules', []));
   $config->set('anonymous', update_variable_get('anonymous', 'Anonymous'));
+  $config->set('settings', update_variable_get('settings', []));
   $config->save();
 
   update_variable_del('domain_list_size');
@@ -590,4 +591,5 @@ function domain_update_1000() {
   update_variable_del('domain_bootstrap_modules');
   update_variable_del('anonymous');
   update_variable_del('domain_default');
+  update_variable_del('settings');
 }
