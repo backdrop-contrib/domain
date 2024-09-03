@@ -28,13 +28,13 @@
  *   An array containing current domain (host) name and
  *   the results of lookup against {domain} table.
  *
- * @see domain_resolve_name()
- *
  * @return
  *   An array containing at least a valid domain_id. Other values are:
  *   -- 'active_alias_id' => the currently active alias.
  *   -- 'redirect' => a boolean flag telling the module to redirect to the
  *   registered domain name if accessed from an alias.
+ * @see domain_resolve_name()
+ *
  */
 function domain_alias_domain_bootstrap_lookup($domain) {
   // If we had an exact match, then $domain['sitename'] is populated.
@@ -64,7 +64,7 @@ function domain_alias_init() {
   if (isset($_domain['redirect']) && !empty($_domain['redirect'])) {
     $domain = domain_lookup($_domain['domain_id']);
     $response_code = ($_domain['redirect'] < 300) ? 302 : $_domain['redirect'];
-    backdrop_goto(domain_get_uri($domain), array(), $response_code);
+    backdrop_goto(domain_get_uri($domain), [], $response_code);
   }
 }
 
@@ -72,15 +72,15 @@ function domain_alias_init() {
  * Implements hook_menu().
  */
 function domain_alias_menu() {
-  $items = array();
-  $items['admin/structure/domain/view/%domain/alias'] = array(
+  $items = [];
+  $items['admin/structure/domain/view/%domain/alias'] = [
     'title' => 'Aliases',
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'domain_alias',
-    'page arguments' => array(4),
+    'page arguments' => [4],
     'file' => 'domain_alias.admin.inc',
-  );
+  ];
   return $items;
 }
 
@@ -88,25 +88,25 @@ function domain_alias_menu() {
  * Implements hook_theme().
  */
 function domain_alias_theme() {
-  return array(
-    'domain_alias_form' => array(
+  return [
+    'domain_alias_form' => [
       'render element' => 'form',
       'file' => 'domain_alias.admin.inc',
-    ),
-    'domain_alias_block' => array(
-      'variables' => array('domains' => array()),
-    ),
-  );
+    ],
+    'domain_alias_block' => [
+      'variables' => ['domains' => []],
+    ],
+  ];
 }
 
 /**
  * Implements hook_block_info().
  */
 function domain_alias_block_info() {
-  $blocks = array();
-  $blocks['domain_alias'] = array(
+  $blocks = [];
+  $blocks['domain_alias'] = [
     'info' => t('Domain alias switcher'),
-  );
+  ];
   return $blocks;
 }
 
@@ -115,34 +115,34 @@ function domain_alias_block_info() {
  */
 function domain_alias_block_view($delta = '') {
   $domains = domain_domains();
-  $output = theme('domain_alias_block', array('domains' => $domains));
-  $blocks = array(
+  $output = theme('domain_alias_block', ['domains' => $domains]);
+  $blocks = [
     'subject' => t('Domain alias switcher'),
     'content' => $output,
-  );
+  ];
   return $blocks;
 }
 
 /**
  * Implements hook_block().
  */
-function domain_alias_block($op = 'list', $delta = 0, $edit = array()) {
-  $blocks = array();
+function domain_alias_block($op = 'list', $delta = 0, $edit = []) {
+  $blocks = [];
   switch ($op) {
     case 'list':
-      $blocks['domain_alias'] = array(
+      $blocks['domain_alias'] = [
         'info' => t('Domain alias switcher'),
         'cache' => BLOCK_CACHE_PER_ROLE,
-      );
+      ];
       break;
     case 'view':
       $domains = domain_domains();
       $output = 'Test';
       $output = theme('domain_alias_block', $domains);
-      $blocks = array(
+      $blocks = [
         'subject' => t('Domain alias switcher'),
         'content' => $output,
-      );
+      ];
       break;
   }
   return $blocks;
@@ -153,7 +153,8 @@ function domain_alias_block($op = 'list', $delta = 0, $edit = array()) {
  * be present. The database result is limited to one row.
  *
  * @param $subdomain
- *   The domain to match the patterns in the {domain_alias} table against. Optional.
+ *   The domain to match the patterns in the {domain_alias} table against.
+ *   Optional.
  * @param $alias_id
  *   The alias_id taken from {domain_alias}. Optional
  * @param $reset
@@ -163,7 +164,7 @@ function domain_alias_block($op = 'list', $delta = 0, $edit = array()) {
  *   An array containing the requested row from the {domain_alias} table.
  *   Returns -1 on failure.
  */
-function domain_alias_lookup($subdomain = NULL, $alias_id = NULL, $reset = FALSE ) {
+function domain_alias_lookup($subdomain = NULL, $alias_id = NULL, $reset = FALSE) {
   $aliases = &backdrop_static(__FUNCTION__);
   // If both are NULL, no lookup can be run.
   if (is_null($subdomain) && is_null($alias_id)) {
@@ -175,18 +176,18 @@ function domain_alias_lookup($subdomain = NULL, $alias_id = NULL, $reset = FALSE
   if (!isset($aliases[$key]) || $reset) {
     if (is_string($subdomain)) {
       // First, look for an exact match.
-      $alias = array();
-      $alias = db_query("SELECT alias_id, domain_id, pattern, redirect FROM {domain_alias} WHERE pattern = :subdomain", array(':subdomain' => $subdomain))->fetchAssoc();
+      $alias = [];
+      $alias = db_query("SELECT alias_id, domain_id, pattern, redirect FROM {domain_alias} WHERE pattern = :subdomain", [':subdomain' => $subdomain])->fetchAssoc();
       // If that fails, find the closest pattern(s).
       if (empty($alias)) {
-        $result = db_query("SELECT alias_id, domain_id, pattern, redirect FROM {domain_alias} WHERE :subdomain LIKE pattern", array(':subdomain' => $subdomain), array('fetch' => PDO::FETCH_ASSOC));
+        $result = db_query("SELECT alias_id, domain_id, pattern, redirect FROM {domain_alias} WHERE :subdomain LIKE pattern", [':subdomain' => $subdomain], ['fetch' => PDO::FETCH_ASSOC]);
         // If we returned more than one match, we have to find the most appropriate one.
-        $patterns = array();
+        $patterns = [];
         foreach ($result as $alias) {
           $patterns[] = $alias;
         }
         if (empty($patterns)) {
-          $alias = array();
+          $alias = [];
         }
         elseif (count($patterns) == 1) {
           $alias = current($patterns);
@@ -197,7 +198,7 @@ function domain_alias_lookup($subdomain = NULL, $alias_id = NULL, $reset = FALSE
       }
     }
     elseif (intval($alias_id)) {
-      $alias = db_query("SELECT alias_id, domain_id, pattern, redirect FROM {domain_alias} WHERE alias_id = :alias_id", array(':alias_id' => $alias_id))->fetchAssoc();
+      $alias = db_query("SELECT alias_id, domain_id, pattern, redirect FROM {domain_alias} WHERE alias_id = :alias_id", [':alias_id' => $alias_id])->fetchAssoc();
 
     }
     // If we found a match, prepare the readable version.
@@ -226,7 +227,7 @@ function domain_alias_lookup($subdomain = NULL, $alias_id = NULL, $reset = FALSE
  *   The best match, as an $alias array.
  */
 function domain_alias_best_match($subdomain, $patterns) {
-  $alias = array();
+  $alias = [];
   $test = -1;
   $request = explode('.', $subdomain);
   foreach ($patterns as $pattern) {
@@ -250,7 +251,7 @@ function domain_alias_best_match($subdomain, $patterns) {
  *   String with replaced values.
  */
 function _domain_alias_placeholders_to_sql($subdomain, $reverse = FALSE) {
-  $placeholders = array('*' => '%', '?' => '_');
+  $placeholders = ['*' => '%', '?' => '_'];
   if ($reverse) {
     return str_replace($placeholders, array_keys($placeholders), $subdomain);
   }
@@ -289,10 +290,10 @@ function domain_alias_list($domain_id, $reset = FALSE) {
   $result = &backdrop_static(__FUNCTION__ . '_result');
   // Query the db for aliases.
   if (!isset($result) || $reset) {
-    $result = db_query("SELECT domain_id, alias_id, pattern, redirect FROM {domain_alias} ORDER BY domain_id, alias_id", array(), array('fetch' => PDO::FETCH_ASSOC))->FetchAll();
+    $result = db_query("SELECT domain_id, alias_id, pattern, redirect FROM {domain_alias} ORDER BY domain_id, alias_id", [], ['fetch' => PDO::FETCH_ASSOC])->FetchAll();
   }
   if (!isset($aliases[$domain_id]) || $reset) {
-    $aliases[$domain_id] = array();
+    $aliases[$domain_id] = [];
     foreach ($result as $data) {
       $data['pattern'] = _domain_alias_placeholders_from_sql($data['pattern']);
       $aliases[$data['domain_id']][$data['alias_id']] = $data;
@@ -314,7 +315,7 @@ function theme_domain_alias_block($variables) {
   $_domain = domain_get_domain();
   $domains = $variables['domains'];
   $output = '';
-  $items = array();
+  $items = [];
   $msg = FALSE;
   $i = 0;
   $active = NULL;
@@ -335,7 +336,10 @@ function theme_domain_alias_block($variables) {
       if ($domain['domain_id'] == $_domain['domain_id']) {
         $title = '<strong>' . $title . '</strong>';
       }
-      $items[$i]['data'] = l($title, domain_get_uri($domain), array('absolute' => TRUE, 'html' => TRUE));
+      $items[$i]['data'] = l($title, domain_get_uri($domain), [
+        'absolute' => TRUE,
+        'html' => TRUE,
+      ]);
       if (!empty($domain['aliases'])) {
         $request = array_reverse(explode('.', $_domain['subdomain']));
         if (isset($_domain['active_alias_id'])) {
@@ -348,7 +352,7 @@ function theme_domain_alias_block($variables) {
       $i++;
     }
   }
-  $output .= theme('item_list', array('items' => $items));
+  $output .= theme('item_list', ['items' => $items]);
   if ($msg) {
     $output .= t('<em>* Inactive domain.</em>');
   }
@@ -398,7 +402,7 @@ function _domain_alias_link($alias, $domain, $request, $active = 0) {
   if (!$alias['redirect'] && !$wildcard) {
     $domain['subdomain'] = $text;
     $path = domain_get_uri($domain);
-    $link = l($output, $path, array('absolute' => TRUE, 'html' => TRUE));
+    $link = l($output, $path, ['absolute' => TRUE, 'html' => TRUE]);
   }
   else {
     $link = check_markup($output);
@@ -410,16 +414,16 @@ function _domain_alias_link($alias, $domain, $request, $active = 0) {
  * Implements hook_features_api().
  */
 function domain_alias_features_api() {
-  $components = array(
-    'domain_alias' => array(
+  $components = [
+    'domain_alias' => [
       'name' => t('Domain aliases'),
       'default_hook' => 'domain_alias_default_aliases',
       'default_file' => FEATURES_DEFAULTS_CUSTOM,
       'default_filename' => 'domains',
       'feature_source' => TRUE,
-      'file' => backdrop_get_path('module', 'domain_alias') .'/domain_alias.features.inc',
-    ),
-  );
+      'file' => backdrop_get_path('module', 'domain_alias') . '/domain_alias.features.inc',
+    ],
+  ];
   return $components;
 }
 

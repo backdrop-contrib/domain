@@ -1,11 +1,4 @@
 <?php
-require_once BACKDROP_ROOT . '/core/includes/bootstrap.inc';
-require_once BACKDROP_ROOT . '/core/includes/common.inc';
-require_once BACKDROP_ROOT . '/core/includes/file.inc';
-require_once BACKDROP_ROOT . '/core/includes/module.inc';
-require_once BACKDROP_ROOT . '/core/includes/ajax.inc';
-require_once BACKDROP_ROOT . '/core/includes/config.inc';
-require_once BACKDROP_ROOT . '/core/includes/database/database.inc';
 
 /**
  * @file
@@ -61,9 +54,8 @@ define('DOMAIN_BOOTSTRAP_FULL', 2);
  */
 function domain_bootstrap() {
   global $_domain;
-
   // Initialize our global variable.
-  $_domain = array();
+  $_domain = [];
 
   // Ensure that core globals are loaded so that we don't break page caching.
   // See http://drupal.org/node/1046844 and http://drupal.org/node/1189916.
@@ -71,13 +63,15 @@ function domain_bootstrap() {
     domain_settings_initialize();
   }
 
-  $phases = array(DOMAIN_BOOTSTRAP_INIT, DOMAIN_BOOTSTRAP_NAME_RESOLVE, DOMAIN_BOOTSTRAP_FULL);
-
+  $phases = [
+    DOMAIN_BOOTSTRAP_INIT,
+    DOMAIN_BOOTSTRAP_NAME_RESOLVE,
+    DOMAIN_BOOTSTRAP_FULL,
+  ];
   foreach ($phases as $phase) {
     // We return NULL if the domain module is not enabled.  This prevents
     // load errors during module enable / disable.
     $error = _domain_bootstrap($phase);
-
     if ($error === NULL) {
       $_domain['error'] = -1;
       break;
@@ -90,7 +84,6 @@ function domain_bootstrap() {
       break;
     }
   }
-
 }
 
 /**
@@ -101,38 +94,32 @@ function domain_bootstrap() {
  *
  * @return
  *   Returns TRUE if the bootstrap phase was successful and FALSE otherwise.
- * @throws \Exception
  */
 function _domain_bootstrap($phase) {
   global $_domain;
+  global $install_state;
+
   switch ($phase) {
     case DOMAIN_BOOTSTRAP_INIT:
       // Make sure database is loaded.
       // The new update handler causes problems here, so we account for it.
       // Same with drush or other CLI resources. It turns out that the
-      // drupal_is_cli() function is not consistent for php and drush scripts,
+      // backdrop_is_cli() function is not consistent for php and drush scripts,
       // so instead, we check to see if the database driver has been loaded.
       // See http://drupal.org/node/1342740 for the latest background.
       $new_phase = FALSE;
+
       // If running from drush or update.php, we act differently.
-      if (function_exists('drush_verify_cli') || function_exists('update_prepare_bootstrap')) {
+      // Prevent $new_phase = TRUE when running drush site-install by checking
+      // the $install_state global.
+      if ((function_exists('drush_verify_cli') || function_exists('update_prepare_bootstrap')) && empty($install_state)) {
         $new_phase = TRUE;
       }
-
       backdrop_bootstrap(BACKDROP_BOOTSTRAP_DATABASE, $new_phase);
 
       // If the Domain Access module has been disabled, or if we're unable to interact with the database, stop loading.
       if (function_exists('db_query')) {
-        $table = domain_get_primary_table('system');
-
-        $query = db_select($table, 'c')
-          ->fields('c', array('status'))
-          ->condition('name', 'domain')
-          ->condition('type', 'module')
-          ->execute()
-          ->fetchAssoc();
-
-        $check = (bool) $query['status'];
+        $check = (bool) db_query("SELECT status FROM {system} WHERE name = 'domain' AND type = 'module'")->fetchField();
         if (empty($check)) {
           return NULL;
         }
@@ -154,7 +141,7 @@ function _domain_bootstrap($phase) {
       // Get the domain_id of the request.
       $_domain = domain_resolve_host();
       // If we don't have a valid domain id now, we can't really go on, bootstrap fails.
-      if (empty($_domain) || !is_numeric($_domain['domain_id'])) {
+      if (empty($_domain['domain_id']) || !is_numeric($_domain['domain_id'])) {
         return FALSE;
       }
       break;
@@ -162,13 +149,13 @@ function _domain_bootstrap($phase) {
     case DOMAIN_BOOTSTRAP_FULL:
       // Grant access to all affiliates. See http://drupal.org/node/770650
       $_domain['site_grant'] = DOMAIN_SITE_GRANT;
+
       // Load all bootstrap processes registered with the module.
       _domain_bootstrap_invoke_all('full', $_domain);
       break;
   }
 
   return TRUE;
-
 }
 
 /**
@@ -180,15 +167,16 @@ function _domain_bootstrap($phase) {
  * @param $reset
  *   If set to TRUE the cached list of modules is updated with the value from
  *   the {variable} table again. Default value is FALSE. Optional.
+ *
  * @return
  *   An array of module names.
  */
 function _domain_bootstrap_modules($reset = FALSE) {
-  $modules = &backdrop_static(__FUNCTION__, NULL);
+  $modules = backdrop_static(__FUNCTION__, NULL);
   if ($reset || is_null($modules)) {
     $modules = _domain_bootstrap_modules_get();
     if (!is_array($modules)) {
-      $modules = array();
+      $modules = [];
     }
     if (!in_array('domain', $modules)) {
       $modules['-99'] = 'domain';
@@ -200,6 +188,7 @@ function _domain_bootstrap_modules($reset = FALSE) {
 
 /**
  * Tries to load all domain bootstrap modules.
+ *
  * @see _domain_bootstrap_modules()
  */
 function _domain_bootstrap_modules_load() {
@@ -217,19 +206,7 @@ function _domain_bootstrap_modules_load() {
  *   An array containing module names.
  */
 function _domain_bootstrap_modules_get() {
-  global $conf;
-  $key = 'domain_bootstrap_modules';
-  $table = domain_get_primary_table('variable');
-
-  $result = config_get('domain.settings', 'domain_bootstrap_modules');
-  if (!empty($result)) {
-    $conf[$key] = $result;
-  }
-  else {
-    $conf[$key] = array('domain');
-  }
-  return $conf[$key];
-
+  return config_get('domain.settings', 'domain_bootstrap_modules');
 }
 
 /**
@@ -247,16 +224,19 @@ function _domain_bootstrap_modules_get() {
  */
 function _domain_bootstrap_invoke_all() {
   $args = func_get_args();
+
   $hook = $args[0];
 
   unset($args[0]);
 
-  $return = array();
+  $return = [];
   foreach (_domain_bootstrap_modules() as $module) {
     $function = $module . '_domain_bootstrap_' . $hook;
+
     if (function_exists($function)) {
       $result = call_user_func_array($function, $args);
       if (isset($result) && is_array($result)) {
+
         $return = array_merge_recursive($return, $result);
       }
       elseif (isset($result)) {
@@ -279,13 +259,14 @@ function _domain_bootstrap_invoke_all() {
  * enclose the table name in brackets {}, as that defeats the purpose of
  * this function.
  *
- * @see _domain_conf_load_primary()
- *
  * @param $table
  *   The name of the base table to lookup.
+ *
  * @return
  *   A query-safe table name pointing to the primary domain and default
  *   database..
+ * @see _domain_conf_load_primary()
+ *
  */
 function domain_get_primary_table($table) {
   global $databases;
@@ -319,7 +300,7 @@ function domain_get_primary_table($table) {
  */
 function domain_settings_initialize() {
   global $base_url, $base_path, $base_root, $cookie_domain;
-
+  require_once BACKDROP_ROOT . '/core/includes/config.inc';
   $is_https = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on';
 
   if (isset($base_url)) {
@@ -357,7 +338,7 @@ function domain_settings_initialize() {
   else {
     // Otherwise use $base_url as session name, without the protocol
     // to use the same session identifiers across http and https.
-    list( , $session_name) = explode('://', $base_url, 2);
+    [, $session_name] = explode('://', $base_url, 2);
     // HTTP_HOST can be modified by a visitor, but we already sanitized it
     // in backdrop_settings_initialize().
     if (!empty($_SERVER['HTTP_HOST'])) {
@@ -372,11 +353,12 @@ function domain_settings_initialize() {
     }
   }
 
+
   // Per RFC 2109, cookie domains must contain at least one dot other than the
   // first. For hosts such as 'localhost' or IP Addresses we don't set a cookie domain.
   if (count(explode('.', $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
-    ini_set('session.cookie_domain', $cookie_domain);
 
+    ini_set('session.cookie_domain', $cookie_domain);
   }
   // To prevent session cookies from being hijacked, a user can configure the
   // SSL version of their website to only transfer session cookies via SSL by

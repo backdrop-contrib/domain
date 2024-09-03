@@ -22,7 +22,7 @@ function domain_alias_features_export($data, &$export, $module_name) {
     $export['features']['domain_alias'][$machine_name] = $machine_name;
   }
   domain_features_export_set_wipe_tables($export, $data, 'domain_alias');
-  return array();
+  return [];
 }
 
 /**
@@ -30,7 +30,7 @@ function domain_alias_features_export($data, &$export, $module_name) {
  */
 function domain_alias_features_export_render($module_name, $data, $export = NULL) {
   domain_features_load($module_name, 'domain_alias_default_aliases', FALSE);
-  $code = array();
+  $code = [];
   $code[] = '  $domain_aliases = array();';
   // Set the wipe tables item.
   if ($wipe = domain_features_export_wipe_tables_code($data, $code, $export, 'domain_aliases') && empty($export)) {
@@ -45,7 +45,7 @@ function domain_alias_features_export_render($module_name, $data, $export = NULL
   }
   $code[] = "\n  return \$domain_aliases;";
   $output = implode("\n", $code);
-  return array('domain_alias_default_aliases' => $output);
+  return ['domain_alias_default_aliases' => $output];
 }
 
 /**
@@ -60,7 +60,7 @@ function domain_alias_features_export_render($module_name, $data, $export = NULL
 function domain_alias_prepare_export($machine_name) {
   $domain_id = domain_load_domain_id($machine_name);
   $list = domain_alias_list($domain_id);
-  $aliases = array();
+  $aliases = [];
   if (!empty($list)) {
     foreach ($list as $id => $val) {
       $val['machine_name'] = domain_load_machine_name($val['domain_id']);

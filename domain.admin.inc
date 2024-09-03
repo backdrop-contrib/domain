@@ -22,8 +22,7 @@ function domain_overview_form($form, &$form_state) {
   // Set the form.
   $default = domain_default();
   $active_domain = domain_get_domain();
-  $form = [];
-  ;
+  $form = [];;
   $form['top'] = [
     '#markup' => t('<p>The following domains have been created for your site.  The currently active domain <strong>is shown in boldface</strong>.  You
                     may click on a domain to change the currently active domain.  Your default domain is %name, which will be used for all requests that fail to resolve to a registered domain.</p>', ['%name' => $default['subdomain']]),
@@ -487,6 +486,7 @@ function domain_values_from_form_state($form_state) {
  */
 function domain_form($form, &$form_state, $domain = [], $arguments = []) {
   $_domain = domain_get_domain();
+
   // This action should be performed from the primary domain unless overridden.
   $error = FALSE;
   if (!isset($arguments['ignore_domain_status_check'])) {
@@ -1145,7 +1145,6 @@ function domain_nodes_form($form, &$form_state) {
 }
 
 function domain_nodes_form_submit($form, &$form_state) {
-  $config = config_get('domain.settings', 'domain_node_');
   $var = [];
   $node_types = node_type_get_names();
   foreach ($node_types as $type => $name) {

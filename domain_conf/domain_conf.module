@@ -16,6 +16,7 @@
  * Implements hook_domain_bootstrap_full().
  */
 function domain_conf_domain_bootstrap_full($domain) {
+  require_once BACKDROP_ROOT . '/core/includes/common.inc';
   $check = &backdrop_static(__FUNCTION__);
   // If running domain_set_domain(), we have issues with the variables
   // from the primary domain, which need to be loaded from cache.
@@ -30,7 +31,6 @@ function domain_conf_domain_bootstrap_full($domain) {
   $check = $domain['domain_id'];
   $settings = domain_conf_data_get($domain['domain_id']);
   if (!empty($settings)) {
-    global $conf;
 
     // Overwrite the $conf variables.
     foreach ($settings as $key => $value) {
@@ -42,24 +42,33 @@ function domain_conf_domain_bootstrap_full($domain) {
       if ($key == 'language_default') {
         $language = (bool) db_query("SELECT status FROM {system} WHERE name = 'locale' AND type = 'module'")->fetchField();
         if ($language) {
-          $temp = db_query('SELECT * FROM {languages} WHERE language = :language', array(':language' => $value))->fetchObject();
+          $temp = language_default();
           if (!empty($temp)) {
             $value = $temp;
             $GLOBALS['language'] = $temp;
-            $conf[$key] = $value;
+            config_set('system.core', 'language_default', $value->langcode);
           }
-          // Ensure we store the default language in case of reset.
-          // See domain_conf_js_maintain().
-          $result = db_query('SELECT value FROM {variable} WHERE name = :name', array(':name' => $key))->fetchField();
-          if (!empty($result)) {
-            domain_conf_default_language(unserialize($result));
-          }
+          domain_conf_default_language($value->langcode);
         }
       }
       else {
-        $conf[$key] = $value;
+        if ($settings['maintenance_mode']) {
+          state_set('maintenance_mode', $settings['maintenance_mode']);
+        }
       }
     }
+    config_set('system.core', 'site_mail', $settings['site_mail']);
+    config_set('system.core', 'site_slogan', $settings['site_slogan']);
+    config_set('system.core', 'site_frontpage', $settings['site_frontpage']);
+    config_set('system.core', 'anonymous', $settings['anonymous']);
+    config_set('system.core', 'admin_theme', $settings['admin_theme']);
+    config_set('system.core', 'admin_theme', $settings['admin_theme']);
+    config_set('system.core', 'node_admin_theme', $settings['node_admin_theme']);
+    config_set('system.core', 'cache', $settings['cache']);
+    config_set('system.core', 'page_cache_maximum_age', $settings['cache_lifetime']);
+    config_set('system.core', 'maintenance_mode_message', $settings['maintenance_mode_message']);
+    config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
+
   }
 }
 
@@ -78,7 +87,7 @@ function domain_conf_domain_bootstrap_full($domain) {
  */
 function domain_conf_data_get($domain_id, $reset = FALSE) {
   // Static cache management.
-  $static_cache = &backdrop_static(__FUNCTION__, array());
+  $static_cache = &backdrop_static(__FUNCTION__, []);
   if (!$reset && isset($static_cache[$domain_id])) {
     return $static_cache[$domain_id];
   }
@@ -89,9 +98,9 @@ function domain_conf_data_get($domain_id, $reset = FALSE) {
   $hit = TRUE;
 
   // Fetch data from source.
-  $settings = array();
+  $settings = [];
   $data = db_select('domain_conf', 'd')
-    ->fields('d', array('settings'))
+    ->fields('d', ['settings'])
     ->condition('domain_id', $domain_id)
     ->execute()
     ->fetchField();
@@ -122,15 +131,15 @@ function domain_conf_data_set($domain_id, array $new_settings, $merge = TRUE) {
     $new_settings = array_merge($settings, $new_settings);
   }
   db_merge('domain_conf')
-    ->key(array('domain_id' => $domain_id))
-    ->fields(array(
+    ->key(['domain_id' => $domain_id])
+    ->fields([
       'domain_id' => $domain_id,
       'settings' => serialize($new_settings),
-    ))
+    ])
     ->execute();
 
   // Update the static cache for any subsequent gets.
-  $static_cache_get = &backdrop_static('domain_conf_data_get', array());
+  $static_cache_get = &backdrop_static('domain_conf_data_get', []);
   $static_cache_get[$domain_id] = $new_settings;
 }
 
@@ -152,9 +161,9 @@ function domain_conf_data_delete($domain_id) {
   $query->execute();
 
   // Remove from the static cache for any subsequent gets.
-  $static_cache_get = &backdrop_static('domain_conf_data_get', array());
+  $static_cache_get = &backdrop_static('domain_conf_data_get', []);
   if ($wildcard) {
-    $static_cache_get = array();
+    $static_cache_get = [];
   }
   else {
     unset($static_cache_get[$domain_id]);
@@ -165,23 +174,23 @@ function domain_conf_data_delete($domain_id) {
  * Implements hook_menu()
  */
 function domain_conf_menu() {
-  $items = array();
-  $items['admin/structure/domain/view/%domain/config'] = array(
+  $items = [];
+  $items['admin/structure/domain/view/%domain/config'] = [
     'title' => 'Settings',
     'type' => MENU_LOCAL_TASK,
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'page callback' => 'domain_conf_page',
-    'page arguments' => array(4),
+    'page arguments' => [4],
     'file' => 'domain_conf.admin.inc',
-  );
-  $items['admin/structure/domain/view/%domain/conf-reset'] = array(
+  ];
+  $items['admin/structure/domain/view/%domain/conf-reset'] = [
     'title' => 'Domain site settings',
     'type' => MENU_VISIBLE_IN_BREADCRUMB,
-    'access arguments' => array('administer domains'),
+    'access arguments' => ['administer domains'],
     'page callback' => 'domain_conf_reset',
-    'page arguments' => array(4),
+    'page arguments' => [4],
     'file' => 'domain_conf.admin.inc',
-  );
+  ];
   return $items;
 }
 
@@ -189,11 +198,11 @@ function domain_conf_menu() {
  * Implements hook_theme()
  */
 function domain_conf_theme() {
-  $themes = array(
-    'domain_conf_reset' => array(
-      'variables' => array('domain' => array()),
-    ),
-  );
+  $themes = [
+    'domain_conf_reset' => [
+      'variables' => ['domain' => []],
+    ],
+  ];
   return $themes;
 }
 
@@ -202,9 +211,9 @@ function domain_conf_theme() {
  */
 function domain_conf_hook_info() {
   // TODO: test the loader function, which may fail in D7.
-  $hooks['domain_conf'] = array(
+  $hooks['domain_conf'] = [
     'group' => 'domain',
-  );
+  ];
   return $hooks;
 }
 
@@ -216,12 +225,13 @@ function domain_conf_hook_info() {
  *   Should the function return all hook implementations or just those marked
  *   with the domain_settings flag.  Defaults to FALSE.  Used to determine if
  *   we are loading configuration options specific to the Domain Access module.
+ *
  * @return
  *   An array of form elements according to the FormsAPI or an empty array.
  */
-function domain_conf_api($all = FALSE, $settings = array()) {
+function domain_conf_api($all = FALSE, $settings = []) {
   global $_domain;
-  $options = array();
+  $options = [];
   $extra = module_invoke_all('domain_conf', $_domain);
   if (!empty($extra)) {
     foreach ($extra as $key => $value) {
@@ -241,8 +251,9 @@ function domain_conf_api($all = FALSE, $settings = array()) {
   return $options;
 }
 
- /**
- * Recursively set default values of form fields based on settings for the domain being configured.
+/**
+ * Recursively set default values of form fields based on settings for the
+ * domain being configured.
  *
  * @param $elements
  *   Array of form elements.
@@ -271,13 +282,13 @@ function domain_conf_settings_load($elements, $settings) {
  * Implements hook_block_info().
  */
 function domain_conf_block_info() {
-  $blocks = array();
-  $blocks['domain-main-links'] = array(
+  $blocks = [];
+  $blocks['domain-main-links'] = [
     'info' => t('Domain main links'),
-  );
-  $blocks['domain-secondary-links'] = array(
+  ];
+  $blocks['domain-secondary-links'] = [
     'info' => t('Domain secondary links'),
-  );
+  ];
   return $blocks;
 }
 
@@ -309,10 +320,10 @@ function domain_conf_block_view($delta = '') {
   // Output the block.
   $output = menu_tree($data);
   // Build the block.
-  $block = array(
+  $block = [
     'subject' => check_plain($menus[$data]),
     'content' => $output,
-  );
+  ];
   return $block;
 }
 
@@ -360,6 +371,7 @@ function domain_conf_variable_set($domain_id, $variable, $value = NULL) {
  * @param $reset
  *   A boolean flag to reset the static variable array for the domain. Useful
  *   if you are changing variables during a page request.
+ *
  * @return
  *   The value of the variable for that domain, or NULL if not set,
  *   or an array of variables, in the case of $all.
@@ -391,8 +403,8 @@ function domain_conf_variable_get($domain_id, $variable = '', $all = FALSE, $res
  * Get the language options for use in forms.
  */
 function domain_conf_language_options() {
-  $languages = language_list('language', TRUE);
-  $options = array();
+  $languages = language_list();
+  $options = [];
   foreach ($languages as $key => $lang) {
     $extra = '';
     if ($lang->native != $lang->name) {
@@ -409,13 +421,14 @@ function domain_conf_language_options() {
  * We run this special handler when not able to trust variable_get()
  * during domain switching.
  *
- * @see domain_set_domain()
- *
  * @param $unset
  *   If TRUE, this will reset the global $conf array.
+ *
  * @return
  *   If set to TRUE, no return, just modify the global $conf array.
  *   Otherwise, return the settings data for the primary domain.
+ * @see domain_set_domain()
+ *
  */
 function _domain_conf_load_primary($unset = FALSE) {
   $settings = &backdrop_static(__FUNCTION__);
@@ -477,16 +490,16 @@ function domain_conf_variable_save($domain_id, $variable, $value = NULL) {
  * Implements hook_features_api().
  */
 function domain_conf_features_api() {
-  $components = array(
-    'domain_conf' => array(
+  $components = [
+    'domain_conf' => [
       'name' => t('Domain variables'),
       'default_hook' => 'domain_conf_default_variables',
       'default_file' => FEATURES_DEFAULTS_CUSTOM,
       'default_filename' => 'domains',
       'feature_source' => TRUE,
-      'file' => backdrop_get_path('module', 'domain_conf') .'/domain_conf.features.inc',
-    ),
-  );
+      'file' => backdrop_get_path('module', 'domain_conf') . '/domain_conf.features.inc',
+    ],
+  ];
   return $components;
 }
 
@@ -502,7 +515,7 @@ function domain_conf_features_api() {
  * locale_js_alter() and locale_languages_delete_form_submit(). Fortunately,
  * both function are tied to hook that we can monitor in order to ensure that
  * the settings are preserved properly.
-
+ *
  * @link http://drupal.org/node/1271810
  * @see _locale_rebuild_js()
  * @see locale_languages_delete_form_submit()

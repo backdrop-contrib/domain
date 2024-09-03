@@ -24,13 +24,13 @@ function domain_conf_page($domain) {
   if ($domain['domain_id'] == domain_default_id()) {
     backdrop_set_message(t('This is your default domain. Use of this form is discouraged. Set these values through the standard interface.'), 'warning', FALSE);
   }
-  $output = theme('domain_conf_reset', array('domain' => $domain));
-  backdrop_set_title(t('Settings for !site', array('!site' => $domain['subdomain'])));
+  $output = theme('domain_conf_reset', ['domain' => $domain]);
+  backdrop_set_title(t('Settings for !site', ['!site' => $domain['subdomain']]));
   $form = backdrop_get_form('domain_conf_form', $domain);
-  $form['intro'] = array(
+  $form['intro'] = [
     '#weight' => -5,
     '#markup' => $output,
-  );
+  ];
   return $form;
 }
 
@@ -44,7 +44,7 @@ function domain_conf_page($domain) {
  *   The domain currently being updated.
  */
 function domain_conf_form($form, &$form_state, $domain) {
-  $form = array();
+  $form = [];
   $batch = domain_batch_actions();
   $settings = domain_conf_data_get($domain['domain_id']);
   $default_group = t('Site configuration');
@@ -55,16 +55,16 @@ function domain_conf_form($form, &$form_state, $domain) {
       continue;
     }
     if ($action['#form']['#type'] == 'select') {
-      $action['#form']['#options'] = array('domain-conf-ignore' => t('Use primary domain settings')) + $action['#form']['#options'];
+      $action['#form']['#options'] = ['domain-conf-ignore' => t('Use primary domain settings')] + $action['#form']['#options'];
     }
     $group = isset($action['#group']) ? $action['#group'] : $default_group;
     if (!isset($form[$group])) {
-      $form[$group] = array(
+      $form[$group] = [
         '#type' => 'fieldset',
         '#title' => $group,
         '#collapsible' => TRUE,
         '#collapsed' => $collapsed,
-      );
+      ];
     }
     $form[$group][$key] = $action['#form'];
     $form[$group][$key]['#default_value'] = isset($settings[$key]) ? $settings[$key] : $action['#system_default'];
@@ -78,17 +78,17 @@ function domain_conf_form($form, &$form_state, $domain) {
       $form[$default_group]['site_frontpage']['#field_prefix'] = $fix;
     }
   }
-  $form['domain_id'] = array('#type' => 'value', '#value' => $domain['domain_id']);
+  $form['domain_id'] = ['#type' => 'value', '#value' => $domain['domain_id']];
   // Site name must be edited at the domain creation screen.
   if (config_get('domain.settings', 'domain_sitename_override') && isset($form[$default_group]['site_name'])) {
     $sitename = domain_conf_variable_get($domain['domain_id'], 'site_name');
-    $form[$default_group]['site_name'] = array(
+    $form[$default_group]['site_name'] = [
       '#disabled' => TRUE,
       '#title' => t('Site name'),
-      '#description' => t('The name of this web site, as entered in the <a href="!url">domain-specific settings</a>.', array('!url' => url('admin/structure/domain/view/' . $domain['domain_id']))),
+      '#description' => t('The name of this web site, as entered in the <a href="!url">domain-specific settings</a>.', ['!url' => url('admin/structure/domain/view/' . $domain['domain_id'])]),
       '#type' => 'textfield',
       '#default_value' => !empty($sitename) ? $sitename : $domain['sitename'],
-    );
+    ];
   }
   // Locale module is a little tricky, so handle it properly.
   $str = t('Language settings');
@@ -101,11 +101,11 @@ function domain_conf_form($form, &$form_state, $domain) {
   // Merge the $extra and $form arrays.
   $form = array_merge_recursive($form, $extra);
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Save domain settings'),
-    '#weight' => 10
-  );
+    '#weight' => 10,
+  ];
   return $form;
 }
 
@@ -113,10 +113,17 @@ function domain_conf_form($form, &$form_state, $domain) {
  * FormsAPI for domain_conf_form().
  */
 function domain_conf_form_submit($form, &$form_state) {
-  $new_settings = array();
+  $new_settings = [];
 
   // Throw away what we don't need.
-  $ignore = array('form_token', 'form_id', 'form_build_id', 'op', 'submit', 'domain_id');
+  $ignore = [
+    'form_token',
+    'form_id',
+    'form_build_id',
+    'op',
+    'submit',
+    'domain_id',
+  ];
   foreach ($form_state['values'] as $key => $value) {
     if (in_array($key, $ignore)) {
       continue;
@@ -161,8 +168,8 @@ function domain_conf_reset($domain) {
  */
 
 function domain_conf_reset_form($form, &$form_state, $domain) {
-  $extra['domain_id'] = array('#type' => 'value', '#value' => $domain['domain_id']);
-  $form = confirm_form($extra, t('Are you sure you wish to reset the settings for %name?', array('%name' => $domain['sitename'])), 'admin/structure/domain/view/' . $domain['domain_id'] . '/config', t('Submitting this form will restore default settings for this domain.'));
+  $extra['domain_id'] = ['#type' => 'value', '#value' => $domain['domain_id']];
+  $form = confirm_form($extra, t('Are you sure you wish to reset the settings for %name?', ['%name' => $domain['sitename']]), 'admin/structure/domain/view/' . $domain['domain_id'] . '/config', t('Submitting this form will restore default settings for this domain.'));
   return $form;
 }
 
@@ -191,10 +198,10 @@ function domain_conf_reset_form_submit($form, &$form_state) {
 function theme_domain_conf_reset($variables) {
   $domain = $variables['domain'];
   $output = '';
-  $output .= '<p>' . t('These settings will replace or supplement your default site settings when %name is the active domain.', array('%name' => $domain['sitename'])) . '</p>';
+  $output .= '<p>' . t('These settings will replace or supplement your default site settings when %name is the active domain.', ['%name' => $domain['sitename']]) . '</p>';
   $settigns = domain_conf_data_get($domain['domain_id']);
   if (!empty($settigns)) {
-    $output .= '<p>' . t('You may <a href="!url">erase these settings</a> to restore the default behavior.', array('!url' => url('admin/structure/domain/view/' . $domain['domain_id'] . '/conf-reset'))) . '</p>';
+    $output .= '<p>' . t('You may <a href="!url">erase these settings</a> to restore the default behavior.', ['!url' => url('admin/structure/domain/view/' . $domain['domain_id'] . '/conf-reset')]) . '</p>';
   }
   return $output;
 }

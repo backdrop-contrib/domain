@@ -74,7 +74,7 @@ function domain_api_version() {
  * $conf['site_name'].
  */
 function domain_init() {
-  global $_domain, $conf;
+  global $_domain;
 
   if (!is_array($_domain)) {
     $_domain = [];
@@ -135,7 +135,7 @@ function domain_init() {
 
   // Set the site name to the domain-specific name.
   if (config_get('domain.settings', 'domain_sitename_override')) {
-    $conf['site_name'] = $_domain['sitename'];
+    config_set('system.core', 'site_name', $_domain['sitename']);
   }
 }
 
@@ -686,8 +686,8 @@ function domain_form_user_register_form_alter(&$form, &$form_state) {
 function domain_form_user_form_alter(&$form, &$form_state) {
   // Only act on our forms.
   if (in_array($form['#form_id'], [
-      'user_register_form',
-    ])) {
+    'user_register_form',
+  ])) {
     return;
   }
 
@@ -1117,10 +1117,10 @@ function domain_lookup($domain_id = NULL, $subdomain = NULL, $reset = FALSE) {
   if (!isset($result) || $reset) {
     // Temporary hack for update to 7.x.3.
     if (db_table_exists('domain_export')) {
-      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAllAssoc('domain_id');
+      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default, machine_name FROM {domain}", [], ['fetch' => PDO::FETCH_ASSOC])->fetchAllAssoc('domain_id');
     }
     else {
-      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default FROM {domain}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAllAssoc('domain_id');
+      $result = db_query("SELECT domain_id, subdomain, sitename, scheme, valid, weight, is_default FROM {domain}", [], ['fetch' => PDO::FETCH_ASSOC])->fetchAllAssoc('domain_id');
     }
   }
 
@@ -2534,10 +2534,10 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
 
   $type = '';
   // Apply to all node editing forms only.
-  if (!empty($form['#node'])){
+  if (!empty($form['#node'])) {
     $type = $form['#node']->type;
   }
-  if ($form_id != $type.'_node_form') {
+  if ($form_id != $type . '_node_form') {
     return;
   }
 

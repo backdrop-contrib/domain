@@ -12,7 +12,7 @@
  */
 function domain_block_view_switcher() {
   $output = '';
-  $list = array();
+  $list = [];
   $domains = domain_domains();
   $msg = FALSE;
   foreach ($domains as $domain) {
@@ -29,17 +29,17 @@ function domain_block_view_switcher() {
       }
     }
     if ($allow) {
-      $list[] = l($title, domain_get_uri($domain), array('absolute' => TRUE));
+      $list[] = l($title, domain_get_uri($domain), ['absolute' => TRUE]);
     }
   }
-  $items = array('items' => $list);
+  $items = ['items' => $list];
   $output = theme('item_list', $items);
-  $block = array(
+  $block = [
     'subject' => t('Domain switcher'),
-    'content' => array(
+    'content' => [
       '#markup' => $output,
-    ),
-  );
+    ],
+  ];
   return $block;
 }
 
@@ -56,24 +56,30 @@ function domain_block_view_information() {
   }
   // Print the assigned domains.
   if (!empty($node->subdomains)) {
-    $output .= theme('item_list', array('items' => $node->subdomains, 'title' => t('Assigned domains')));
+    $output .= theme('item_list', [
+      'items' => $node->subdomains,
+      'title' => t('Assigned domains'),
+    ]);
   }
   // Print the link source domain.
   $this_domain = domain_get_node_match($node->nid);
-  $output .= theme('item_list', array('items' => array(check_plain($this_domain['sitename'])), 'title' => t('Source domain')));
+  $output .= theme('item_list', [
+    'items' => [check_plain($this_domain['sitename'])],
+    'title' => t('Source domain'),
+  ]);
   if (empty($output)) {
     $output = t('This node is not assigned to a domain.');
   }
   else {
-    $output = '<p>' . t('%node is published with the following Domain Access rules:', array('%node' => $node->title)) . '</p>' . $output;
+    $output = '<p>' . t('%node is published with the following Domain Access rules:', ['%node' => $node->title]) . '</p>' . $output;
   }
 
-  $block = array(
+  $block = [
     'subject' => t('Domain access information'),
-    'content' => array(
+    'content' => [
       '#markup' => $output,
-    ),
-  );
+    ],
+  ];
   return $block;
 }
 
@@ -85,28 +91,28 @@ function domain_block_view_information() {
 function domain_block_view_server() {
   $_domain = domain_get_domain();
   $output = '';
-  $header = array(t('Property'), t('Value'));
-  $rows = array();
-  $rows[] = array(
+  $header = [t('Property'), t('Value')];
+  $rows = [];
+  $rows[] = [
     t('HTTP_HOST request'),
     check_plain($_SERVER['HTTP_HOST']),
-  );
+  ];
 
   $check = domain_lookup(NULL, $_SERVER['HTTP_HOST']);
   $match = t('TRUE');
   if ($check == -1) {
     // Specific check for Domain Alias.
     if (isset($_domain['active_alias_id'])) {
-      $match = t('ALIAS: Using alias %id', array('%id' => $_domain['active_alias_id']));
+      $match = t('ALIAS: Using alias %id', ['%id' => $_domain['active_alias_id']]);
     }
     else {
       $match = t('FALSE: Using default domain.');
     }
   }
-  $rows[] = array(
+  $rows[] = [
     t('Domain match'),
     $match,
-  );
+  ];
   foreach ($_domain as $key => $value) {
     if (is_null($value)) {
       $value = t('NULL');
@@ -117,18 +123,18 @@ function domain_block_view_server() {
     elseif ($value === FALSE) {
       $value = t('FALSE');
     }
-    $rows[] = array(
+    $rows[] = [
       check_plain($key),
       !is_array($value) ? check_plain($value) : _domain_block_print_array($value),
-    );
+    ];
   }
-  $output = theme('table', array('header' => $header, 'rows' => $rows));
-  $block = array(
+  $output = theme('table', ['header' => $header, 'rows' => $rows]);
+  $block = [
     'subject' => t('Domain server information'),
-    'content' => array(
+    'content' => [
       '#markup' => $output,
-    ),
-  );
+    ],
+  ];
   return $block;
 }
 
@@ -142,20 +148,20 @@ function domain_block_view_server() {
  *  A suitable output string.
  */
 function _domain_block_print_array($array) {
-  $items = array();
+  $items = [];
   foreach ($array as $key => $val) {
     $value = 'array';
     if (!is_array($val)) {
       $value = check_plain($val);
     }
     else {
-      $list = array();
+      $list = [];
       foreach ($val as $k => $v) {
-        $list[] = t('@key : @value', array('@key' => $k, '@value' => $v));
+        $list[] = t('@key : @value', ['@key' => $k, '@value' => $v]);
       }
       $value = implode('<br />', $list);
     }
-    $items[] = t('@key : !value', array('@key' => $key, '!value' => $value));
+    $items[] = t('@key : !value', ['@key' => $key, '!value' => $value]);
   }
-  return theme('item_list', array('items' => $items));
+  return theme('item_list', ['items' => $items]);
 }

@@ -603,16 +603,16 @@ function hook_domain_bootstrap_lookup($domain) {
  *   be called unless $domain is set properly.
  */
 function hook_domain_bootstrap_full($domain) {
-  global $conf;
   // The language variable should not be set yet.
   // Check for errors.
-  if (isset($conf['language'])) {
+  config_get('system.core', 'language_default');
+  if (empty(config_get('system.core', 'language_default'))) {
     global $_domain;
     $_domain['error'] = 'mymodule';
     return;
   }
   // Our test module sets the default language to Spanish.
-  $conf['language'] = 'es';
+  config_set('system.core', 'language_default','en');
 }
 
 /**
@@ -669,6 +669,7 @@ function mymodule_form_submit($form_state) {
     return;
   }
   $domains = domain_domains();
+  print_r($domains);
   foreach ($domains as $domain) {
     $value = $form_state['values']['my_variable'];
     domain_conf_variable_set($domain['domain_id'], 'my_variable', $value);
