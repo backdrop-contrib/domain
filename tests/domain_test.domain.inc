@@ -117,14 +117,6 @@ function domain_test_domain_batch() {
 }
 
 /**
- * Implements hook_domain_batch_alter().
- */
-function domain_test_domain_batch_alter(&$batch) {
-  // Rename 'Put site into maintenance mode'.
-  $batch['maintenance_mode']['#form']['#title'] = t('Test reset value');
-}
-
-/**
  * Implements hook_domain_invalid_request().
  */
 function domain_test_domain_invalid_request($path, $_domain, $account) {

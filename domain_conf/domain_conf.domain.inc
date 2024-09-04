@@ -17,7 +17,6 @@ function domain_conf_domain_warning() {
     'system_performance_settings',
     'system_regional_settings',
     'system_site_information_settings',
-    'system_site_maintenance_mode',
     'locale_languages_overview_form',
     'menu_configure',
     'node_type_form',
@@ -259,46 +258,6 @@ function domain_conf_domain_batch() {
     '#weight' => -5,
     '#update_all' => TRUE,
     '#group' => t('Performance'),
-  ];
-  // Toggle the site offline status.
-  $batch['maintenance_mode'] = [
-    '#form' => [
-      '#type' => 'checkbox',
-      '#title' => t('Put site into maintenance mode'),
-      '#default_value' => state_get('maintenance_mode'),
-      '#description' => t('When enabled, only users with the "Access site in maintenance mode" <a href="@permissions-url">permission</a> are able to access your site to perform maintenance; all other visitors see the maintenance mode message configured below. Authorized users can log in directly via the <a href="@user-login">user login</a> page.', [
-        '@permissions-url' => url('admin/people/permissions'),
-        '@user-login' => url('user'),
-      ]),
-    ],
-    '#permission' => 'administer site configuration',
-    '#domain_action' => 'domain_conf',
-    '#system_default' => state_get('maintenance_mode', FALSE),
-    '#variable' => 'maintenance_mode',
-    '#meta_description' => t('Set maintenance for all domains.'),
-    '#data_type' => 'integer',
-    '#weight' => -4,
-    '#update_all' => TRUE,
-    '#group' => t('Maintenance mode'),
-  ];
-  // Change the site offline message.
-  $batch['maintenance_mode_message'] = [
-    '#form' => [
-      '#title' => t('Site offline message'),
-      '#type' => 'textarea',
-      '#cols' => 30,
-      '#rows' => 5,
-      '#description' => t('Message to show visitors when this domain is in off-line mode.'),
-    ],
-    '#permission' => 'administer site configuration',
-    '#domain_action' => 'domain_conf',
-    '#system_default' => t('@site is currently under maintenance. We should be back shortly. Thank you for your patience.', ['@site' => config_get('system.core', 'site_name')]),
-    '#variable' => 'maintenance_mode_message',
-    '#meta_description' => t('Set the site offline message for all domains.'),
-    '#data_type' => 'string',
-    '#weight' => -2,
-    '#update_all' => TRUE,
-    '#group' => t('Maintenance mode'),
   ];
   // Change the default language.
   if (module_exists('locale')) {

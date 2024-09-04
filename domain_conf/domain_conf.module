@@ -51,23 +51,27 @@ function domain_conf_domain_bootstrap_full($domain) {
           domain_conf_default_language($value->langcode);
         }
       }
-      else {
-        if ($settings['maintenance_mode']) {
-          state_set('maintenance_mode', $settings['maintenance_mode']);
-        }
+    }
+    $indexes = [
+      'site_mail',
+      'site_slogan',
+      'site_frontpage',
+      'anonymous',
+      'admin_theme',
+      'node_admin_theme',
+    ];
+    foreach ($indexes as $i => $index) {
+      if (!empty($settings[$index])) {
+        config_set('system.core', $index, $settings[$index]);
       }
     }
-    config_set('system.core', 'site_mail', $settings['site_mail']);
-    config_set('system.core', 'site_slogan', $settings['site_slogan']);
-    config_set('system.core', 'site_frontpage', $settings['site_frontpage']);
-    config_set('system.core', 'anonymous', $settings['anonymous']);
-    config_set('system.core', 'admin_theme', $settings['admin_theme']);
-    config_set('system.core', 'admin_theme', $settings['admin_theme']);
-    config_set('system.core', 'node_admin_theme', $settings['node_admin_theme']);
     config_set('system.core', 'cache', $settings['cache']);
-    config_set('system.core', 'page_cache_maximum_age', $settings['cache_lifetime']);
-    config_set('system.core', 'maintenance_mode_message', $settings['maintenance_mode_message']);
-    config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
+    if (!empty($settings['cache_lifetime'])) {
+      config_set('system.core', 'page_cache_maximum_age', $settings['cache_lifetime']);
+    }
+    if (!empty($settings['date_default_timezone'])) {
+      config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
+    }
 
   }
 }

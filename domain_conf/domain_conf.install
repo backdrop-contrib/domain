@@ -69,8 +69,6 @@ function domain_conf_d7_variable_changes() {
   ];
   $renamed = [
     'menu_primary_links_source' => 'menu_main_links_source',
-    'site_offline' => 'maintenance_mode',
-    'site_offline_message' => 'maintenance_mode_message',
   ];
   return ['removed' => $removed, 'renamed' => $renamed];
 }

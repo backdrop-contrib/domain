@@ -232,7 +232,6 @@ function hook_domain_warning() {
     'system_admin_theme_settings',
     'system_date_time_settings',
     'system_site_information_settings',
-    'system_site_maintenance_settings'
   );
   $return = array();
   foreach ($forms as $key) {
@@ -487,21 +486,6 @@ function hook_domain_batch() {
 }
 
 /**
- * Allow modules to modify the batch editing functions.
- *
- * @see backdrop_alter()
- *
- * @param &$batch
- *   An array of batch editing functions, passed by reference.
- * @return
- *   No return value. Modify $batch by reference.
- */
-function hook_domain_batch_alter(&$batch) {
-  // Rename 'Put site into maintenance mode'.
-  $batch['maintenance_mode']['#form']['#title'] = t('Take site offline');
-}
-
-/**
  * Return an array of forms for which we cannot run hook_form_alter().
  *
  * @return
@@ -725,7 +709,6 @@ function hook_domain_warning_alter(&$forms) {
   $core_forms = array(
     'system_admin_theme_settings',
     'system_site_information_settings',
-    'system_site_maintenance_settings',
     'menu_configure',
   );
   foreach ($core_forms as $form_id) {
