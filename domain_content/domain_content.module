@@ -43,7 +43,7 @@ function domain_content_menu() {
   // See http://drupal.org/node/1003430.
   if (module_exists('domain')) {
     $domains = domain_domains();
-    if (count($domains) <= variable_get('domain_list_size', DOMAIN_LIST_SIZE)) {
+    if (count($domains) <= config_get('domain.settings', 'domain_list_size')) {
       foreach ($domains as $domain) {
         $items['admin/domain/content/' . $domain['domain_id']] = array(
           'title' => check_plain($domain['sitename']) .' content',
