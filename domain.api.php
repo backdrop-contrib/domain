@@ -653,7 +653,6 @@ function mymodule_form_submit($form_state) {
     return;
   }
   $domains = domain_domains();
-  print_r($domains);
   foreach ($domains as $domain) {
     $value = $form_state['values']['my_variable'];
     domain_conf_variable_set($domain['domain_id'], 'my_variable', $value);

@@ -572,8 +572,8 @@ function domain_user_set($account) {
 /**
  * Implements hook_user_insert().
  */
-function domain_user_insert(&$edit, $account, $category) {
-  domain_user_save($edit, $account, $category);
+function domain_user_insert($account) {
+  domain_user_save($account);
 }
 
 /**
@@ -587,7 +587,6 @@ function domain_user_update($account) {
  * Helper function called by both hook_user_insert() and hook_user_update().
  */
 function domain_user_save($account) {
-
   // If our field element is missing, do nothing.
   if (!isset($account->domain_user)) {
     return;
@@ -603,6 +602,7 @@ function domain_user_save($account) {
       $values[] = ['uid' => $account->uid, 'domain_id' => $domain_id];
     }
   }
+
   if (!empty($values)) {
     $query = db_insert('domain_editor')->fields(['uid', 'domain_id']);
     foreach ($values as $record) {
@@ -611,7 +611,7 @@ function domain_user_save($account) {
     $query->execute();
   }
   // Clear the $edit field.
-  $edit['domain_user'] = NULL;
+//  $edit['domain_user'] = NULL;
 }
 
 /**
@@ -684,13 +684,6 @@ function domain_form_user_register_form_alter(&$form, &$form_state) {
  * Helper function for the two user forms we care about.
  */
 function domain_form_user_form_alter(&$form, &$form_state) {
-  // Only act on our forms.
-  if (in_array($form['#form_id'], [
-    'user_register_form',
-  ])) {
-    return;
-  }
-
   $_domain = domain_get_domain();
 
   // Get the domains for this user, but ignore roles unless told to use them.
@@ -4241,10 +4234,10 @@ function domain_batch_actions() {
 /**
  * Implements template_preprocess_html().
  */
-function domain_preprocess_html(&$variables) {
+function domain_preprocess_page(&$variables) {
   $classes = domain_page_classes();
   foreach ($classes as $class) {
-    $variables['classes_array'][] = $class;
+    $variables['classes'][] = $class;
   }
 }
 
