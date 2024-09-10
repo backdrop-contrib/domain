@@ -134,11 +134,6 @@ function domain_conf_form_submit($form, &$form_state) {
   // Update configuration.
 
   domain_conf_data_set($form_state['values']['domain_id'], $new_settings);
-  $domain_data = config_get('domain.settings', 'settings');
-  $domain_id = $form_state['values']['domain_id'];
-  unset($domain_data[$domain_id]);
-  $domain_data[$domain_id] = $new_settings;
-  config_set('domain.settings', 'settings', $domain_data);
   backdrop_set_message(t('Domain options saved successfully.'));
   // Clear the cache.
   cache_clear_all();

@@ -4470,6 +4470,7 @@ function domain_autoload_info() {
     'MigrateDestinationDomain' => 'domain.migrate.inc',
     'DomainNodeHandler' => 'domain.migrate.inc',
     'DomainUserHandler' => 'domain.migrate.inc',
+    'DomainLayoutAccess' => 'plugins/layout/access/domain_layout_access.inc',
   ];
 }
 
@@ -4482,4 +4483,16 @@ function domain_config_info() {
     'group' => t('Configuration'),
   ];
   return $prefixes;
+}
+
+/**
+ * Implements hook_layout_access_info().
+ */
+function domain_layout_access_info() {
+  $info['domain'] = array(
+    'title' => t('Domain'),
+    'description' => t('Control access by Domain'),
+    'class' => 'DomainLayoutAccess',
+  );
+  return $info;
 }

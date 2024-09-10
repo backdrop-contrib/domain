@@ -72,9 +72,10 @@ function domain_conf_domain_bootstrap_full($domain) {
     if (!empty($settings['date_default_timezone'])) {
       config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
     }
-
   }
 }
+
+
 
 /**
  * CRUD utility to retreve domain configuratin data.
