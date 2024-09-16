@@ -440,6 +440,11 @@ function domain_configure_form_submit($form, &$form_state, $user_submitted = FAL
   config_set('domain.settings', 'domain_xmlrpc_rule', $form_state['values']['domain_xmlrpc_rule']);
   config_set('domain.settings', 'domain_paths', $form_state['values']['domain_paths']);
   config_set('domain.settings', 'domain_classes', $form_state['values']['domain_classes']);
+  if (module_exists('domain_settings') && isset($form_state['values']['domain_settings_behavior']) ) {
+    config_set('domain_settings.settings', 'domain_settings_behavior', $form_state['values']['domain_settings_behavior']);
+    config_set('domain_settings.settings', 'domain_settings_form_visibility', $form_state['values']['domain_settings_form_visibility']);
+    config_set('domain_settings.settings', 'domain_settings_forms', $form_state['values']['domain_settings_forms']);
+  }
 }
 
 /**

@@ -30,7 +30,7 @@ function domain_nav_menu() {
     $items['domain'] = array(
       'title' => 'Domain',
       'type' => MENU_SUGGESTED_ITEM,
-      'page callback' => 'drupal_goto',
+      'page callback' => 'backdrop_goto',
       'page arguments' => array($root['path']),
       'access callback' => 'domain_nav_check',
       'access arguments' => array(TRUE),
@@ -47,7 +47,7 @@ function domain_nav_menu() {
       $items['domain/' . filter_xss_admin($domain['subdomain'])] = array(
         'title' => check_plain($domain['sitename']),
         'type' => $type,
-        'page callback' => 'drupal_goto',
+        'page callback' => 'backdrop_goto',
         'page arguments' => array($domain['path']),
         'access callback' => 'domain_nav_check',
         'access arguments' => array(TRUE),
@@ -142,7 +142,7 @@ function domain_nav_block_configure($delta = '') {
   $form['domain_nav_block'] = array(
     '#type' => 'radios',
     '#title' => t('Link paths'),
-    '#default_value' => variable_get('domain_nav_block', 0),
+    '#default_value' => config_get('domain_nav.settings', 'domain_nav_block'),
     '#options' => array(0 => t('Link to site home page'), 1 => t('Link to active url')),
   );
   $options = array(
@@ -153,7 +153,7 @@ function domain_nav_block_configure($delta = '') {
   $form['domain_nav_theme'] = array(
     '#type' => 'radios',
     '#title' => t('Link theme'),
-    '#default_value' => variable_get('domain_nav_theme', 'default'),
+    '#default_value' => config_get('domain_nav.settings','domain_nav_theme'),
     '#options' => $options,
   );
   return $form;
@@ -163,8 +163,8 @@ function domain_nav_block_configure($delta = '') {
  * Implements hook_block_save().
  */
 function domain_nav_block_save($delta = '', $edit = array()) {
-  variable_set('domain_nav_block', $edit['domain_nav_block']);
-  variable_set('domain_nav_theme', $edit['domain_nav_theme']);
+  config_set('domain_nav.settings','domain_nav_block', $edit['domain_nav_block']);
+  config_set('domain_nav.settings','domain_nav_theme', $edit['domain_nav_theme']);
 }
 
 /**
@@ -194,10 +194,10 @@ function domain_nav_render($paths = NULL, $style = NULL) {
   }
   // Get the options and set the variables.
   if (empty($paths)) {
-    $paths = variable_get('domain_nav_block', 0);
+    $paths =config_get('domain_nav.settings','domain_nav_block');
   }
   if (empty($style)) {
-    $style = variable_get('domain_nav_theme', 'default');
+    $style = config_get('domain_nav.settings','domain_nav_theme');
   }
   $options = array();
   $domains = domain_domains();
@@ -228,7 +228,7 @@ function domain_nav_render($paths = NULL, $style = NULL) {
     }
   }
   $theme = 'domain_nav_' . $style;
-  drupal_alter('domain_nav_options', $options);
+  backdrop_alter('domain_nav_options', $options);
   $content = theme($theme, array('options' => $options));
   return $content;
 }
@@ -327,4 +327,15 @@ function domain_nav_rebuild_menu() {
     // We rebuild the menu, since the domain records have changed.
     menu_rebuild();
   }
+}
+
+/**
+ * Implements hook_config_info().
+ */
+function domain_nav_config_info() {
+  $prefixes['domain_nav.settings'] = array(
+    'label' => t('Domain Access settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
 }

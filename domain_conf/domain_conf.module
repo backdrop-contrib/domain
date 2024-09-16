@@ -73,8 +73,26 @@ function domain_conf_domain_bootstrap_full($domain) {
       config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
     }
   }
+  $data = config_get('domain_settings.settings', 'forms_settings');
+  if (!empty($data)) {
+    foreach ($data as $form_data => $form_val) {
+      if (!empty($data[$form_data][$check])) {
+        foreach ($data[$form_data][$check] as $key => $value) {
+          $json = [];
+          $json = $data[$form_data]['file_json'];
+          if (is_array($json)) {
+            foreach ($data[$form_data]['file_json'] as $file => $config) {
+              $var = config_get($config);
+              if (array_key_exists($key, $var)) {
+                config_set($config, $key, $value);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
-
 
 
 /**
