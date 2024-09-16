@@ -1,0 +1,9 @@
+{
+    "_config_name": "domain_settings.settings",
+    "domain_settings_ignore": "",
+    "domain_settings_behavior": 0,
+    "domain_settings_form_visibility": "DOMAIN_SETTINGS_SHOW_EXCEPT_LISTED",
+    "domain_settings_forms": "",
+    "forms_settings": [],
+    "domain_sitename": ""
+}
