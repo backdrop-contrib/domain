@@ -65,7 +65,10 @@ function domain_conf_domain_bootstrap_full($domain) {
         config_set('system.core', $index, $settings[$index]);
       }
     }
-    config_set('system.core', 'cache', $settings['cache']);
+    if (isset($settings['cache'])){
+      config_set('system.core', 'cache', $settings['cache']);
+    }
+
     if (!empty($settings['cache_lifetime'])) {
       config_set('system.core', 'page_cache_maximum_age', $settings['cache_lifetime']);
     }

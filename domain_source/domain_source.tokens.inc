@@ -57,7 +57,7 @@ function domain_source_tokens($type, $tokens, array $data = array(), array $opti
       switch ($name) {
         case 'source-domain-node-url':
           // Get the query string parameters. If none set, set to NULL
-          $query_string = drupal_get_query_parameters();
+          $query_string = backdrop_get_query_parameters();
           if (empty($query_string)) {
             $query_string = NULL;
           }

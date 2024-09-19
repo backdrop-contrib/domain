@@ -44,3 +44,13 @@ function domain_source_update_7300(&$sandbox) {
     ->execute();
   return t('Domain Source zero records removed.');
 }
+
+/**
+ * Migrate domain_source variables to config.
+ */
+function domain_source_update_1000() {
+  $config = config('domain_source.settings');
+  $config->set('domain_source_type', update_variable_get('domain_source_type', array()));
+  $config->save();
+  update_variable_del('domain_source_type');
+}

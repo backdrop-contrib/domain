@@ -245,13 +245,15 @@ function domain_content_form() {
     '#attributes' => ['class' => ['container-inline']],
   ];
   $options = [];
-  $list = domain_content_node_operations();
-  foreach ($list as $key => $value) {
-    $options[$key] = $value['label'];
+
+  if ($admin_access) {
+    foreach (module_invoke('domain_content', 'actions_info') as $operation => $array) {
+      $options[$operation] = $array['label'];
+    }
   }
   // Get the actions the user may perform.
   if ($admin_access) {
-    foreach (module_invoke('domain_content', 'node_actions') as $operation => $array) {
+    foreach (module_invoke('node', 'action_info') as $operation => $array) {
       $options[$operation] = $array['label'];
     }
   }
@@ -272,9 +274,6 @@ function domain_content_form() {
     '#submit' => ['domain_content_admin_nodes_submit'],
   ];
 
-
-  // Enable language column if translation module is enabled
-  // or if we have any node with language.
   $multilanguage = (module_exists('translation') || db_query("SELECT 1 FROM {node} WHERE langcode <> :langcode", [':langcode' => LANGUAGE_NONE])->fetchField());
 
   // Build the sortable table header.
@@ -740,91 +739,40 @@ function domain_content_admin_nodes_submit($form, &$form_state) {
   require_once BACKDROP_ROOT . '/core/modules/node/node.actions.inc';
   require_once BACKDROP_ROOT . '/core/modules/node/node.admin.inc';
 
-  $operations = module_invoke('domain_content', 'node_actions');
+  $operations = module_invoke_all('action_info');
+  $operations['domain'] = module_invoke('domain_content', 'actions_info')['domain'];
   $operation = $operations[$form_state['values']['operation']];
+
   // Filter out unchecked nodes
   $nodes = array_filter($form_state['values']['nodes']);
 
   if ($function = $operation['callback']) {
     // Add in callback arguments if present.
-    if (isset($operation['callback arguments']) && $operation['callback arguments'] != 'delete') {
+    if (isset($operation['callback arguments'])) {
       $args = array_merge([$nodes], $operation['callback arguments']);
     }
     else {
       $args = [$nodes];
     }
-
-    if ($operation['callback arguments'] == 'delete') {
-      foreach ($args[0] as $arg) {
+    foreach ($args[0] as $arg) {
+      if ($operation['callback'] != 'node_delete_action') {
+        $nod = node_load($arg);
+        $param = [
+          'node' => $nod,
+          'context' => &$context,
+        ];
+        call_user_func_array($function, $param);
+      }
+      else {
+        $nod = node_load($arg);
         node_delete($arg);
       }
     }
-    else {
-
-      call_user_func_array($function, $args);
-    }
-
-    cache_clear_all();
+    backdrop_flush_all_caches();
   }
   else {
     // We need to rebuild the form to go to a second step. For example, to
     // show the confirmation form for the deletion of nodes.
     $form_state['rebuild'] = TRUE;
   }
-}
-
-/**
- * Implements hook_node_operations().
- */
-function domain_content_node_actions() {
-  $operations = [
-    'publish' => [
-      'label' => t('Publish selected content'),
-      'callback' => 'node_mass_update',
-      'callback arguments' => ['updates' => ['status' => NODE_PUBLISHED]],
-    ],
-    'unpublish' => [
-      'label' => t('Unpublish selected content'),
-      'callback' => 'node_mass_update',
-      'callback arguments' => ['updates' => ['status' => NODE_NOT_PUBLISHED]],
-    ],
-    'promote' => [
-      'label' => t('Promote selected content to front page'),
-      'callback' => 'node_mass_update',
-      'callback arguments' => [
-        'updates' => [
-          'status' => NODE_PUBLISHED,
-          'promote' => NODE_PROMOTED,
-        ],
-      ],
-    ],
-    'demote' => [
-      'label' => t('Demote selected content from front page'),
-      'callback' => 'node_mass_update',
-      'callback arguments' => ['updates' => ['promote' => NODE_NOT_PROMOTED]],
-    ],
-    'sticky' => [
-      'label' => t('Make selected content sticky'),
-      'callback' => 'node_mass_update',
-      'callback arguments' => [
-        'updates' => [
-          'status' => NODE_PUBLISHED,
-          'sticky' => NODE_STICKY,
-        ],
-      ],
-    ],
-    'unsticky' => [
-      'label' => t('Make selected content not sticky'),
-      'callback' => 'node_mass_update',
-      'callback arguments' => ['updates' => ['sticky' => NODE_NOT_STICKY]],
-    ],
-    'node_delete_action' => [
-      'type' => 'node',
-      'label' => t('Delete content'),
-      'callback' => 'node_delete_action',
-      'callback arguments' => 'delete',
-      'file' => 'node.actions.inc',
-    ],
-  ];
-  return $operations;
 }

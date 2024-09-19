@@ -21,7 +21,7 @@ define('DOMAIN_SOURCE_IGNORE', -10);
  */
 function domain_source_form_alter(&$form, &$form_state, $form_id) {
   // Apply to all node editing forms only.
-  if (empty($form['#node_edit_form'])) {
+  if (empty($form['#node'])) {
     return;
   }
   global $user;
@@ -241,7 +241,7 @@ function domain_source_node_delete($node) {
  * Display debugging information for a node.
  */
 function domain_source_node_view($node, $view_mode) {
-  if (empty($node->nid) || !in_array($view_mode, array('full', 'teaser')) || !variable_get('domain_debug', 0) || !user_access('set domain access')) {
+  if (empty($node->nid) || !in_array($view_mode, array('full', 'teaser')) || !config_get('domain.settings', 'domain_debug') || !user_access('set domain access')) {
     return;
   }
   $_domain = domain_get_domain();
@@ -360,6 +360,7 @@ function domain_source_views_api() {
 function domain_source_form_domain_nodes_form_alter(&$form, &$form_state, $form_id) {
   $options = array();
   $domains = domain_domains();
+  print_r($domains);
   $options[DOMAIN_SOURCE_USE_ACTIVE] = t('Use active domain');
   foreach ($domains as $domain) {
     $options[$domain['machine_name']] = $domain['sitename'];
@@ -438,4 +439,25 @@ function domain_source_form_node_type_form_alter(&$form, &$form_state, $form_id)
     '#default_value' => variable_get('domain_source_' . $form['#node_type']->type, DOMAIN_SOURCE_USE_ACTIVE),
   );
   $form['#validate'][] = 'domain_source_validate_domain_nodes_form';
+}
+
+/**
+ * Implements hook_config_info().
+ */
+function domain_source_config_info() {
+  $prefixes['domain_source.settings'] = array(
+    'label' => t('Domain Access settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
+ * Implements hook_autoload_info().
+ */
+function domain_source_autoload_info() {
+  return array(
+    'DomainSourceNodeHandler' => 'domain_source.migrate.inc',
+    'domain_source_handler_filter_domain_id' => 'includes/domain_source_handler_filter_domain_id.inc',
+  );
 }

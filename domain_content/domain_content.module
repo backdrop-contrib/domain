@@ -143,12 +143,13 @@ function domain_content_check($domain_id) {
 /**
  * Implement hook_node_operations()
  */
-function domain_content_node_operations() {
+function domain_content_actions_info() {
   // Only privileged users can perform this operation.
   // Do not show this on the default node editing form.
   if (user_access('set domain access')) {
     $operations = array(
       'domain' => array(
+        'type' => 'node',
         'label' => t('Change affiliate publishing options'),
         'callback' => 'domain_content_node_operations_process',
       ),
@@ -165,6 +166,7 @@ function domain_content_node_operations() {
  * of domain_content_process_nodes().
  */
 function domain_content_node_operations_process($nodes) {
+
 }
 
 /**
