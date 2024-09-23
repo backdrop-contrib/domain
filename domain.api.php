@@ -252,8 +252,6 @@ function hook_domain_warning() {
  *   No return value; modify $source by reference.
  */
 function hook_domain_source_alter(&$source, $nid) {
-  print_r($source);
-  die;
   // Taken from the Domain Source module
   $source_id = domain_source_lookup($nid);
   // If FALSE returned, no source is defined.

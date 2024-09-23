@@ -540,7 +540,7 @@ function domain_update_1000() {
   $config->set('domain_grant_all', update_variable_get('domain_grant_all', 'user/*/track'));
   $config->set('domain_cron_rule', update_variable_get('domain_cron_rule', 1));
   $config->set('domain_xmlrpc_rule', update_variable_get('domain_xmlrpc_rule', 0));
-  $config->set('domain_paths', update_variable_get('domain_paths', 'node/%n\r\nnode/%n/edit\r\ncomment/reply/%n\r\nnode/add/book/parent/%n\r\nbook/export/html/%n\r\nnode/%n/outline'));
+  $config->set('domain_paths', update_variable_get('domain_paths', "node/%n node/%n/edit comment/reply/%n node/add/book/parent/%n book/export/html/%n node/%n/outline"));
   $config->set('domain_classes', update_variable_get('domain_classes', 'domain-[current-domain:machine_name]'));
   $config->set('domain_allow_non_ascii', update_variable_get('domain_allow_non_ascii', FALSE));
   $config->set('domain_add_roles', update_variable_get('domain_add_roles', 0));
