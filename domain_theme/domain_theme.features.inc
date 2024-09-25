@@ -110,7 +110,7 @@ function domain_theme_features_rebuild($module) {
             'status' => $theme['status'],
             'filepath' => $theme['filepath'],
           );
-          drupal_write_record('domain_theme', $record);
+          backdrop_write_record('domain_theme', $record);
         }
       }
     }

@@ -22,6 +22,7 @@
  * @ingroup strict
  */
 function domain_strict_node_grants_alter(&$grants, $account, $op) {
+
   $_domain = domain_get_domain();
   // We only act on the 'view' operation.
   if ($op != 'view') {
@@ -31,6 +32,7 @@ function domain_strict_node_grants_alter(&$grants, $account, $op) {
   $grants['domain_id'] = array();
   // Get the user-assigned domains.
   $domains = domain_get_user_domains($account);
+
   if (!empty($domains)) {
     foreach ($domains as $key => $value) {
       // If the user has access to the current domain, set that grant.
@@ -39,4 +41,5 @@ function domain_strict_node_grants_alter(&$grants, $account, $op) {
       }
     }
   }
+
 }

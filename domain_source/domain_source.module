@@ -29,6 +29,13 @@ function domain_source_form_alter(&$form, &$form_state, $form_id) {
   if (!empty($form['#node']->nid)) {
     $default_source = db_query("SELECT domain_id FROM {domain_source} WHERE nid = :nid", array(':nid' => $form['#node']->nid))->fetchField();
   }
+  $config = config_get('domain_source.settings', 'domain_source_type');
+  $type = $form['type']['#value'];
+
+  if (isset($config['domain_source_' . $type])){
+    $source = domain_load_domain_id($config['domain_source_' . $type]);
+    $default_source = $source;
+  }
   if (!isset($default_source)) {
     $source = domain_load_domain_id(DOMAIN_SOURCE_USE_ACTIVE);
     if ($source <= 0) {
@@ -105,7 +112,7 @@ function domain_source_form_alter(&$form, &$form_state, $form_id) {
       '#title' => t('Source domain'),
       '#options' => $options,
       '#default_value' => $default_source,
-      '#description' => t('This affiliate will be used to write links to this content from other affiliates, as needed.')
+      '#description' => t('This affiliate will be used to write links to this content from other affiliates, as needed.'),
     );
   }
   // Non-privileged users just have the current domain assigned.
@@ -139,7 +146,7 @@ function domain_source_form_domain_content_admin_alter(&$form, &$form_state) {
     '#title' => t('Source domain'),
     '#options' => $options,
     '#default_value' => $_domain['domain_id'],
-    '#description' => t('The canonical domain for the selected content. This element replaces existing settings for all selections.')
+    '#description' => t('The canonical domain for the selected content. This element replaces existing settings for all selections.'),
   );
   $form['admin']['options']['submit']['#validate'][] = 'domain_source_validate';
   $form['admin']['options']['submit']['#submit'][] = 'domain_source_update_nodes';
@@ -369,15 +376,27 @@ function domain_source_form_domain_nodes_form_alter(&$form, &$form_state, $form_
     '#type' => 'fieldset',
     '#title' => t('Default source domains'),
   );
+  $config = config_get('domain_source.settings', 'domain_source_type');
   foreach (node_type_get_names() as $type => $name) {
     $form['domain_source']['domain_source_' . $type] = array(
       '#type' => 'select',
       '#title' => t('%name default source domain', array('%name' => $name)),
       '#options' => $options,
-      '#default_value' => DOMAIN_SOURCE_USE_ACTIVE,
+      '#default_value' => isset($config['domain_source_' . $type]) ? $config['domain_source_' . $type] : DOMAIN_SOURCE_USE_ACTIVE,
     );
   }
   $form['#validate'][] = 'domain_source_validate_domain_nodes_form';
+  $form['#submit'][] = 'domain_source_form_domain_nodes_form_submit';
+}
+
+function domain_source_form_domain_nodes_form_submit (&$form, &$form_state) {
+  $config = config_get('domain_source.settings', 'domain_source_type');
+  foreach (node_type_get_names() as $type => $name) {
+    if (isset($form_state['values']['domain_source_' . $type])) {
+       $config['domain_source_' . $type] = $form_state['values']['domain_source_' . $type];
+    }
+  }
+  config_set('domain_source.settings', 'domain_source_type', $config);
 }
 
 /**
@@ -459,6 +478,6 @@ function domain_source_autoload_info() {
   return array(
     'DomainSourceNodeHandler' => 'domain_source.migrate.inc',
     'domain_source_handler_filter_domain_id' => 'includes/domain_source_handler_filter_domain_id.inc',
-    'domain_source.domain'=>'domain_source.domain.inc'
+    'domain_source.domain'=>'domain_source.domain.inc',
   );
 }

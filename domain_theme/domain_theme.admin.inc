@@ -17,15 +17,15 @@ function domain_theme_page($domain) {
   if (isset($domain['domain_id'])) {
     // Check the current domain.
     if ($domain['domain_id'] == domain_default_id()) {
-      drupal_set_message(t('This is your default domain. Use of this form is discouraged. Set these values through the standard interface.'), 'warning', FALSE);
+      backdrop_set_message(t('This is your default domain. Use of this form is discouraged. Set these values through the standard interface.'), 'warning', FALSE);
     }
 
     // Load the system form file.
-    include_once drupal_get_path('module', 'system') . '/system.admin.inc';
+    include_once backdrop_get_path('module', 'system') . '/system.admin.inc';
 
     // Set the page title and generate the form.
-    drupal_set_title(t('Theme for @site', array('@site' => $domain['subdomain'])));
-    return drupal_get_form('domain_theme_form', $domain);
+    backdrop_set_title(t('Theme for @site', array('@site' => $domain['subdomain'])));
+    return backdrop_get_form('domain_theme_form', $domain);
   }
   else {
     $build['content'] = array(
@@ -48,12 +48,12 @@ function domain_theme_form($form, &$form_state, $domain) {
   $form = array();
   // Get the current $theme for this domain, if available.
   $theme = domain_theme_lookup($domain['domain_id']);
-  if ($theme['theme']) {
+  if (!empty($theme['theme'])) {
     $default = $theme['theme'];
   }
   else {
-    $default = variable_get('theme_default', 'bartik');
-    drupal_set_message(t('No theme has been set for this domain. It will use the default theme settings.'), 'status', FALSE);
+    $default = config_get('system.core', 'theme_default');
+    backdrop_set_message(t('No theme has been set for this domain. It will use the default theme settings.'), 'status', FALSE);
   }
   // Message to users.
   $form['intro'] = array(
@@ -137,7 +137,7 @@ function domain_theme_form_submit($form, &$form_state) {
 function theme_domain_theme_form($variables) {
   $form = $variables['form'];
   $output = '';
-  $output .= drupal_render($form['intro']);
+  $output .= backdrop_render($form['intro']);
   $themes = system_rebuild_theme_data();
   $header = array(t('Screenshot'), t('Theme'), t('Default'), t('Options'));
   $rows = array();
@@ -161,14 +161,14 @@ function theme_domain_theme_form($variables) {
     $row = array(
       theme('image', $screenshot_options),
       '<h3>' . $themes[$key]->info['name'] . ' ' . (isset($themes[$key]->info['version']) ? $themes[$key]->info['version'] : '') . ' ' . $default . '</h3>' . t($themes[$key]->info['description']),
-      drupal_render($form['theme'][$key]),
+      backdrop_render($form['theme'][$key]),
       l(t('configure'), 'admin/structure/domain/view/' . $form['domain_id']['#value'] . '/theme/' . $key . '/theme-settings')
     );
     $rows[] = array('data' => $row, 'class' => array('theme-selector'));
   }
 
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= drupal_render_children($form);
+  $output .= backdrop_render_children($form);
   return $output;
 }
 
@@ -185,7 +185,7 @@ function domain_theme_reset($domain) {
   if ($domain == -1) {
     return t('An invalid request has been made.');
   }
-  return drupal_get_form('domain_theme_reset_form', $domain);
+  return backdrop_get_form('domain_theme_reset_form', $domain);
 }
 
 /**
@@ -210,7 +210,7 @@ function domain_theme_reset_form_submit($form, &$form_state) {
   db_delete('domain_theme')
     ->condition('domain_id', $form_state['values']['domain_id'])
     ->execute();
-  drupal_set_message(t('Domain theme settings have been reset.'));
+  backdrop_set_message(t('Domain theme settings have been reset.'));
   $form_state['redirect'] = 'admin/structure/domain/view/' . $form_state['values']['domain_id'] . '/theme';
   // Clear the cache.
   cache_clear_all();
@@ -246,20 +246,20 @@ function theme_domain_theme_reset($variables) {
  */
 function domain_theme_settings($domain, $theme) {
   // Load the system form file.
-  include_once(drupal_get_path('module', 'system') . '/system.admin.inc');
+  include_once(backdrop_get_path('module', 'system') . '/system.admin.inc');
 
   // Set the proper context for the user.
   $settings = db_query("SELECT theme, settings FROM {domain_theme} WHERE domain_id = :domain_id AND theme = :theme", array(':domain_id' => $domain['domain_id'], ':theme' => $theme))->fetchAssoc();
-  drupal_set_message(t('You are viewing the %theme settings for %domain.', array('%theme' => $theme, '%domain' => $domain['subdomain'])), 'status', FALSE);
-  drupal_set_title(t('@theme settings for @site', array('@site' => $domain['subdomain'], '@theme' => $theme)));
+  backdrop_set_message(t('You are viewing the %theme settings for %domain.', array('%theme' => $theme, '%domain' => $domain['subdomain'])), 'status', FALSE);
+  backdrop_set_title(t('@theme settings for @site', array('@site' => $domain['subdomain'], '@theme' => $theme)));
 
   // If there are settings, we have to load ours.
   if (!empty($settings)) {
     domain_theme_set_variables($settings);
-    return drupal_get_form('system_theme_settings', $settings['theme']);
+    return backdrop_get_form('system_theme_settings', $settings['theme']);
   }
   else {
-    return drupal_get_form('system_theme_settings', $theme);
+    return backdrop_get_form('system_theme_settings', $theme);
   }
 }
 
@@ -274,7 +274,8 @@ function domain_theme_settings_submit($form, &$form_state) {
   $filepath = file_default_scheme() . ':/' . '/domain-' . $domain['domain_id'];
   $vars = array('palette', 'stylesheets', 'logo', 'files', 'screenshot');
   foreach ($vars as $variable) {
-    $preset = variable_get('color_' . $values['theme'] . '_' . $variable, '');
+    $config = config_get('domain_theme.settings', 'color_');
+    $preset = !empty($config['color_' . $values['theme'] . '_' . $variable])? $config['color_' . $values['theme'] . '_' . $variable] : '';
     if (!empty($preset)) {
       $values['color_' . $values['theme'] . '_' . $variable] = $preset;
     }
@@ -284,10 +285,12 @@ function domain_theme_settings_submit($form, &$form_state) {
   if (isset($values['domain_color_defaults'])) {
     foreach ($values['domain_color_defaults'] as $key => $value) {
       if (!empty($value)) {
-        variable_set($key, domain_unserialize($value));
-      }
-      else {
-        variable_del($key);
+        $config = config_get('domain_theme.settings', 'keys');
+        if (isset($config[$key])) {
+          unset($config[$key]);
+          $config[$key] = domain_unserialize($value);
+        }
+        config_set('domain_theme.settings', 'keys', $config);
       }
     }
   }
@@ -341,12 +344,12 @@ function domain_theme_settings_submit($form, &$form_state) {
       ->condition('domain_id', $domain_id)
       ->condition('theme', $theme)
       ->execute();
-    drupal_set_message(t('%theme has been set as the default theme for %domain', array('%theme' => $theme, '%domain' => $domain['sitename'])));
+    backdrop_set_message(t('%theme has been set as the default theme for %domain', array('%theme' => $theme, '%domain' => $domain['sitename'])));
   }
   // Clear the cache.
   cache_clear_all();
   // Finish processing the form.
-  drupal_set_message(t('The configuration options have been saved.'));
+  backdrop_set_message(t('The configuration options have been saved.'));
   $form_state['redirect'] = 'admin/structure/domain/view/' . $domain_id . '/theme';
 }
 

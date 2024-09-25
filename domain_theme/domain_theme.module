@@ -152,7 +152,7 @@ function domain_theme_lookup($domain_id, $theme = NULL, $reset = FALSE) {
  */
 function domain_theme_domain_form(&$form) {
   // Set the module weight for Domain Theme,
-  $module_weight = variable_get('domain_theme_weight', 0);
+  $module_weight = config_get('domain_theme.settings', 'domain_theme_weight');
   db_update('system')
     ->fields(array('weight' => $module_weight))
     ->condition('name', 'domain_theme')
@@ -166,7 +166,7 @@ function domain_theme_domain_form(&$form) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE
   );
-  $options = drupal_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
+  $options = backdrop_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
   $form['domain_theme']['domain_theme_weight'] = array(
     '#type' => 'select',
     '#title' => t('Domain Theme execution order'),
@@ -211,7 +211,7 @@ function domain_theme_batch_submit($values) {
       }
     }
     else {
-      variable_set('theme_default', $value);
+      config_set('system.core','theme_default', $value);
     }
   }
 }
@@ -247,7 +247,7 @@ function domain_theme_form_alter(&$form, &$form_state, $form_id) {
 
   $domain = domain_lookup($domain_id);
   if ($domain == -1 || !array_key_exists($theme, $themes)) {
-    return drupal_access_denied();
+    return backdrop_access_denied();
   }
 
   // Which domain are we editing?
@@ -291,7 +291,8 @@ function domain_theme_form_alter(&$form, &$form_state, $form_id) {
   // Label the scheme correctly.
   // Since may have added a 'domain_default' element to the palette,
   // color module might think we are not using the default theme.
-  $current_scheme = variable_get('color_' . $theme . '_palette', array());
+  $config = config_get('domain_theme.settings', 'color_');
+  $current_scheme = !empty($config['color_' . $theme . '_palette']) ? $config['color_' . $theme . '_palette'] : [];
   if (isset($current_scheme['domain_default'])) {
     unset($current_scheme['domain_default']);
     $info = color_get_info($theme);
@@ -324,7 +325,7 @@ function domain_theme_features_api() {
       'default_file' => FEATURES_DEFAULTS_CUSTOM,
       'default_filename' => 'domains',
       'feature_source' => TRUE,
-      'file' => drupal_get_path('module', 'domain_theme') .'/domain_theme.features.inc',
+      'file' => backdrop_get_path('module', 'domain_theme') .'/domain_theme.features.inc',
     ),
   );
   return $components;

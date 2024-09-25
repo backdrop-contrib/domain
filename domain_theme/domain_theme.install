@@ -25,12 +25,6 @@ function domain_theme_schema() {
   return $schema;
 }
 
-/**
- * Implements hook_uninstall().
- */
-function domain_theme_uninstall() {
-  variable_del('domain_theme_weight');
-}
 
 /**
  * Implements hook_dependencies().
@@ -52,4 +46,19 @@ function domain_theme_update_7300(&$sandbox) {
     ->condition('domain_id', 0)
     ->execute();
   return t('Domain Theme zero records removed.');
+}
+
+/**
+ * Migrate domain_theme variables to config.
+ */
+function domain_theme_update_1000() {
+  $config = config('domain_theme.settings');
+  $config->set('domain_theme_weight', update_variable_get('domain_theme_weight', '0'));
+  $config->set('color_', update_variable_get('color_', array()));
+  $config->set('keys', update_variable_get('keys', array()));
+  $config->save();
+
+  update_variable_del('domain_theme_weight');
+  update_variable_del('color_');
+  update_variable_del('keys');
 }

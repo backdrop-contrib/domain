@@ -1453,6 +1453,7 @@ function domain_get_user_domains($account, $add_roles = TRUE) {
   foreach ($result as $data) {
     $user_domains[$data->domain_id] = $data->domain_id;
   }
+
   if ($add_roles) {
     if (empty($account->roles)) {
       $account->roles = [0 => 'new user'];
@@ -1461,8 +1462,8 @@ function domain_get_user_domains($account, $add_roles = TRUE) {
     $defaults = config_get('domain.settings', 'domain_roles');
     foreach ($account->roles as $rid => $role) {
       $filter = [];
-      if (isset($defaults[$rid])) {
-        $filter = array_filter($defaults[$rid]);
+      if (isset($defaults[$role])) {
+        $filter = array_filter($defaults[$role]);
       }
       if (!empty($filter)) {
         // If this role is assigned to "All domains"
@@ -2082,9 +2083,9 @@ function domain_get_node_domains($nodes) {
 function domain_node_grants($account, $op) {
   $_domain = domain_get_domain();
   $grants = [];
-
   // In some edge cases, the $account may not have domain information loaded,
   // so get it.
+
   domain_user_set($account);
 
   // By design, all users can see content sent to all affiliates,
@@ -2103,7 +2104,7 @@ function domain_node_grants($account, $op) {
     // we simply get out of the way of other node_access rules.
     // We do this with the universal 'domain_all' grant.
     if (domain_grant_all()) {
-      $grants = ['domain_all' => [0]];
+      $grants = array('domain_all' => array(0));
     }
   }
   else {
@@ -2127,6 +2128,7 @@ function domain_node_grants($account, $op) {
       }
     }
   }
+
   // If the user may view unpublished content, then add those grants.
   if (!empty($grants['domain_id']) && user_access('view unpublished domain content', $account)) {
     foreach ($grants['domain_id'] as $id) {
@@ -2346,6 +2348,7 @@ function domain_node_access_view($type, $node, $op, $account) {
     return NODE_ACCESS_IGNORE;
   }
   // The actual access check.
+
   foreach ($node->domains as $key => $value) {
     if (!empty($account->domain_user[$key])) {
       return NODE_ACCESS_ALLOW;
