@@ -77,7 +77,7 @@ function domain_init() {
   global $_domain;
 
   if (!is_array($_domain)) {
-    $_domain = [];
+    $_domain = array();
   }
   // Error handling in case the module is not installed correctly.
   if (!isset($_domain['domain_id'])) {
@@ -113,7 +113,6 @@ function domain_init() {
     $_domain['subdomain'] = str_replace('www.', '', $_domain['subdomain']);
     $www_replaced = TRUE;
   }
-
   // Add information from domain_lookup but keep existing values (domain_id and subdomain)
   $domain = domain_lookup($_domain['domain_id'], NULL, TRUE);
   if ($domain != -1) {
@@ -188,7 +187,7 @@ function domain_unserialize($object) {
  * Implements hook_menu().
  */
 function domain_menu() {
-  $items = [];
+  $items = array();
   $admin = user_access('administer domains');
   $items['admin/structure/domain'] = [
     'title' => 'Domains',
@@ -377,7 +376,6 @@ function domain_permission() {
  *
  * @param $type
  *   The machine-readable name of the node type.
- *
  * @return array
  *   An array of permission names and descriptions.
  */
@@ -2082,10 +2080,10 @@ function domain_get_node_domains($nodes) {
  */
 function domain_node_grants($account, $op) {
   $_domain = domain_get_domain();
-  $grants = [];
+  $grants = array();
+
   // In some edge cases, the $account may not have domain information loaded,
   // so get it.
-
   domain_user_set($account);
 
   // By design, all users can see content sent to all affiliates,
@@ -2128,7 +2126,6 @@ function domain_node_grants($account, $op) {
       }
     }
   }
-
   // If the user may view unpublished content, then add those grants.
   if (!empty($grants['domain_id']) && user_access('view unpublished domain content', $account)) {
     foreach ($grants['domain_id'] as $id) {
