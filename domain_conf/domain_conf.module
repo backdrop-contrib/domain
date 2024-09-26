@@ -31,7 +31,6 @@ function domain_conf_domain_bootstrap_full($domain) {
   $check = $domain['domain_id'];
   $settings = domain_conf_data_get($domain['domain_id']);
   if (!empty($settings)) {
-
     // Overwrite the $conf variables.
     foreach ($settings as $key => $value) {
       if ($value === 'domain-conf-ignore') {
@@ -52,6 +51,11 @@ function domain_conf_domain_bootstrap_full($domain) {
         }
       }
     }
+
+    if (!config_get('domain.settings', 'domain_sitename_override')) {
+      config_set('system.core', 'site_name', $settings['site_name']);
+    }
+
     $indexes = [
       'site_mail',
       'site_slogan',
