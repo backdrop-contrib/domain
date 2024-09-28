@@ -95,7 +95,7 @@ Before using the module, you should read the installation instructions found
 in INSTALL_QUICKSTART.txt.
 
 The Domain Access module group is designed to run an affiliated network of sites
-from a single Drupal installation.  The module allows you to share users,
+from a single Backdrop installation.  The module allows you to share users,
 content, and configurations across a group of sites such as:
 
   - example.com
@@ -106,11 +106,11 @@ content, and configurations across a group of sites such as:
   - anothersite.com
   - example.com:3000 <-- non-standard ports are treated as unique domains.
 
-By default, these sites share all tables in your Drupal installation.
+By default, these sites share all tables in your Backdrop installation.
 
-The module uses Drupal's node_access() system to determine what content is
+The module uses Backdrop's node_access() system to determine what content is
 available on each site in the network.  Unlike other multi-domain modules for
-Drupal, the Domain Access module determines user access based on the active
+Backdrop, the Domain Access module determines user access based on the active
 domain that the user is viewing, rather than which group or site the user
 belongs to.
 
@@ -118,7 +118,7 @@ Additionally, when a user creates content, that content will automatically be
 assigned to the currently active domain unless the user has specific
 privileges to be able to assign domain access.  Under advanced setups, the
 ability to edit content for a specific domain can be segregated from the
-typical Drupal privilege to 'Bypass content access control.'
+typical Backdrop privilege to 'Bypass content access control.'
 
 For more information about Domain Access privileges, see section 3.
 
@@ -145,7 +145,7 @@ editors have no control over which domains their content is published to.
 
 This video from DrupalCon Paris explains the module in detail:
 
-  http://www.archive.org/details/SharingcontentacrossmultiplesiteswithDomainAccess
+http://www.archive.org/details/SharingcontentacrossmultiplesiteswithDomainAccess
 
 ----
 1.2 Examples
@@ -172,7 +172,7 @@ Sites using Domain Access include:
 ----
 1.3   Using Multiple Node Access Modules
 
-Node Access is a complex issue in Drupal.  Typically, sites will only use
+Node Access is a complex issue in Backdrop.  Typically, sites will only use
 one node access module at a time.  In some cases, you may require
 more advances access control rules.
 
@@ -213,13 +213,13 @@ While example.com and one.example.com can share a login cookie, the
 other two domains cannot read that cookie.  This is an Internet standard,
 not a bug.
 
-Note: See the INSTALL.txt for instructions regarding Drupal's default
+Note: See the INSTALL.txt for instructions regarding Backdrop's default
 cookie handling.
 
 ----
 1.4.2   Cron Handling
 
-When Drupal's cron function runs, it operates on the domain from which
+When Backdrop's cron function runs, it operates on the domain from which
 the cron.php script is invoked.  That is, if you setup cron to run from:
 
   http://one.example.com/cron.php
@@ -244,7 +244,7 @@ For upgrade instructions, see the provided UPGRADE.txt.
 2.  Installation
 
 WARNING: The Domain Access module assumes that you have already installed
-and configured your Drupal site.  Please do so before continuing.
+and configured your Backdrop site.  Please do so before continuing.
 
 Installing the module requires that you share a single copy of settings.php
 for all domains that will be registered with Domain Access.
@@ -256,7 +256,7 @@ For detailed instructions, see INSTALL.txt.
 
 After you have completed the steps outlined by the installer, you may enable
 the module normally. When you enable the module, it will create a {domain} table
-in your Drupal database.
+in your Backdrop database.
 
 All existing nodes and users on your site will be assigned to the default domain
 for your web site. Existing content will be set to be visible on all new
@@ -271,14 +271,14 @@ Please see the documentation in INSTALL.txt or INSTALL_QUICKSTART.txt
 2.2 Server Configuration
 
 For the module to work correctly, the DNS record of your server must accept
-multiple DNS entries pointing at a single IP address that hosts your Drupal
+multiple DNS entries pointing at a single IP address that hosts your Backdrop
 installation.
 
 The two basic methods for doing this are either to:
 
-  - Setup WildCard DNS, so that *.example.com resolves to your Drupal site.
+  - Setup WildCard DNS, so that *.example.com resolves to your Backdrop site.
   - Setup VirtualHosts so that one.example.com, two.example.com, etc. all
-    resolve to your Drupal site.
+    resolve to your Backdrop site.
 
 For example, on my local testing machine, I have VirtualHosts to the following
 sites setup in httpd.conf:
@@ -294,11 +294,11 @@ server.  For more information, see:
   - http://en.wikipedia.org/wiki/Wildcard_DNS_record
   - http://en.wikipedia.org/wiki/Virtual_hosting
 
-After you have enabled multiple DNS entries to resolve to your Drupal
+After you have enabled multiple DNS entries to resolve to your Backdrop
 installation, you may activate the module and configure its settings.
 
 No matter how many domains resolve to the same IP, you only need one instance
-of Drupal's settings.php file.  The sites folder should be named 'default' or
+of Backdrop's settings.php file.  The sites folder should be named 'default' or
 named for your root domain.
 
 NOTE: If you choose the WildCard DNS option, any subdomain not controlled
@@ -485,7 +485,7 @@ This feature was added in response to http://drupal.org/node/188275.
 ----
 3.2 Normal Usage
 
-Under a normal Drupal site, a single administrator (or a handful of equally
+Under a normal Backdrop site, a single administrator (or a handful of equally
 trusted administrators) typically have the 'Bypass content access control'
 permission and individual 'TYPE: edit all content' permissions.
 
@@ -500,7 +500,7 @@ access,' that can be given to any user you trust to use the UI properly.
 
 In the event that you wish to segregate which content certain editors can
 control, you should not use the normal 'edit any TYPE nodes' and 'delete any
-TYPE nodes' permissions provided by Drupal's core Node module.
+TYPE nodes' permissions provided by Backdrop's core Node module.
 These permissions grant the ability for a user to edit and delete all nodes of a
 given type.
 
@@ -516,7 +516,7 @@ domains to assign them as Domain Editors.
 
 NOTE: Users with the 'Delete any content on assigned domains' permission must
 also be given the 'Edit any content on assigned domains' permission in order to
-delete content due to the location of the delete form in Drupal.
+delete content due to the location of the delete form in Backdrop.
 
 ----
 3.4 Limitations
@@ -561,9 +561,9 @@ Enter the primary domain for your site here.  Typically, you will also enter
 this value into settings.php for cookie handling.  Do not use http:// or a
 trailing slash when entering this value.
 
-NOTE: If you have installed Drupal in a subfolder, such as
-http://example.com/drupal you should not include the folder path
-as part of the primary domain.  Simply use example.com -- Drupal
+NOTE: If you have installed Backdrop in a subfolder, such as
+http://example.com/backdrop you should not include the folder path
+as part of the primary domain.  Simply use example.com -- Backdrop
 will automatically detect the presence of the subfolder.
 
 NOTE: As of 5.x.1.5 and higher, you may use a port protocol as part
@@ -717,7 +717,7 @@ will make all nodes viewable to some users.
 
 When using Node Access modules, user 1 (the super-admin) and users with
 the 'Bypass content access control' permission are not subject to node access
-rules. This is a design feature of Drupal, and it can lead to confusion when
+rules. This is a design feature of Backdrop, and it can lead to confusion when
 viewing your site as an administrator.
 
 To help with this confusion, the 'Enforce rules on administrators' setting can
@@ -759,7 +759,7 @@ for your forms, but you may use this setting to alter that behavior.
 4.4   Advanced Settings
 
 These settings control advanced features for the module.  Some of these
-features require patches to Drupal core.  Please read the documentation
+features require patches to Backdrop core.  Please read the documentation
 carefully before implementing these features.
 
 NOTE: Some of these options may be disabled in the event that patches
@@ -771,7 +771,7 @@ By default, these features are all disabled.
 4.4.1   Search Settings
 
 Allows the admin to decide if content searches should be run across all
-affiliates or just the currently active domain.  By design, Drupal will only
+affiliates or just the currently active domain.  By design, Backdrop will only
 find matches for the current domain.
 
 ----
@@ -818,7 +818,7 @@ alias of *.example.com' then all host requests will have the 'www.' string
 stripped before the domain lookup is processed.
 
 Users going to a www.one.example.com in this case will not automatically
-be sent to one.example.com, but your Drupal site will behave as if they
+be sent to one.example.com, but your Backdrop site will behave as if they
 had requested one.example.com.
 
 This feature was requested by Rick and Matt at DZone.com
@@ -848,7 +848,7 @@ page may show different results if seen from different domains:
 The behavior we really want is to show ALL posts by the user regardless of
 the active domain.
 
-The Special Page Requests setting lets you specify Drupal paths for which
+The Special Page Requests setting lets you specify Backdrop paths for which
 this behavior is active.  These paths are entered in the same way as block
 settings for page visibility.
 
@@ -876,7 +876,7 @@ Note that the 'search' path is handled separately and need not be added here.
 ----
 4.5.1  Cron Handling
 
-When Drupal's cron function runs, it runs on a specific domain.  This forces
+When Backdrop's cron function runs, it runs on a specific domain.  This forces
 Domain Access to invoke its access control rules, which may not be desired.
 
 In most use cases, you will want Domain Access to allow access to all nodes
@@ -897,7 +897,7 @@ Note that this does not affect node access permissions set by other modules.
 4.5.2   XMLRPC Handling
 
 Similar to the above, you may check this option to disable Domain Access
-rules when Drupal is invoked using XMLRPC.
+rules when Backdrop is invoked using XMLRPC.
 
 ----
 4.6   Node Link Patterns
@@ -905,7 +905,7 @@ rules when Drupal is invoked using XMLRPC.
 When using this module, there are times when Domain Access will need to
 rewrite a node link using custom_url_rewrite_outbound().
 
-Since Drupal is an extensible system, we cannot account for all possible
+Since Backdrop is an extensible system, we cannot account for all possible
 links to specific nodes.  Node Link Patterns are designed to allow you to
 extend the module as you add new contributed modules.
 
@@ -1078,7 +1078,8 @@ module provides block and menu items intended for end users.
 
 The Domain Access Information block lets you view node access rules for any
 node when you are viewing that node.  This block can help you debug the
-module for user accounts that do not have the 'Set domain access status for all content' permission.
+module for user accounts that do not have the 'Set domain access status for all
+content' permission.
 
 NOTE: By design, this block is viewable by all users.  However, its content
 should only be shown to site developers or during debugging.  You should use
@@ -1108,7 +1109,7 @@ heading "Domain access options":
     override the options below.
 
   Publish to: * (required)
-    [] Drupal
+    [] Backdrop
     [] One site
     [] Two site
     Select which affiliates can access this content.
@@ -1145,7 +1146,7 @@ assigned to 'all affiliates' do not grant editing privileges to all editors.
 ----
 6.3   Realms
 
-This section contains technical details about Drupal's node access system.
+This section contains technical details about Backdrop's node access system.
 
 In Domain Access, the following realms are defined:
 
@@ -1193,9 +1194,9 @@ follows.
 ----
 6.5   Warnings
 
-Node access in Drupal is a permissive system.  Once a grant has been issued, it
-cannot be revoked.  As a result, it is possible for multiple editors to be able
-to edit or delete a single node.  Here's the use case:
+Node access in Backdrop is a permissive system. Once a grant has been issued, it
+cannot be revoked. As a result, it is possible for multiple editors to be able
+to edit or delete a single node. Here's the use case:
 
   - Node 10 (a book page) is assigned to one.example.com and three.example.com
   - User A is an editor for one.example.com.
@@ -1204,7 +1205,7 @@ to edit or delete a single node.  Here's the use case:
 
 Under this scenario, User A and User C will be able to edit node 10.
 
-To be more clear about Drupal permissions:
+To be more clear about Backdrop permissions:
 
   - User D has 'Bypass content access control' permission for the site.
   - User E has the 'Book page: edit all content' permission for the site.
@@ -1219,8 +1220,8 @@ However, you still need to give users the 'TYPE: Create new content' permission
 normally.  Domain Access does not affect node creation.
 
 Since Domain Access implements node_access() fully, if you uninstall the module
--- using Drupal's uninstall sequence -- all node_access entries should be reset
-to grant 'grant_view' to realm 'all' with gid '0'.
+-- using Backdrop's uninstall sequence -- all node_access entries should be
+reset to grant 'grant_view' to realm 'all' with gid '0'.
 
 ----
 7.  Developer Notes
@@ -1269,11 +1270,11 @@ required, but each adds functionality to the core module.
 ----
 7.2 The $_domain Global
 
-NOTE: In Drupal 7, this value is deprecated. You should use domain_get_domain()
+NOTE: In Backdrop, this value is deprecated. You should use domain_get_domain()
 to return the active domain.
 
 During hook_init(), the Domain Access module creates a new global variable,
-$_domain, which can be used by other Drupal elements (themes, blocks, modules).
+$_domain, which can be used by other Backdrop elements (themes, blocks, modules).
 
 The $_domain global is an array of data taken from the {domain} table for the
 currently active domain. If no active domain is found, default values are used.
@@ -1293,7 +1294,7 @@ hook_domain_bootstrap_full() for details.
 ----
 7.3 Database Schema
 
-The Domain Access module creates two tables in a Drupal installation.  {domain}
+The Domain Access module creates two tables in a Backdrop installation. {domain}
 contains the following structure:
 
   - domain_id
@@ -1352,7 +1353,7 @@ delete content on specific domains.  Its structure is:
 ----
 7.4 API
 
-The Domain Access module has an API for internal module hooks.  Documentation is
+The Domain Access module has an API for internal module hooks. Documentation is
 included in the download as domain.api.php and can be viewed online at:
 
   http://therickards.com/api
@@ -1461,7 +1462,7 @@ Type 'drush help' for more information.
     always resolve.
 
     If you do not pass a domain string or domain_id, all domains will be
-    tested. Note that if you run Drupal in a subdirectory, you must pass a
+    tested. Note that if you run Backdrop in a subdirectory, you must pass a
     --uri value with this command.
 
     Sample command:
@@ -1475,7 +1476,7 @@ Type 'drush help' for more information.
     will test the requested domain for a valid HTTP response. You may disable
     this check by passing --skip_check=1 to the command.
 
-    Note that if you run Drupal in a subdirectory, you must pass a
+    Note that if you run Backdrop in a subdirectory, you must pass a
     --uri value with this command in order to test the HTTP response.
 
     Sample command:
