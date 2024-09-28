@@ -376,7 +376,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#cols' => 40,
     '#default_value' => config_get('domain.settings', 'domain_paths'),
     '#description' => t('When using SEO or other path rewrites, the following link paths should be turned into absolute URLs.  Enter
-      the Drupal path of the link, using the <em>%n</em> placeholder to represent the node id.
+      the Backdrop path of the link, using the <em>%n</em> placeholder to represent the node id.
       Enter one path per line.  See the README for more details.'),
   ];
 
