@@ -4,7 +4,7 @@
  */
 
 Domain Access: Domain Specific Settings
-Allows domain specific use of Drupal system settings forms.
+Allows domain specific use of Backdrop system settings forms.
 
 CONTENTS
 --------
@@ -110,7 +110,7 @@ your sites.
 There are three options:
 
   -- Use the default domain
-  Mimics the behavior of Drupal core and only saves the variable to the
+  Mimics the behavior of Backdrop core and only saves the variable to the
   primary domain of your site.
 
   -- Use the active domain
@@ -125,8 +125,8 @@ There are three options:
 ----
 3.2  Form Visibility
 
-Like Drupal blocks, the Domain Settings form can be exposed or hidden
-to a specific list of forms. The 'Visibility of domain-specific settings on forms'
+Like Backdrop blocks, the Domain Settings form can be exposed or hidden to
+a specific list of forms. The 'Visibility of domain-specific settings on forms'
 setting allows you to specify the behavior you want.
 
   -- Show on every system settings form, except those listed below.
@@ -151,8 +151,9 @@ Domain-specific settings can be (dis)allowed for particular forms by entering a
 list of form_ids, one per line. This option is useful for site administrators
 who wish to prevent domain-specific settings on certain forms.
 
-Form ids are an internal Drupal identifier. Check api.drupal.org for the
-specific form functions that control settings pages.
+Form ids are an internal Backdrop identifier.
+Check https://docs.backdropcms.org/api/backdrop for the specific form functions
+that control settings pages.
 
 You may also look at the generated HTML for the form 'id' element. This
 value can normally be used if you convert a dash (-) to an underscore (_).
