@@ -48,7 +48,7 @@ Domain Navigation requires the Domain Access module be installed and active.
 ----
 2.2 Permissions
 
-As of 6.x.2.0, Domain Navigation has one permission:
+Domain Navigation has one permission:
 
   - 'access domain navigation'
   This permission allows users to view the Domain Navigation block.
@@ -63,7 +63,7 @@ The module also uses the following inherited permission:
 3.  Configuration Options
 
 When active, the Domain Navigation module provides a block for use with your
-Drupal themes.  By default, this block presents a Javascript-powered
+Backdrop themes.  By default, this block presents a Javascript-powered
 select list.
 
 If you click 'configure' for the block, you can set the block title (which
@@ -94,7 +94,7 @@ Indicates how to format the HTML output.  There are three options:
   - JavaScript select list
   Creates a select-list form that uses JavaScript to goto the selected domain.
   Requires JavaScript and does not include a submit button.
-  Note: This is _not_ a drupal-generated form element.
+  Note: This is _not_ a Backdrop-generated form element.
 
   - Menu-style tab links
   Creates a list of links formatted like primary tabs, with the active domain
@@ -122,8 +122,6 @@ enable this feature, use the following steps:
   - Save the changes.
   - Disable the top-level 'Domain' menu item, but leave the others intact.
   - Sort the menu items so that the active links are at the top level of the menu.
-
-This final step is new in Drupal 6.
 
 NOTE: If you wish to disable the menu entirely, but keep the block functions
 for this module, you may edit the following line at the top of the module:
@@ -174,5 +172,5 @@ these are:
   domain_id == the unique identifier of this domain
   subdomain == the host path of the url for this domain
   sitename == the human-readable name of this domain
-  path == the link path (a Drupal-formatted path)
+  path == the link path (a Backdrop-formatted path)
   active == a boolean flag indicating the currently active domain

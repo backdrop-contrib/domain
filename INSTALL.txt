@@ -55,14 +55,14 @@ WARNINGS:
 ----
 2.  Installation
 
-This module requires some advanced understanding of Drupal and of
+This module requires some advanced understanding of Backdrop and of
 how DNS servers behave.  If you simply untar the download and
 activate the module, it may not work correctly.
 
 Domain Access works by reading the inbound HTTP_HOST request
 and serving content appropriate to the requested domain. For this to
 work properly, all domains for your site must be routed to the same
-Drupal installation on your webserver.
+Backdrop installation on your webserver.
 
 Domain Access was not designed to run on shared hosts, and you may need
 assistance from your provider to make it work correctly.
@@ -77,7 +77,7 @@ In-depth documentation with many examples for specific situations:
   - http://httpd.apache.org/docs/2.0/vhosts/
   - http://httpd.apache.org/docs/2.0/vhosts/examples.html
 
-When you enable the module, it will create a {domain} table in your Drupal
+When you enable the module, it will create a {domain} table in your Backdrop
 database.
 
 On installation, all existing nodes on your site will be assigned to the default
@@ -92,11 +92,11 @@ You will need to do the following before you install the module.
   - Read this document
   - Configure your web server DNS records appropriately
   - Read the supplied README.txt
-  - Install and configure Drupal normally.
+  - Install and configure Backdrop normally.
 
 WARNING: The Domain Access module series instructs you to add a
 file include to your settings.php file.  Do not add this command until
-after you have installed Drupal.
+after you have installed Backdrop.
 
 ----
 2.2   Server Configuration
@@ -112,11 +112,11 @@ uses to identify itself) and an IP address.
 
 The two basic methods for doing this are to either:
 
-  - Set up WildCard DNS, so that *.example.com resolves to your Drupal site.
+  - Set up WildCard DNS, so that *.example.com resolves to your Backdrop site.
     (The asterisk indicates any and all names carrying the < example.com >
     suffix)
   - Set up each VirtualHost specifically, so that one.example.com,
-    two.example.com, (and so on) all resolve to your Drupal site.
+    two.example.com, (and so on) all resolve to your Backdrop site.
 
 For example, on a local testing machine, VirtualHosts in my hosts file could be
 configured in the following way:
@@ -130,7 +130,7 @@ With their port and document root defined (WildCard set up) in the httpd.conf
 file:
 
 <VirtualHost *:80>
-DocumentRoot /path/to/drupal/install
+DocumentRoot /path/to/Backdrop/install
 ServerName ken.test
 ServerAlias *.ken.test foo.test
 </VirtualHost>
@@ -138,24 +138,25 @@ ServerAlias *.ken.test foo.test
 In this case any subdomain (*.ken.test) and another domain foo.test resolve to
 the same location. When configuring DNS for Domain Access, the document root is
 the same for all the VirtualHosts. The DocumentRoot directive sets the directory
-from which httpd will serve files. For DA, there is one Drupal installation and
-it is this installation built on a single database that is serving the files.
+from which httpd will serve files. For DA, there is one Backdrop installation
+and it is this installation built on a single database that is serving the
+files.
 
 This becomes even clearer when the VirtualHosts are set up specifically,
 each with its own VirtualHost block in the httpd.conf file, for example:
 
 <VirtualHost 127.0.0.1:80>
-DocumentRoot /path/to/drupal/install
+DocumentRoot /path/to/Backdrop/install
 ServerName ken.test
 </VirtualHost>
 
 <VirtualHost 127.0.0.1:80>
-DocumentRoot /path/to/drupal/install
+DocumentRoot /path/to/Backdrop/install
 ServerName two.ken.test
 </VirtualHost>
 
 <VirtualHost 127.0.0.1:80>
-DocumentRoot /path/to/drupal/install
+DocumentRoot /path/to/Backdrop/install
 ServerName foo.test
 </VirtualHost>
 
@@ -167,7 +168,7 @@ contact their administration for help with configuration if their online help
 files do not make things clear enough.
 
 After you have enabled multiple DNS entries to resolve to your single,
-default Drupal installation, you may activate the module and configure its
+default Backdrop installation, you may activate the module and configure its
 settings at Admin > Structure > Domains.
 
 ----
@@ -233,36 +234,39 @@ Administer > User Management > Users.
 
 After you have prepared your server and made any edits to the
 default module behavior, you may install Domain Access like any
-other Drupal module.
+other Backdrop module.
 
 ----
-3.1   Using Drush
+3.1   Using Bee
 
-When installing from drush, you must pass the URI value for your site. Include
+When using bee to install, you must pass the URI value for your site. Include
 the full path to the installation, as below:
 
-  drush pm-enable domain --uri=http://example.com/optional_subdirectory
+  bee pm-enable domain --site=example.com/optional_subdirectory
 
 If your site is not installed in a subdirectory, the command would be:
 
-  drush pm-enable domain --uri=http://example.com/
+  bee pm-enable domain --site=example.com
 
-Passing the --uri variable tells Domain Access what the default domain for
+Passing the --site variable tells Domain Access what the default domain for
 your site will be. Without this information, the default domain cannot be
 created from the command line.
 
-After installing via drush, you must rebuild the node access table. Run the
+After installing via bee, you must rebuild the node access table. Run the
 command:
 
-  drush cache-clear
+  bee ev "node_access_rebuild();"
 
-When prompted, select either option [1] or option [9] to rebuild node access.
+Also clear all caches:
+
+  bee cache-clear
+
+When prompted, select option [0].
 
 ----
 3.2   After Installation
 
-Note that as of 6.x.2.0, the primary domain is created for you on
-installation.
+Note that the primary domain is created for you on installation.
 
 The primary domain will use the SERVER_NAME value of the request made
 when installing the module. This value may be edited by going to
@@ -295,11 +299,11 @@ considered carefully.
 The $base_url setting is normally not set.  With Domain Access, you
 cannot set this value manually.
 
-Since multiple domains are involved, Drupal needs to be allowed to
+Since multiple domains are involved, Backdrop needs to be allowed to
 set this value.  (For the technical, this happens in the conf_init()
 function).
 
-If you need to install Drupal in a subdirectory and wish to hide that
+If you need to install Backdrop in a subdirectory and wish to hide that
 subdirectory from site visitors, you may set $base_url dynamically.
 
 See the instructions at http://drupal.org/node/633726.
@@ -307,7 +311,7 @@ See the instructions at http://drupal.org/node/633726.
 ----
 4.2   $databases
 
-The $databases value allows for table prefixing of your Drupal database
+The $databases value allows for table prefixing of your Backdrop database
 in the event that you run more than one site from a single database.
 
 $databases can be used normally with Domain Access.
@@ -315,8 +319,8 @@ $databases can be used normally with Domain Access.
 ----
 4.3   $cookie_domain
 
-By design, Drupal cookies are set for the current website on login.  That is, if
-you login from www.example.com, the cookie will be set from the domain
+By design, Backdrop cookies are set for the current website on login.  That is,
+if you login from www.example.com, the cookie will be set from the domain
 'www.example.com.'
 
 However, a cookie from www.example.com is not valid on one.example.com.
@@ -343,11 +347,11 @@ If you do not add settings.inc to your settings.php file, Domain Access will
 fail to load and report an error message to site administrators.
 
 IMPORTANT: You must add these lines to settings.php after $databases
-has been set; otherwise, Drupal will fail to load. Normally, you should add
+has been set; otherwise, Backdrop will fail to load. Normally, you should add
 these lines to the end of the settings.php file.
 
-NOTE: If you perform a Drupal core version upgrade, you must remove these
-lines from settings.php.  See UPGRADE.txt for details.
+NOTE: If you perform a Backdrop core major version upgrade, you must remove
+these lines from settings.php.  See UPGRADE.txt for details.
 
 ----
 4.4.1  Installation
@@ -374,17 +378,17 @@ Add the following lines to the end of your settings.php file:
 /**
  * Add the domain module setup routine.
  */
-include DRUPAL_ROOT . '/path/to/modules/domain/settings.inc';
+include BACKDROP_ROOT . '/path/to/modules/domain/settings.inc';
 ====
 
 In this case, change 'path/to/modules' with the directory where your modules are
-stored.  Typically this will be 'sites/all/modules', which makes the lines:
+stored. Typically this will be '/modules', which makes the lines:
 
 ====
 /**
  * Add the domain module setup routine.
  */
-include DRUPAL_ROOT . '/sites/all/modules/domain/settings.inc';
+include BACKDROP_ROOT . '/modules/domain/settings.inc';
 ====
 
 ----
@@ -410,11 +414,11 @@ include 'settings.inc';
 ----
 4.4.4   Testing Your Configuration
 
-After editing your settings.php file, go to Admin > Structure > Domains.  You may
+After editing your settings.php file, go to Admin > Structure > Domains. You may
 see a warning at the top of the page:
 
-  "Domain access failed to load during phase: bootstrap include. Please check your
-  settings.php file and site configuration."
+  "Domain access failed to load during phase: bootstrap include. Please check
+   your settings.php file and site configuration."
 
 This message means that your PHP server cannot find the include file.  You
 may need to test other path options for the include code.
@@ -422,11 +426,11 @@ may need to test other path options for the include code.
 When this occurs, the default domain will be loaded, but custom settings or
 themes for other domains will not.
 
-If the module is working correctly and you are getting persistent errors due to web
-crawlers, you may disable this warning. To do so, edit settings.php and add the
-following lines to the bottom of the file:
+If the module is working correctly and you are getting persistent errors due to
+web crawlers, you may disable this warning. To do so, edit settings.php and add
+the following lines to the bottom of the file:
 
-  $conf['domain_hide_errors'] = TRUE;
+  $config['domain.settings']['domain_hide_errors'] = TRUE;
 
 This will suppress the warning messages. See http://drupal.org/node/774692 for
 background.
@@ -445,8 +449,8 @@ into your settings.php file.
 ----
 5.  Additional Module Installation
 
-The Domain Access module includes several sub-modules.  Two of these
-have their own INSTALL.txt instructions.
+The Domain Access module includes several sub-modules. Two of these have their
+own INSTALL.txt instructions.
 
 ----
 5.1   Domain Strict

@@ -10,7 +10,7 @@ For full documentation, see INSTALL.txt and README.txt
 
 INSTALLATION INSTRUCTIONS
 
-1. Before proceeding, you must install and configure Drupal
+1. Before proceeding, you must install and configure Backdrop
     without installing this module.
 
     Note that you only need one settings directory and file.
@@ -26,7 +26,7 @@ INSTALLATION INSTRUCTIONS
 /**
  * Add the domain module setup routine.
  */
-include DRUPAL_ROOT . '/sites/all/modules/domain/settings.inc';
+include BACKDROP_ROOT . '/modules/domain/settings.inc';
 
     NOTE: You may need to alter the file path above based on your
     site configuration.  See INSTALL.txt for further help.
@@ -35,7 +35,7 @@ include DRUPAL_ROOT . '/sites/all/modules/domain/settings.inc';
     $databases. Normally, you should add these lines to the end of the
     settings.php file.
 
-    NOTE: If you perform a Drupal core version upgrade, you must
+    NOTE: If you perform a Backdrop core major version upgrade, you must
     remove these lines from settings.php.  See UPGRADE.txt for details.
 
 4. Go to Admin > Modules.  There you will see the Domain module group.
@@ -77,15 +77,19 @@ include DRUPAL_ROOT . '/sites/all/modules/domain/settings.inc';
     Please read them carefully before activating them.
 
 ----
-USING DRUSH
+USING BEE
 
-NOTE: When installing from drush, it is proper to pass the URI value for your
+NOTE: When using bee to install, it is proper to pass the URI value for your
 site. Include the full path to the installation, as below:
 
-  drush pm-enable domain --uri=http://example.com/optional_subdirectory
+  bee pm-enable domain --site=example.com/optional_subdirectory
 
-Then clear the node access cache:
+Then rebuild node access tables:
 
-  drush cache-clear
+  bee ev "node_access_rebuild();"
 
-When prompted, select either option [1] or option [5] to rebuild node access.
+Also clear all caches:
+
+  bee cache-clear
+
+When prompted, select option [0].

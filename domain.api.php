@@ -114,7 +114,7 @@ function hook_domain_delete($domain, $form_values = array()) {
  *   - domain_id -- the unique identifier of this domain
  *   - subdomain -- the host path of the url for this domain
  *   - sitename -- the human-readable name of this domain
- *   - path -- the link path (a Drupal-formatted path)
+ *   - path -- the link path (a Backdrop-formatted path)
  *   - active -- a boolean flag indicating the currently active domain
  *
  * @ingroup domain_hooks
@@ -269,7 +269,7 @@ function hook_domain_source_alter(&$source, $nid) {
 }
 
 /**
- * Allows modules to specify the target link for a Drupal path.
+ * Allows modules to specify the target link for a Backdrop path.
  *
  * Note: This hook is not meant to be used for node paths, which
  * are handled by hook_domain_source_alter(). This hook is split
@@ -432,7 +432,7 @@ function hook_domain_conf() {
  *   --- 'integer' == the query will use %d to insert the data.
  *   --- 'float' == the query will use %f to insert the data.
  *   --- 'binary' == the query will use %b to insert the data.
- * For more information, see db_query() in the Drupal API documentation.
+ * For more information, see db_query() in the Backdrop API documentation.
  *
  * - '#weight' [optional] Used to weight the item in the menu system.  Should
  * normally be set to zero.  Negative values are reserved for use by the core
@@ -500,13 +500,13 @@ function hook_domain_ignore() {
  * The Domain Bootstrap Process.
  *
  * There are some variables that Domain Access and its modules
- * need to set before Drupal finishes loading. In effect, we have to add
- * stages to the Drupal bootstrap process.
+ * need to set before Backdrop finishes loading. In effect, we have to add
+ * stages to the Backdrop bootstrap process.
  *
  * These processes are initiated after settings.php is loaded, during
  * backdrop_BOOTSTRAP_CONFIGURATION. We skip ahead and
  * load backdrop_BOOTSTRAP_DATABASE to access db_query() and
- * similar functions.  However, the majority of Drupal functions are
+ * similar functions.  However, the majority of Backdrop functions are
  * not yet available.
  *
  * The following modules will load during the bootstrap process, if enabled:
@@ -541,7 +541,7 @@ function hook_domain_bootstrap() {
  * For example, Domain Alias can change the domain_id matched to the current
  * domain name before related information is retrieved during domain_init().
  *
- * Note: Because this function is usually called VERY early, many Drupal
+ * Note: Because this function is usually called VERY early, many Backdrop
  * functions or modules won't be loaded yet.
  *
  * Warning: do _not_ call domain_lookup() or domain_load() from within this
@@ -562,12 +562,12 @@ function hook_domain_bootstrap_lookup($domain) {
 }
 
 /**
- * Allows modules to execute code before Drupal's hook_boot().
+ * Allows modules to execute code before Backdrop's hook_boot().
  *
- * This hook can be used to modify drupal's variables system or prefix database
- * tables, as used in the module domain_conf.
+ * This hook can be used to modify Backdrop's variables system or prefix
+ * database tables, as used in the module domain_conf.
  *
- * Note: Because this function is usually called VERY early, many Drupal
+ * Note: Because this function is usually called VERY early, many Backdrop
  * functions or modules won't be loaded yet.
  *
  * Warning: do _not_ call domain_lookup() or domain_load() from within this
@@ -611,7 +611,7 @@ function hook_domain_bootstrap_full($domain) {
  * @param $domain_id
  *   The domain_id taken from {domain}.
  * @param $path
- *   The internal drupal path to the node.
+ *   The internal Backdrop path to the node.
  * @param $options
  *   The path options.
  * @param $original_path
@@ -782,7 +782,7 @@ function hook_domain_validate_alter(&$error_list, $subdomain) {
  * trigger a TRUE response.
  *
  * Also note that the status of this function cannot be changed _during_ a
- * page load. Drupal's Node Access system only allows these permissions
+ * page load. Backdrop's Node Access system only allows these permissions
  * to be set once per callback.
  *
  * @param $grant
@@ -792,8 +792,8 @@ function hook_domain_validate_alter(&$error_list, $subdomain) {
  *   An array of optional information gathered by domain_grant_all(). This
  *   keyed array may contain the following values:
  *    'script' == The name of invoking script if the page is called by cron.php
- *      or xmlrpc.php instead of Drupal's standard index.php. Presence indicates
- *      that the function returned TRUE.
+ *      or xmlrpc.php instead of Backdrop's standard index.php.
+ *      Presence indicates that the function returned TRUE.
  *    'search' == Indicates that we are on a search page and searching across
  *      all domains has been enabled.
  *    'pages' == The matching pattern list for page-specific access.
