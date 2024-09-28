@@ -57,10 +57,10 @@ may be in "offline" mode.  This is accomplished using the Domain Conf module.
 The Domain Conf module is included in the Domain Access download.  To install,
 untar the domain package and place the entire folder in your modules directory.
 
-When you enable the module, it will create a {domain_conf} table in your Drupal
-database.
+When you enable the module, it will create a {domain_conf} table in your
+Backdrop database.
 
-For the module to function correctly, you must follow the instructions in INSTALL.txt.
+For the module to function correctly, follow the instructions in INSTALL.txt.
 
 ----
 2.1   Dependencies
@@ -106,7 +106,7 @@ affiliates.
 This section only applies if you set separate Primary or Secondary links
 for your domains.
 
-Drupal's default blocks for Primary and Secondary links do not respect
+Backdrop's default blocks for Primary and Secondary links do not respect
 the variables set by Domain Configuration. To work around this limitation,
 we instead create two new blocks, named:
 
@@ -151,7 +151,7 @@ The module works by applying hook_form_alter() to the form:
 hook_domain_conf() allows developers to add additional form elements.
 
 Note that you may use this hook to create variables that are independent
-of other Drupal modules.  To do so, be sure to set the '#domain_setting' flag
+of other Backdrop modules.  To do so, be sure to set the '#domain_setting' flag
 to TRUE before returning your $form array.
 
  - $form['myform']['#domain_setting'] = TRUE;
