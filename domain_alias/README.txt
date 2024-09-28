@@ -52,8 +52,8 @@ when you cannot modify your DNS hosts file.
 Let us assume that our main site is example.com and we run two
 sub sites at users.example.com and testing.example.com.
 
-Out sample site allows wildcard DNS, so any request to
-*.example.com will be passed to our Drupal site.  We would like the
+Our sample site allows wildcard DNS, so any request to
+*.example.com will be passed to our Backdrop site.  We would like the
 following rules to be obeyed:
 
 -- www.example.com should redirect to example.com.
@@ -96,8 +96,8 @@ See http://drupal.org/node/284422 for bacjground.
 The Domain Alias module is included in the Domain Access download.  To install,
 untar the domain package and place the entire folder in your modules directory.
 
-When you enable the module, it will create a {domain_alias} table in your Drupal
-database.
+When you enable the module, it will create a {domain_alias} table in your
+Backdrop database.
 
 ----
 2.1   Dependencies
@@ -136,7 +136,7 @@ non-ASCII domain names, you must add the following lines to the bottom
 of your settings.php file:
 
   // Allow registration of non-ASCII domain strings.
-  $conf['domain_allow_non_ascii'] = TRUE;
+  $config['domain.settings']['domain_allow_non_ascii'] = TRUE;
 
 ----
 3.2   Updating Aliases
