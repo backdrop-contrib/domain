@@ -236,6 +236,7 @@ function domain_theme_get_color_path($path) {
  * form settings.
  */
 function domain_theme_form_alter(&$form, &$form_state, $form_id) {
+  //print_r($form_id);
   // We cannot use a named form_alter here because of color module.
   // Color submit must happen first, and a named function destroys that.
   if ($form_id != 'system_theme_settings' || arg(2) != 'domain') {
