@@ -23,7 +23,7 @@ include 'domain.bootstrap.inc';
 // can explode rather maginificently. Using a try/catch, we can at least fail
 // silently.
 try {
-  global $databases, $settings;
+  global $databases;
 
   $database_is_set = FALSE;
   // Database connection settings have been provided in the form of a connection
