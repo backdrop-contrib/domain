@@ -8,6 +8,13 @@ to work, but it needs more testing before we can assume it's stabile. Please,
 test it out and report bugs. But, be cautious before installing in a 
 production environment. 
 
+There were many Drupal 7 modules to extend and improve this module. Please, see
+a list of other domain related modules that have been ported to Backdrop or 
+developed specifically for Backdrop. Please, help us port more modules 
+to extend and support the domain access module.
+
+https://github.com/backdrop-contrib/domain/wiki/1.-Domain-module-wiki
+
 Documentation
 -------------------
 Please review the documentation in the wiki and help us make it better. 
