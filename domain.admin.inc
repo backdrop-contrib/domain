@@ -532,7 +532,7 @@ function domain_form($form, &$form_state, $domain = [], $arguments = []) {
     '#size' => 40,
     '#maxlength' => 80,
     '#required' => TRUE,
-    '#default_value' => $domain['subdomain'],
+    '#default_value' => !is_null($domain['subdomain']) ? $domain['subdomain'] : '',
     '#description' => t('The allowed domain, using the full <em>path.example.com</em> format.') . '<br />' . t('Leave off the http:// and the trailing slash and do not include any paths.') . '<br />' . $description,
   ];
   $form['machine_name'] = [
@@ -549,7 +549,7 @@ function domain_form($form, &$form_state, $domain = [], $arguments = []) {
     '#size' => 40,
     '#maxlength' => 80,
     '#required' => TRUE,
-    '#default_value' => $domain['sitename'],
+    '#default_value' => !is_null($domain['sitename']) ? $domain['sitename'] : '',
     '#description' => t('The human-readable name of this domain.'),
   ];
   $form['scheme'] = [
