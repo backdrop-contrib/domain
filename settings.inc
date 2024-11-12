@@ -19,9 +19,8 @@
 include 'domain.bootstrap.inc';
 
 /**
- * If the module is not installed properly, or Backdrop is not yet installed, we
- * can fail rather maginificently. Using a try/catch, we can at least fail
- * silently. See https://www.drupal.org/node/1559486.
+ * If the module is not installed properly, or Backdrop is not yet installed, it
+ * can fail rather magnificently. Using a try/catch, it can fail silently.
  */
 
 try {
