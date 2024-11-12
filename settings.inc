@@ -1,38 +1,37 @@
 <?php
 /**
- *
  * @file
  * settings.inc
  *
- * This file should be included at the bottom of your settings.php file:
+ * This file should be included at the bottom of the settings.php file:
  *
- * include DRUPAL_ROOT . '/sites/all/modules/domain/settings.inc';
+ * include BACKDROP_ROOT . '/modules/domain/settings.inc';
  *
- * If you have installed the domain module into a different folder than
- * /sites/all/modules/domain please adjust the path appropriately.
+ * If the domain module is installed in a different folder than /modules/domain
+ * please adjust the path appropriately.
  *
  * @ingroup domain
  */
 
 /**
- * Include bootstrap file and start bootstrap phases.
+ * Include domain bootstrap file and start bootstrap phases.
  */
 include 'domain.bootstrap.inc';
 
-// If the module is not installed properly, or Drupal not yet installed, we
-// can explode rather maginificently. Using a try/catch, we can at least fail
-// silently.
+/**
+ * If the module is not installed properly, or Backdrop is not yet installed, it
+ * can fail rather magnificently. Using a try/catch, it can fail silently.
+ */
+
 try {
   global $databases;
 
   $database_is_set = FALSE;
-  // Database connection settings have been provided in the form of a connection
-  // string.
+  // Check if database connection settings are provided as a simplified string.
   if (!empty($database) && is_string($database)) {
     $default_db_string = 'mysql://user:pass@localhost/database_name';
     if ($database !== $default_db_string) {
-      // Convert simplified database settings string into the full databases
-      // array.
+      // Convert simplified database settings string into full database array.
       $database_parts = parse_url($database);
       if (!$database_parts) {
         trigger_error('The database setting could not be parsed. Please check the $database setting in settings.php.', E_USER_ERROR);
@@ -50,8 +49,7 @@ try {
       $database_is_set = TRUE;
     }
   }
-  // Database connection settings have been provided in the form of a simplified
-  // array.
+  // Check if database connection settings are provided as a simplified array.
   if (!empty($database) && is_array($database)) {
     $default_db_array = array(
       'database' => 'database_name',
@@ -84,7 +82,6 @@ try {
   }
   domain_bootstrap();
 }
-catch(Exception $e) {
-  // No error logging is available yet, assume we are installing Drupal.
-  // See https://www.drupal.org/node/1559486.
+catch (Exception $e) {
+  // No error logging is available yet, assume we are installing Backdrop.
 }
