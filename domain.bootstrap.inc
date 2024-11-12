@@ -314,15 +314,24 @@ function domain_settings_initialize() {
     $base_root = substr($base_url, 0, strlen($base_url) - strlen($parts['path']));
   }
   else {
-    // Create base URL
+    // Create base URL.
     $http_protocol = $is_https ? 'https' : 'http';
     $base_root = $http_protocol . '://' . $_SERVER['HTTP_HOST'];
+
     $base_url = $base_root;
 
     // $_SERVER['SCRIPT_NAME'] can, in contrast to $_SERVER['PHP_SELF'], not
     // be modified by a visitor.
     if ($dir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '\/')) {
-      $base_path = $dir;
+      // Remove "core" directory if present, allowing install.php, update.php,
+      // cron.php and others to auto-detect a base path.
+      $core_position = strrpos($dir, '/core');
+      if ($core_position !== FALSE && strlen($dir) - 5 == $core_position) {
+        $base_path = substr($dir, 0, $core_position);
+      }
+      else {
+        $base_path = $dir;
+      }
       $base_url .= $base_path;
       $base_path .= '/';
     }
