@@ -16,7 +16,7 @@
 /**
  * Include domain bootstrap file and start bootstrap phases.
  */
-include 'domain.bootstrap.inc';
+include_once 'domain.bootstrap.inc';
 
 /**
  * If the module is not installed properly, or Backdrop is not yet installed, it
