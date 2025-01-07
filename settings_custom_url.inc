@@ -40,7 +40,7 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
   }
   // Querying for nodepaths is expensive, so only do it if needed.
   if (!isset($check_nodes)) {
-    $check_nodes = $check || $seo || $use_source;
+    $check_nodes = ($check || $seo || $use_source) && !empty($original_path);
   }
   // Check for path rewrites.
   if (!isset($path_alter)) {
