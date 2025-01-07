@@ -66,7 +66,7 @@ class DomainLayoutAccess extends LayoutAccess {
       '#type' => 'checkboxes',
       '#options' => $options,
       '#description' => t('Limit block display to selected affiliates. When no affiliates are selected this block is visible on all domains by default.'),
-      '#default_value' => $this->settings['domain'],
+      '#default_value' => !empty($this->settings['domain']) ? $this->settings['domain'] : array(),
     );
   }
 
