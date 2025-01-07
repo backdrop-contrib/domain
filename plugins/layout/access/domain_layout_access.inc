@@ -22,7 +22,14 @@ class DomainLayoutAccess extends LayoutAccess {
    * {@inheritdoc}
    */
   public function summary() {
-    return t('Custom condition: Domain Blocks Specific Condition');
+    $domain_list = '';
+    $domains = domain_id_list();
+    foreach ($domains as $machine_name => $domain_id) {
+      if (in_array($domain_id, $this->settings['domain'])) {
+        $domain_list .= $machine_name . ', ';
+      }
+    }
+    return t('Domain: ') . rtrim($domain_list, ', ');
   }
 
   /**
