@@ -32,6 +32,7 @@ function domain_conf_domain_warning() {
  * Implements hook_domain_batch().
  */
 function domain_conf_domain_batch() {
+  $config = config('system.core');
   $batch = [];
   // Allows the deletion of all Domain Configuration rows.
   $batch['domain_conf'] = [
@@ -60,7 +61,7 @@ function domain_conf_domain_batch() {
     ],
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'site_name'),
+    '#system_default' => $config->get('site_name'),
     '#variable' => 'site_name',
     '#meta_description' => t('Set the site name for all domains.'),
     '#data_type' => 'string',
@@ -79,7 +80,7 @@ function domain_conf_domain_batch() {
     ],
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'site_name'),
+    '#system_default' => $config->get('site_name'),
     '#variable' => 'site_mail',
     '#meta_description' => t('Set the email address for all domains.'),
     '#data_type' => 'string',
@@ -98,7 +99,7 @@ function domain_conf_domain_batch() {
     ],
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'site_slogan'),
+    '#system_default' => $config->get('site_slogan'),
     '#variable' => 'site_slogan',
     '#meta_description' => t('Set the site slogan for all domains.'),
     '#data_type' => 'string',
@@ -117,7 +118,7 @@ function domain_conf_domain_batch() {
     ],
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'site_frontpage'),
+    '#system_default' => $config->get('site_frontpage'),
     '#variable' => 'site_frontpage',
     '#meta_description' => t('Set the site frontpage for all domains.'),
     '#data_type' => 'string',
@@ -136,7 +137,7 @@ function domain_conf_domain_batch() {
     ],
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'anonymous'),
+    '#system_default' => $config->get('anonymous'),
     '#variable' => 'anonymous',
     '#meta_description' => t('Set the anonymous user label for all domains.'),
     '#data_type' => 'string',
@@ -160,7 +161,7 @@ function domain_conf_domain_batch() {
     ],
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'admin_theme'),
+    '#system_default' => $config->get('admin_theme'),
     '#variable' => 'admin_theme',
     '#meta_description' => t('Set the administrative theme for all domains.'),
     '#data_type' => 'string',
@@ -168,7 +169,7 @@ function domain_conf_domain_batch() {
     '#update_all' => TRUE,
     '#group' => t('Administrative theme'),
   ];
-  // Choose whether the admin theme is used when creating/editing content
+  // Choose whether the admin theme is used when creating/editing content.
   $batch['node_admin_theme'] = [
     '#form' => [
       '#type' => 'checkbox',
@@ -177,7 +178,7 @@ function domain_conf_domain_batch() {
     ],
     '#permission' => 'administer themes',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'node_admin_theme'),
+    '#system_default' => $config->get('node_admin_theme'),
     '#variable' => 'node_admin_theme',
     '#meta_description' => t('Choose whether to use the administrative theme when editing or creating content on all domains.'),
     '#data_type' => 'boolean',
@@ -206,7 +207,7 @@ function domain_conf_domain_batch() {
     '#group' => t('Timezone settings'),
   ];
   // Change the caching mode.
-  $cache = config_get('system.core', 'cache');
+  $cache = $config->get('cache');
   $batch['cache'] = [
     '#form' => [
       '#type' => 'checkbox',
@@ -245,13 +246,13 @@ function domain_conf_domain_batch() {
     '#form' => [
       '#type' => 'select',
       '#title' => t('Minimum cache lifetime'),
-      '#default_value' => config_get('system.core', 'page_cache_maximum_age'),
+      '#default_value' => $config->get('page_cache_maximum_age'),
       '#options' => $period,
       '#description' => t('The minimum amount of time that will elapse before the caches are recreated.'),
     ],
     '#permission' => 'administer site configuration',
     '#domain_action' => 'domain_conf',
-    '#system_default' => config_get('system.core', 'page_cache_maximum_age'),
+    '#system_default' => $config->get('page_cache_maximum_age'),
     '#variable' => 'cache_lifetime',
     '#meta_description' => t('Set the minimum cache lifetime for all domains.'),
     '#data_type' => 'integer',
@@ -275,7 +276,7 @@ function domain_conf_domain_batch() {
       '#system_default' => $default->langcode,
       '#override_default' => TRUE,
       '#variable' => '',
-      // deliberately empty, since this is an array and cannot be set.
+      // Deliberately empty, since this is an array and cannot be set.
       '#meta_description' => t('Set the default language for all domains.'),
       '#data_type' => 'string',
       '#weight' => 6,
