@@ -199,14 +199,14 @@ function _domain_bootstrap_modules_load() {
 }
 
 /**
- * Retrieves the value of the variable 'domain_bootstrap_modules' from the
- * {variable} table. This function does not use Drupal's variable system.
+ * Retrieves the value of the state 'domain_bootstrap_modules' from the
+ * {state} table.
  *
  * @return
  *   An array containing module names.
  */
 function _domain_bootstrap_modules_get() {
-  return config_get('domain.settings', 'domain_bootstrap_modules');
+  return state_get('domain_bootstrap_modules');
 }
 
 /**

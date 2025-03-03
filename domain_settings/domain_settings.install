@@ -6,23 +6,6 @@
  */
 
 /**
- * Rename the variable 'domain_settings_ignore'.
- */
-function domain_settings_update_6000() {
-  // Get existing variable:
-  $old_settings = config_get('domain_settings.settings','domain_settings_ignore');
-  // Save the variable with another name if it exists:
-  if (!empty($old_settings)) {
-    config_set('domain_settings.settings','domain_settings_forms', $old_settings);
-  }
-
-  // Delete the old variable:
-  config_clear('domain_settings.settings','domain_settings_ignore');
-
-  return t('Updated Domain Settings configuration.');
-}
-
-/**
  * Migrate domain_settings variables to config.
  */
 function domain_settings_update_1000() {

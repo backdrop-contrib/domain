@@ -24,85 +24,8 @@ function domain_conf_schema() {
 }
 
 /**
- * Some variable names changed in Drupal 7.
+ * Implements hook_update_last_removed().
  */
-function domain_conf_update_7001() {
-  $changes = domain_conf_d7_variable_changes();
-  $domains = db_query("SELECT * FROM {domain}")->FetchAllAssoc('domain_id');
-  $result = db_query("SELECT domain_id FROM {domain_conf}");
-  foreach ($result as $object) {
-    if (!isset($domains[$object->domain_id])) {
-      // Remove cruft from the table.
-      domain_conf_data_delete($object->domain_id);
-      continue;
-    }
-
-    $settings = domain_conf_data_get($object->domain_id, TRUE);
-    if (!empty($settings)) {
-      // Update the record with the new variables.
-      foreach ($changes['removed'] as $key) {
-        if (isset($settings[$key])) {
-          unset($settings[$key]);
-        }
-      }
-      foreach ($changes['renamed'] as $key => $value) {
-        if (isset($settings[$key])) {
-          $settings[$value] = $settings[$key];
-          unset($settings[$key]);
-        }
-      }
-      domain_conf_data_set($object->domain_id, $settings, FALSE);
-    }
-  }
-  return t('Domain Conf variables updated.');
-}
-
-/**
- * Return an array of variable changes from Drupal 6 to 7.
- */
-function domain_conf_d7_variable_changes() {
-  $removed = [
-    'menu_default_node_menu',
-    'site_mission',
-    'site_footer',
-    'page_compression',
-  ];
-  $renamed = [
-    'menu_primary_links_source' => 'menu_main_links_source',
-  ];
-  return ['removed' => $removed, 'renamed' => $renamed];
-}
-
-/**
- * Implements hook_dependencies().
- */
-function domain_conf_update_dependencies() {
-  $dependencies['domain_conf'][7300] = [
-    'domain' => 7303,
-  ];
-  return $dependencies;
-}
-
-/**
- * Remove references to row 0.
- */
-function domain_conf_update_7300(&$sandbox) {
-  $default_id = db_query("SELECT domain_id FROM {domain} WHERE is_default = 1")->fetchField();
-  db_update('domain_conf')
-    ->fields(['domain_id' => $default_id])
-    ->condition('domain_id', 0)
-    ->execute();
-  return t('Domain Configuration zero records removed.');
-}
-
-/**
- * Increases the size of the {domain_conf}.settings to long blob.
- */
-function domain_conf_update_7301(&$sandbox) {
-  $updated_field = [
-    'type' => 'blob',
-    'size' => 'big',
-    'not null' => FALSE,
-  ];
-  db_change_field('domain_conf', 'settings', 'settings', $updated_field);
+function domain_conf_update_last_removed() {
+  return 7301;
 }

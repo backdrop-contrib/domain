@@ -18,7 +18,6 @@
  */
 function domain_conf_domain_bootstrap_full($domain) {
   require_once BACKDROP_ROOT . '/core/includes/common.inc';
-  $config = config('system.core');
   $check = &backdrop_static(__FUNCTION__);
   // If running domain_set_domain(), we have issues with the variables
   // from the primary domain, which need to be loaded from cache.
@@ -47,7 +46,7 @@ function domain_conf_domain_bootstrap_full($domain) {
           if (!empty($temp)) {
             $value = $temp;
             $GLOBALS['language'] = $temp;
-            $config->set('language_default', $value->langcode);
+            $GLOBALS['config']['system.core']['language_default'] = $value->langcode;
           }
           domain_conf_default_language($value->langcode);
         }
@@ -55,7 +54,7 @@ function domain_conf_domain_bootstrap_full($domain) {
     }
 
     if (!config_get('domain.settings', 'domain_sitename_override')) {
-      $config->set('site_name', $settings['site_name']);
+      $GLOBALS['config']['system.core']['site_name'] = $settings['site_name'];
     }
 
     $indexes = [
@@ -68,18 +67,17 @@ function domain_conf_domain_bootstrap_full($domain) {
     ];
     foreach ($indexes as $i => $index) {
       if (!empty($settings[$index])) {
-        $config->set($index, $settings[$index]);
+        $GLOBALS['config']['system.core'][$index] = $settings[$index];
       }
     }
     if (isset($settings['cache'])) {
-      $config->set('cache', $settings['cache']);
+      $GLOBALS['config']['system.core']['cache'] = $settings['cache'];
     }
     if (!empty($settings['cache_lifetime'])) {
-      $config->set('page_cache_maximum_age', $settings['cache_lifetime']);
+      $GLOBALS['config']['system.core']['page_cache_maximum_age'] = $settings['cache_lifetime'];
     }
-    $config->save();
     if (!empty($settings['date_default_timezone'])) {
-      config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
+      $GLOBALS['config']['system.date']['default_timezone'] = $settings['date_default_timezone'];
     }
   }
   $data = config_get('domain_settings.settings', 'forms_settings');
@@ -93,7 +91,7 @@ function domain_conf_domain_bootstrap_full($domain) {
             foreach ($data[$form_data]['file_json'] as $file => $config) {
               $var = config_get($config);
               if (array_key_exists($key, $var)) {
-                config_set($config, $key, $value);
+                $GLOBALS['config'][$config][$key] = $value;
               }
             }
           }
@@ -604,6 +602,6 @@ function domain_conf_default_language($value = NULL) {
  */
 function domain_conf_set_default_language($default_language) {
   if (!empty($default_language) && is_object($default_language)) {
-    config_set('system.core', 'language_default', $default_language);
+    $GLOBALS['config']['system.core']['language_default'] = $default_language;
   }
 }

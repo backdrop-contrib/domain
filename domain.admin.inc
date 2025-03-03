@@ -188,17 +188,18 @@ function domain_configure() {
  * FormsAPI for configuring the domain module.
  */
 function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
+  $config = config('domain.settings');
   $form['domain_sitename_override'] = [
     '#type' => 'checkbox',
     '#title' => t('Override site name with name of domain.'),
-    '#default_value' => config_get('domain.settings', 'domain_sitename_override'),
+    '#default_value' => $config->get('domain_sitename_override'),
     '#description' => t('When enabled, the site name is overridden with the domain name set on the domain edit page.'),
   ];
   $form['domain_debug'] = [
     '#type' => 'radios',
     '#title' => t('Debugging status'),
     '#required' => TRUE,
-    '#default_value' => config_get('domain.settings', 'domain_debug'),
+    '#default_value' => $config->get('domain_debug'),
     '#options' => [
       0 => t('Do not show debugging output'),
       1 => t('Show debugging output on node view'),
@@ -210,7 +211,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'radios',
     '#title' => t('Enforce rules on administrators'),
     '#required' => TRUE,
-    '#default_value' => config_get('domain.settings', 'domain_force_admin'),
+    '#default_value' => $config->get('domain_force_admin'),
     '#options' => [
       0 => t('Do not enforce'),
       1 => t('Restrict node views for administrators'),
@@ -221,7 +222,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'select',
     '#title' => t('Domain list size'),
     '#required' => TRUE,
-    '#default_value' => config_get('domain.settings', 'domain_list_size'),
+    '#default_value' => $config->get('domain_list_size'),
     '#options' => backdrop_map_assoc([
       5,
       10,
@@ -245,7 +246,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'radios',
     '#title' => t('Display in vertical tabs'),
     '#required' => TRUE,
-    '#default_value' => config_get('domain.settings', 'domain_vertical_tab'),
+    '#default_value' => $config->get('domain_vertical_tab'),
     '#options' => [t('No'), t('Yes')],
     '#description' => t('Present the domain form options in a vertical tab.'),
   ];
@@ -253,7 +254,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'radios',
     '#title' => t('Collapse domain form options'),
     '#required' => TRUE,
-    '#default_value' => config_get('domain.settings', 'domain_collapse_options'),
+    '#default_value' => $config->get('domain_collapse_options'),
     '#options' => [t('No'), t('Yes')],
     '#description' => t('When not displayed in a vertical tab, collapse the domain form options fieldset.'),
   ];
@@ -276,7 +277,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
   $form['domain_advanced']['domain_www'] = [
     '#type' => 'radios',
     '#title' => t('WWW prefix handling'),
-    '#default_value' => config_get('domain.settings', 'domain_www'),
+    '#default_value' => $config->get('domain_www'),
     '#options' => [
       0 => t('Process all host requests normally'),
       1 => t('Treat www.*.example.com as an alias of *.example.com'),
@@ -288,7 +289,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
   $form['domain_advanced']['domain_search'] = [
     '#type' => 'radios',
     '#title' => t('Search settings'),
-    '#default_value' => config_get('domain.settings', 'domain_search'),
+    '#default_value' => $config->get('domain_search'),
     '#options' => [
       0 => t('Search content for the current domain only'),
       1 => t('Search all domains from any URL'),
@@ -299,7 +300,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
   $form['domain_advanced']['domain_seo'] = [
     '#type' => 'radios',
     '#title' => t('Search engine optimization'),
-    '#default_value' => config_get('domain.settings', 'domain_seo'),
+    '#default_value' => $config->get('domain_seo'),
     '#options' => [
       0 => t('Do not rewrite URLs'),
       1 => t('Rewrite all URLs to point to a single source'),
@@ -311,7 +312,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
   $form['domain_advanced']['domain_edit_on_primary'] = [
     '#type' => 'checkbox',
     '#title' => t('Force domain editing from the primary domain'),
-    '#default_value' => config_get('domain.settings', 'domain_edit_on_primary'),
+    '#default_value' => $config->get('domain_edit_on_primary'),
     '#description' => t('When editing a domain, you will be redirected to the primary domain. Doing so ensures that
       the server can handle changes to the domain record. <br /><em>Disabling this feature may make development environments
       easier to support. Use at your own risk.</em>'),
@@ -329,7 +330,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'select',
     '#title' => t('Default source domain'),
     '#options' => $options,
-    '#default_value' => config_get('domain.settings', 'domain_default_source'),
+    '#default_value' => $config->get('domain_default_source'),
     '#description' => t('When rewriting urls, nodes assigned to all affiliates will be sent to this domain. <em>NOTE: This option only fires if you enable SEO rewrites or use the Domain Source module.</em>'),
   ];
 
@@ -344,7 +345,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'textarea',
     '#rows' => 5,
     '#cols' => 40,
-    '#default_value' => config_get('domain.settings', 'domain_grant_all'),
+    '#default_value' => $config->get('domain_grant_all'),
     '#description' => t('Content on these pages should be viewable on any domain.  Enter one path per line.
       You may use the * as a wildcard.  Use this for aggregate pages like those provided by <a href="!url">MySite</a> or if you
       intend to show all user posts on a specific page.  See the README for more details.', ['!url' => 'http://drupal.org/project/mysite']),
@@ -352,14 +353,14 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
 
   $form['domain_all']['domain_cron_rule'] = [
     '#type' => 'checkbox',
-    '#default_value' => config_get('domain.settings', 'domain_cron_rule'),
+    '#default_value' => $config->get('domain_cron_rule'),
     '#title' => t('Treat cron.php as a special page request.'),
     '#description' => t('Normally, you should leave this setting active.  See the README for more information.'),
   ];
 
   $form['domain_all']['domain_xmlrpc_rule'] = [
     '#type' => 'checkbox',
-    '#default_value' => config_get('domain.settings', 'domain_xmlrpc_rule'),
+    '#default_value' => $config->get('domain_xmlrpc_rule'),
     '#title' => t('Treat xmlrpc.php as a special page request.'),
     '#description' => t('Enable this setting if you have trouble with remote data calls over XMLRPC.  See the README for more information.'),
   ];
@@ -374,7 +375,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'textarea',
     '#rows' => 5,
     '#cols' => 40,
-    '#default_value' => config_get('domain.settings', 'domain_paths'),
+    '#default_value' => $config->get('domain_paths'),
     '#description' => t('When using SEO or other path rewrites, the following link paths should be turned into absolute URLs.  Enter
       the Backdrop path of the link, using the <em>%n</em> placeholder to represent the node id.
       Enter one path per line.  See the README for more details.'),
@@ -390,7 +391,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
     '#type' => 'textarea',
     '#rows' => 5,
     '#cols' => 40,
-    '#default_value' => config_get('domain.settings', 'domain_classes'),
+    '#default_value' => $config->get('domain_classes'),
   ];
   if (module_exists('token')) {
     $form['domain_classes']['domain_classes']['#description'] = t('Add the following classes to the <em>body</em> tag of every page. Enter one class per line. This field supports tokens.');
@@ -422,28 +423,35 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
   return $form;
 }
 
+/**
+ *
+ */
 function domain_configure_form_submit($form, &$form_state, $user_submitted = FALSE) {
-  config_set('domain.settings', 'domain_sitename_override', $form_state['values']['domain_sitename_override']);
-  config_set('domain.settings', 'domain_debug', $form_state['values']['domain_debug']);
-  config_set('domain.settings', 'domain_force_admin', $form_state['values']['domain_force_admin']);
-  config_set('domain.settings', 'domain_list_size', $form_state['values']['domain_list_size']);
-  config_set('domain.settings', 'domain_vertical_tab', $form_state['values']['domain_vertical_tab']);
-  config_set('domain.settings', 'domain_collapse_options', $form_state['values']['domain_collapse_options']);
-  config_set('domain.settings', 'domain_select_format', $form_state['values']['domain_select_format']);
-  config_set('domain.settings', 'domain_www', $form_state['values']['domain_www']);
-  config_set('domain.settings', 'domain_search', $form_state['values']['domain_search']);
-  config_set('domain.settings', 'domain_seo', $form_state['values']['domain_seo']);
-  config_set('domain.settings', 'domain_edit_on_primary', $form_state['values']['domain_edit_on_primary']);
-  config_set('domain.settings', 'domain_default_source', $form_state['values']['domain_default_source']);
-  config_set('domain.settings', 'domain_grant_all', $form_state['values']['domain_grant_all']);
-  config_set('domain.settings', 'domain_cron_rule', $form_state['values']['domain_cron_rule']);
-  config_set('domain.settings', 'domain_xmlrpc_rule', $form_state['values']['domain_xmlrpc_rule']);
-  config_set('domain.settings', 'domain_paths', $form_state['values']['domain_paths']);
-  config_set('domain.settings', 'domain_classes', $form_state['values']['domain_classes']);
+  $config = config('domain.settings');
+  $config->set('domain_sitename_override', $form_state['values']['domain_sitename_override']);
+  $config->set('domain_debug', $form_state['values']['domain_debug']);
+  $config->set('domain_force_admin', $form_state['values']['domain_force_admin']);
+  $config->set('domain_list_size', $form_state['values']['domain_list_size']);
+  $config->set('domain_vertical_tab', $form_state['values']['domain_vertical_tab']);
+  $config->set('domain_collapse_options', $form_state['values']['domain_collapse_options']);
+  $config->set('domain_select_format', $form_state['values']['domain_select_format']);
+  $config->set('domain_www', $form_state['values']['domain_www']);
+  $config->set('domain_search', $form_state['values']['domain_search']);
+  $config->set('domain_seo', $form_state['values']['domain_seo']);
+  $config->set('domain_edit_on_primary', $form_state['values']['domain_edit_on_primary']);
+  $config->set('domain_default_source', $form_state['values']['domain_default_source']);
+  $config->set('domain_grant_all', $form_state['values']['domain_grant_all']);
+  $config->set('domain_cron_rule', $form_state['values']['domain_cron_rule']);
+  $config->set('domain_xmlrpc_rule', $form_state['values']['domain_xmlrpc_rule']);
+  $config->set('domain_paths', $form_state['values']['domain_paths']);
+  $config->set('domain_classes', $form_state['values']['domain_classes']);
+  $config->save();
   if (module_exists('domain_settings') && isset($form_state['values']['domain_settings_behavior']) ) {
-    config_set('domain_settings.settings', 'domain_settings_behavior', $form_state['values']['domain_settings_behavior']);
-    config_set('domain_settings.settings', 'domain_settings_form_visibility', $form_state['values']['domain_settings_form_visibility']);
-    config_set('domain_settings.settings', 'domain_settings_forms', $form_state['values']['domain_settings_forms']);
+    $config = config('domain_settings.settings');
+    $config->set('domain_settings_behavior', $form_state['values']['domain_settings_behavior']);
+    $config->set('domain_settings_form_visibility', $form_state['values']['domain_settings_form_visibility']);
+    $config->set('domain_settings_forms', $form_state['values']['domain_settings_forms']);
+    $config->save();
   }
 }
 
@@ -491,11 +499,12 @@ function domain_values_from_form_state($form_state) {
  */
 function domain_form($form, &$form_state, $domain = [], $arguments = []) {
   $_domain = domain_get_domain();
+  $config = config('domain.settings');
 
   // This action should be performed from the primary domain unless overridden.
   $error = FALSE;
   if (!isset($arguments['ignore_domain_status_check'])) {
-    if (config_get('domain.settings', 'domain_edit_on_primary')) {
+    if ($config->get('domain_edit_on_primary')) {
       domain_check_primary();
     }
     if (!empty($domain)) {
@@ -520,7 +529,7 @@ function domain_form($form, &$form_state, $domain = [], $arguments = []) {
     $form['domain_arguments'] = ['#type' => 'value', '#value' => $arguments];
   }
   $form['domain_id'] = ['#type' => 'value', '#value' => $domain['domain_id']];
-  if (!config_get('domain.settings', 'domain_allow_non_ascii')) {
+  if (!$config->get('domain_allow_non_ascii')) {
     $description = t('Must contain only dots, lowercase alphanumeric characters, dashes and a colon (if using alternative ports).');
   }
   else {
@@ -930,9 +939,10 @@ function domain_batch_form($form, &$form_state, $action, $batch, $domains) {
     }
     if ($batch['#domain_action'] == 'domain_conf') {
       // Set the default value to the main settings.
-      // In rare cases, variable_get() returns unusable data, so we override it.
+      // In rare cases, config_get() returns unusable data, so we override it.
       if (empty($batch['#override_default'])) {
-        $default[$domain['domain_id']] = empty(config_get('domain.settings', $action)) || is_null(config_get('domain.settings', $action)) ? $batch['#system_default'] : config_get('domain.settings', $action);
+        $action_setting = config_get('domain.settings', $action);
+        $default[$domain['domain_id']] = empty($action_setting) ? $batch['#system_default'] : $action_setting;
       }
       else {
         $default[$domain['domain_id']] = $batch['#system_default'];
@@ -1137,7 +1147,6 @@ function domain_nodes_form($form, &$form_state) {
     ];
   }
 
-
   $form['#submit'][] = 'domain_nodes_form_submit';
   $form['actions']['#type'] = 'actions';
   $form['actions']['submit'] = [
@@ -1149,6 +1158,9 @@ function domain_nodes_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ *
+ */
 function domain_nodes_form_submit($form, &$form_state) {
   $var = [];
   $node_types = node_type_get_names();
@@ -1208,6 +1220,7 @@ function theme_domain_nodes_form($variables) {
  */
 function domain_roles_form($form, &$form_state) {
   $form = [];
+  $config = config('domain.settings');
   $form['domain_add_roles'] = [
     '#type' => 'radios',
     '#options' => [
@@ -1216,11 +1229,11 @@ function domain_roles_form($form, &$form_state) {
     ],
     '#title' => t('Role settings behavior'),
     '#description' => t('Adding role settings to the user account will permanently save them for each user on account updates. Otherwise, role-based settings can be added or removed at will.'),
-    '#default_value' => config_get('domain.settings', 'domain_add_roles'),
+    '#default_value' => $config->get('domain_add_roles'),
   ];
 
   $roles = user_roles();
-  $defaults = config_get('domain.settings', 'domain_roles');
+  $defaults = $config->get('domain_roles');
 
   $roles[0] = t('new user');
   ksort($roles);
@@ -1268,9 +1281,14 @@ function domain_roles_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ *
+ */
 function domain_roles_form_submit($form, &$form_state) {
-  config_set('domain.settings', 'domain_add_roles', $form_state['values']['domain_add_roles']);
-  config_set('domain.settings', 'domain_roles', $form_state['values']['domain_roles']);
+  $config = config('domain.settings');
+  $config->set('domain_add_roles', $form_state['values']['domain_add_roles']);
+  $config->set('domain_roles', $form_state['values']['domain_roles']);
+  $config->save();
 }
 
 /**
