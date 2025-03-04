@@ -206,7 +206,7 @@ function _domain_bootstrap_modules_load() {
  *   An array containing module names.
  */
 function _domain_bootstrap_modules_get() {
-  return config_get('domain_settings', 'domain_bootstrap_modules');
+  return config_get('domain.settings', 'domain_bootstrap_modules');
 }
 
 /**
