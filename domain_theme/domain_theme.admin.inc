@@ -405,7 +405,7 @@ function domain_theme_file_upload(&$values) {
       $values['toggle_logo'] = 1;
     }
   }
-  if(array_key_exists('favicon_upload', $values)){
+  if (array_key_exists('favicon_upload', $values)){
     if ($file = $values['favicon_upload']) {
       unset($values['favicon_upload']);
       $filename = file_unmanaged_copy($file->uri);
