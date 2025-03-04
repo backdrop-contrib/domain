@@ -302,7 +302,9 @@ function domain_theme_settings_submit($form, &$form_state) {
   // Deal with file uploads.
   domain_theme_file_upload($values);
   // Set the variables for saving.
-  $key = $values['var'];
+  if (array_key_exists('var', $values)) {
+    $key = $values['var'];
+  }
   $domain_id = $values['domain_id'];
   $theme = $values['theme'];
   // Exclude unnecessary elements before saving.
@@ -394,19 +396,23 @@ function domain_theme_color_submit($form, &$form_state) {
 function domain_theme_file_upload(&$values) {
   // If the user uploaded a new logo or favicon, save it to a permanent location
   // and use it in place of the default theme-provided file.
-  if ($file = $values['logo_upload']) {
-    unset($values['logo_upload']);
-    $filename = file_unmanaged_copy($file->uri);
-    $values['default_logo'] = 0;
-    $values['logo_path'] = $filename;
-    $values['toggle_logo'] = 1;
+  if (array_key_exists('logo_upload', $values)){
+    if ($file = $values['logo_upload']) {
+      unset($values['logo_upload']);
+      $filename = file_unmanaged_copy($file->uri);
+      $values['default_logo'] = 0;
+      $values['logo_path'] = $filename;
+      $values['toggle_logo'] = 1;
+    }
   }
-  if ($file = $values['favicon_upload']) {
-    unset($values['favicon_upload']);
-    $filename = file_unmanaged_copy($file->uri);
-    $values['default_favicon'] = 0;
-    $values['favicon_path'] = $filename;
-    $values['toggle_favicon'] = 1;
+  if (array_key_exists('favicon_upload', $values)){
+    if ($file = $values['favicon_upload']) {
+      unset($values['favicon_upload']);
+      $filename = file_unmanaged_copy($file->uri);
+      $values['default_favicon'] = 0;
+      $values['favicon_path'] = $filename;
+      $values['toggle_favicon'] = 1;
+    }
   }
 
   // If the user entered a path relative to the system files directory for
