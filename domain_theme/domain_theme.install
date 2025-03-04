@@ -25,27 +25,11 @@ function domain_theme_schema() {
   return $schema;
 }
 
-
 /**
- * Implements hook_dependencies().
+ * Implements hook_update_last_removed().
  */
-function domain_theme_update_dependencies() {
-  $dependencies['domain_theme'][7300] = array(
-    'domain' => 7303,
-  );
-  return $dependencies;
-}
-
-/**
- * Remove references to row 0.
- */
-function domain_theme_update_7300(&$sandbox) {
-  $default_id = db_query("SELECT domain_id FROM {domain} WHERE is_default = 1")->fetchField();
-  db_update('domain_theme')
-    ->fields(array('domain_id' => $default_id))
-    ->condition('domain_id', 0)
-    ->execute();
-  return t('Domain Theme zero records removed.');
+function domain_theme_update_last_removed() {
+  return 7300;
 }
 
 /**

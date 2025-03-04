@@ -163,8 +163,10 @@ function domain_nav_block_configure($delta = '') {
  * Implements hook_block_save().
  */
 function domain_nav_block_save($delta = '', $edit = array()) {
-  config_set('domain_nav.settings','domain_nav_block', $edit['domain_nav_block']);
-  config_set('domain_nav.settings','domain_nav_theme', $edit['domain_nav_theme']);
+  $config = config('domain_nav.settings');
+  $config->set('domain_nav_block', $edit['domain_nav_block']);
+  $config->set('domain_nav_theme', $edit['domain_nav_theme']);
+  $config->save();
 }
 
 /**

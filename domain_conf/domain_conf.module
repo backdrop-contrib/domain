@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * @defgroup domain_conf Domain Conf: configuration extension
  * Functions for the Domain Conf module.
  */
@@ -45,7 +46,7 @@ function domain_conf_domain_bootstrap_full($domain) {
           if (!empty($temp)) {
             $value = $temp;
             $GLOBALS['language'] = $temp;
-            config_set('system.core', 'language_default', $value->langcode);
+            $GLOBALS['config']['system.core']['language_default'] = $value->langcode;
           }
           domain_conf_default_language($value->langcode);
         }
@@ -53,7 +54,7 @@ function domain_conf_domain_bootstrap_full($domain) {
     }
 
     if (!config_get('domain.settings', 'domain_sitename_override')) {
-      config_set('system.core', 'site_name', $settings['site_name']);
+      $GLOBALS['config']['system.core']['site_name'] = $settings['site_name'];
     }
 
     $indexes = [
@@ -66,18 +67,17 @@ function domain_conf_domain_bootstrap_full($domain) {
     ];
     foreach ($indexes as $i => $index) {
       if (!empty($settings[$index])) {
-        config_set('system.core', $index, $settings[$index]);
+        $GLOBALS['config']['system.core'][$index] = $settings[$index];
       }
     }
-    if (isset($settings['cache'])){
-      config_set('system.core', 'cache', $settings['cache']);
+    if (isset($settings['cache'])) {
+      $GLOBALS['config']['system.core']['cache'] = $settings['cache'];
     }
-
     if (!empty($settings['cache_lifetime'])) {
-      config_set('system.core', 'page_cache_maximum_age', $settings['cache_lifetime']);
+      $GLOBALS['config']['system.core']['page_cache_maximum_age'] = $settings['cache_lifetime'];
     }
     if (!empty($settings['date_default_timezone'])) {
-      config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
+      $GLOBALS['config']['system.date']['default_timezone'] = $settings['date_default_timezone'];
     }
   }
   $data = config_get('domain_settings.settings', 'forms_settings');
@@ -91,7 +91,7 @@ function domain_conf_domain_bootstrap_full($domain) {
             foreach ($data[$form_data]['file_json'] as $file => $config) {
               $var = config_get($config);
               if (array_key_exists($key, $var)) {
-                config_set($config, $key, $value);
+                $GLOBALS['config'][$config][$key] = $value;
               }
             }
           }
@@ -581,10 +581,10 @@ function domain_conf_multilingual_settings_changed() {
  * Store the default language setting for later use.
  *
  * @param $value
- *  If set, the $language object to store.
+ *   If set, the $language object to store.
  *
  * @return
- *  The language object or FALSE if not set.
+ *   The language object or FALSE if not set.
  */
 function domain_conf_default_language($value = NULL) {
   $language = &backdrop_static(__FUNCTION__);
@@ -598,10 +598,10 @@ function domain_conf_default_language($value = NULL) {
  * Shutdown function to reset the default language variable.
  *
  * @param $default_language
- *  A language object, stored by domain_conf_default_language().
+ *   A language object, stored by domain_conf_default_language().
  */
 function domain_conf_set_default_language($default_language) {
   if (!empty($default_language) && is_object($default_language)) {
-    config_set('system.core', 'language_default', $default_language);
+    $GLOBALS['config']['system.core']['language_default'] = $default_language;
   }
 }

@@ -732,9 +732,11 @@ function hook_domain_warning_alter(&$forms) {
 function hook_domain_settings($domain_id, $values) {
   // Sync domain 2 with the primary domain in all cases.
   if ($domain_id == 2) {
+    $config = config('domain.settings');
     foreach($values as $name => $value) {
-      config_set('domain.settings', $name, $value);
+      $config->set($name, $value);
     }
+    $config->save();
   }
 }
 
