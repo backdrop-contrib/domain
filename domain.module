@@ -610,7 +610,7 @@ function domain_user_save($account) {
     $query->execute();
   }
   // Clear the $edit field.
-  //  $edit['domain_user'] = NULL;.
+  // $edit['domain_user'] = NULL;
 }
 
 /**
