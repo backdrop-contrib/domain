@@ -396,7 +396,7 @@ function domain_theme_color_submit($form, &$form_state) {
 function domain_theme_file_upload(&$values) {
   // If the user uploaded a new logo or favicon, save it to a permanent location
   // and use it in place of the default theme-provided file.
-  if(array_key_exists('logo_upload', $values)){
+  if (array_key_exists('logo_upload', $values)){
     if ($file = $values['logo_upload']) {
       unset($values['logo_upload']);
       $filename = file_unmanaged_copy($file->uri);
