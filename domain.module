@@ -3013,7 +3013,7 @@ function domain_bootstrap_register() {
   $lookup = module_implements('domain_bootstrap_lookup');
   $full = module_implements('domain_bootstrap_full');
   $modules = array_merge($lookup, $full);
-  state_set('domain_bootstrap_modules', $modules);
+  config_set('domain.settings', 'domain_bootstrap_modules', $modules);
 }
 
 /**

@@ -259,7 +259,7 @@ function domain_update_1000() {
   $config->set('domain_node_', update_variable_get('domain_node_', []));
   $config->set('domain_last_node_update', update_variable_get('domain_last_node_update', 0));
   $config->set('user_picture_default', update_variable_get('user_picture_default', ""));
-  state_set('domain_bootstrap_modules', update_variable_get('domain_bootstrap_modules', []));
+  $config->set('domain_bootstrap_modules', update_variable_get('domain_bootstrap_modules', []));
   $config->set('anonymous', update_variable_get('anonymous', 'Anonymous'));
   $config->set('settings', update_variable_get('settings', []));
   $config->save();
