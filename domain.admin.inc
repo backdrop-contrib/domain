@@ -155,7 +155,7 @@ function domain_overview_form_submit($form, &$form_state) {
       $default = 1;
       $valid = 1;
       // Indicate a message if the value changed.
-      if ($domain_id != $form_state['complete form']['default_domain']['#default_value']) {
+      if ($domain_id != $form_state['complete_form']['default_domain']['#default_value']) {
         backdrop_set_message(t('The primary domain has been set to %domain.', ['%domain' => domain_get_path($value['values'])]));
       }
     }
