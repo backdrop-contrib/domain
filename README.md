@@ -35,7 +35,6 @@ https://github.com/backdrop-contrib/domain/issues.
 
 Current Maintainers
 -------------------
-- [Martin Price](https://github.com/yorkshire-pudding) - [System Horizons Ltd](https://www.systemhorizons.co.uk)
 - [Tim Erickson](https://github.com/stpaultim) - [Simplo by Triplo](https://simplo.site/)
 - [Rodobaldo Perez Macias](https://github.com/rudy880719)
 - Collaboration and co-maintainers welcome! REALLY, REALLY WELCOME!!
