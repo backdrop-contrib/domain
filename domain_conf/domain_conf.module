@@ -99,6 +99,14 @@ function domain_conf_domain_bootstrap_full($domain) {
       }
     }
   }
+
+  // Push all overrides into any already-cached (static) Config objects.
+  // Config objects capture $GLOBALS['config'] only at construction time, so
+  // objects loaded before this hook ran won't pick up overrides set here
+  // unless we update them explicitly via setOverrides().
+  foreach ($GLOBALS['config'] as $config_name => $overrides) {
+    config($config_name)->setOverrides($overrides);
+  }
 }
 
 

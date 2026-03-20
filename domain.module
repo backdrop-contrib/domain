@@ -136,6 +136,11 @@ function domain_init() {
   // Set the site name to the domain-specific name.
   if ($config->get('domain_sitename_override')) {
     $GLOBALS['config']['system.core']['site_name'] = $_domain['sitename'];
+    // Push the override into any already-cached (static) Config object.
+    // Config objects capture $GLOBALS['config'] only at construction time, so
+    // objects loaded before this hook ran won't pick up overrides set here
+    // unless we update them explicitly via setOverrides().
+    config('system.core')->setOverrides($GLOBALS['config']['system.core']);
   }
 }
 
