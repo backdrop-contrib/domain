@@ -22,3 +22,20 @@ function domain_settings_update_1000() {
   update_variable_del('domain_settings_form_visibility');
   update_variable_del('domain_settings_forms');
 }
+
+/**
+ * Stub for a legacy D6-era update hook present in older packaged releases.
+ *
+ * This hook was carried over from the Drupal 6 → 7 upgrade path and is not
+ * applicable to Backdrop. It is included here as a no-op so that sites which
+ * encountered the repeating update loop (the original function failed silently
+ * and never advanced the schema) can advance cleanly to schema 6000.
+ *
+ * NOTE: Because this stub advances the schema to 6000, all future update hooks
+ * for this module must be numbered 7000 or higher. Updates in the 1001-5999
+ * and 6001-6999 ranges will never run on any site that has passed through 6000.
+ */
+function domain_settings_update_6000() {
+  // No operation needed. This stub exists to resolve a repeating update loop
+  // caused by a broken legacy hook in earlier packaged releases.
+}
