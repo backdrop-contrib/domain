@@ -4484,7 +4484,7 @@ function domain_autoload_info() {
  */
 function domain_config_info() {
   $prefixes['domain.settings'] = [
-    'label' => t('domain settings'),
+    'label' => t('Domain settings'),
     'group' => t('Configuration'),
   ];
   return $prefixes;
