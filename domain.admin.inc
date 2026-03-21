@@ -22,6 +22,14 @@ function domain_overview_form($form, &$form_state) {
   // Set the form.
   $default = domain_default();
   $active_domain = domain_get_domain();
+
+  // Warn when viewing domain administration from a non-primary domain.
+  // Changes to domain settings require being on the primary domain; alerting
+  // the user here avoids a confusing redirect later when they try to edit.
+  if ($active_domain['domain_id'] != $default['domain_id']) {
+    $primary_url = domain_get_uri($default) . 'admin/structure/domain';
+    backdrop_set_message(t('Domain settings can only be changed from the primary domain. <a href="!url">Switch to the primary domain</a> to make changes.', ['!url' => $primary_url]), 'warning', FALSE);
+  }
   $form = [];;
   $form['top'] = [
     '#markup' => t('<p>The following domains have been created for your site.  The currently active domain <strong>is shown in boldface</strong>.  You
