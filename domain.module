@@ -3769,6 +3769,11 @@ function domain_check_response($domain, $drush = FALSE) {
     'absolute' => TRUE,
   ]);
   if ($response->code != 200) {
+    if ($response->code == 0) {
+      return $t('!server could not be reached (connection failed). This is common in local development environments where the server cannot make HTTP requests to itself. You can disable this check at <a href="!url">Domain settings</a>.',
+        ['!server' => $url, '!url' => url('admin/structure/domain/settings')]
+      );
+    }
     return $t('!server is not responding as expected and may not be configured correctly at the server level. Server code !code was returned.',
       ['!server' => $url, '!code' => $response->code]
     );
