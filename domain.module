@@ -133,6 +133,14 @@ function domain_init() {
     domain_invalid_domain_requested();
   }
 
+  // Display a redirect message passed via URL from a cross-domain redirect.
+  // backdrop_set_message() cannot survive a cross-domain redirect because
+  // sessions are not shared across domain boundaries. The message is instead
+  // passed as a query parameter and displayed here on the destination domain.
+  if (!empty($_GET['domain_redirect_msg'])) {
+    backdrop_set_message(t('To edit these settings you must be on your primary domain. You have been redirected there.'));
+  }
+
   // Set the site name to the domain-specific name.
   if ($config->get('domain_sitename_override')) {
     $GLOBALS['config']['system.core']['site_name'] = $_domain['sitename'];
@@ -1629,7 +1637,12 @@ function domain_check_primary($msg = 'default') {
   $default = domain_default();
   if ($_domain['domain_id'] != $default['domain_id']) {
     if ($msg == 'default') {
-      backdrop_set_message(t('You have been redirected: This page must be accessed from the primary domain.'));
+      // Pass a flag in the redirect URL rather than calling backdrop_set_message()
+      // here. Session messages set before a cross-domain redirect are stored in
+      // the source domain's session and never appear on the destination domain.
+      // The flag is caught in domain_init() after the redirect completes.
+      $path = domain_get_uri($default);
+      backdrop_goto($path, ['query' => ['domain_redirect_msg' => 1]]);
     }
     elseif (!empty($msg)) {
       backdrop_set_message($msg);
