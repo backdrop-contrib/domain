@@ -188,7 +188,49 @@ function domain_requirements($phase) {
       break;
     case 'runtime':
       $messages = [];
-      $severity = REQUIREMENT_ERROR;
+      $severity = REQUIREMENT_OK;
+
+      // Check that settings.php is properly configured for Domain Access.
+      // The domain bootstrap sets $_domain['domain_id'] during settings.php
+      // processing. If it is missing or an error is flagged, the required
+      // include is absent or misconfigured.
+      global $_domain;
+      if (empty($_domain['domain_id']) || isset($_domain['error'])) {
+        $messages[] = t('The Domain Access bootstrap has not run. Add the following lines to the end of your settings.php file (after any DDEV or local settings includes):<br><code>unset($base_url);<br>include BACKDROP_ROOT . \'/modules/domain/settings.inc\';</code>');
+        $severity = REQUIREMENT_ERROR;
+      }
+
+      // Check that node access permissions do not need rebuilding.
+      // When the catch-all grant (realm=all) is present in {node_access},
+      // domain restrictions are not enforced — all content is visible on all
+      // domains regardless of assignment.
+      if (function_exists('node_access_needs_rebuild') && node_access_needs_rebuild()) {
+        $rebuild = l(t('Rebuild content permissions'), 'admin/reports/status/rebuild');
+        $messages[] = t('Node access permissions need to be rebuilt. Until rebuilt, Domain Access restrictions are not enforced and content may appear on the wrong domains. !rebuild.', ['!rebuild' => $rebuild]);
+        $severity = max($severity, REQUIREMENT_WARNING);
+      }
+
+      // Check that domain_conf is registered as a bootstrap module if enabled.
+      // Without bootstrap registration, per-domain config overrides are never
+      // applied — the module appears to work but domain-specific settings are
+      // silently ignored.
+      if (module_exists('domain_conf')) {
+        $bootstrap_modules = config_get('domain.settings', 'domain_bootstrap_modules');
+        if (!is_array($bootstrap_modules) || !in_array('domain_conf', $bootstrap_modules)) {
+          $messages[] = t('Domain Conf is enabled but its settings are not being applied per-domain. This can happen when site configuration is imported or synced between environments. To fix, disable and re-enable the Domain Conf module.');
+          $severity = max($severity, REQUIREMENT_WARNING);
+        }
+      }
+
+      // Check that more than one domain is configured.
+      // A single domain means the module is installed but not yet put to use.
+      $domain_count = db_query("SELECT COUNT(domain_id) FROM {domain}")->fetchField();
+      if ($domain_count <= 1) {
+        $add = l(t('add affiliate domains'), 'admin/structure/domain');
+        $messages[] = t('Only one domain is configured. Domain Access is most useful with multiple domains. !add to get started.', ['!add' => $add]);
+        $severity = max($severity, REQUIREMENT_WARNING);
+      }
+
       // Ensure we have a primary domain.
       $check = domain_default();
       if ($check['domain_id'] == 0) {
@@ -197,15 +239,19 @@ function domain_requirements($phase) {
           $updated = l(t('set properly'), 'admin/structure/domain');
         }
         $messages[] = t('The site has no primary domain and needs to be !updated.', ['!updated' => $updated]);
+        $severity = max($severity, REQUIREMENT_ERROR);
       }
-      // Check for domain_id 0.
+
+      // Check for domain_id 0 in submodule tables.
       $list = domain_update_module_check();
       domain_update_messages($messages, $list);
+      if (!empty($list)) {
+        $severity = max($severity, REQUIREMENT_ERROR);
+      }
 
       // Now report.
       $t = get_t();
       if (empty($messages)) {
-        $severity = REQUIREMENT_OK;
         $messages[] = t('Module installed correctly.');
       }
       $requirements['domain'] = [
