@@ -6,26 +6,28 @@
  */
 
 /**
- * Implements hook_schema().
- */
-function domain_conf_schema() {
-  $schema['domain_conf'] = [
-    'description' => 'Stores custom settings for each domain.',
-    'fields' => [
-      'domain_id' => ['type' => 'int', 'not null' => TRUE, 'default' => 0],
-      'settings' => ['type' => 'blob', 'size' => 'big', 'not null' => FALSE],
-    ],
-    'primary key' => ['domain_id'],
-    'foreign_keys' => [
-      'domain_id' => ['domain' => 'domain_id'],
-    ],
-  ];
-  return $schema;
-}
-
-/**
  * Implements hook_update_last_removed().
  */
 function domain_conf_update_last_removed() {
   return 7301;
+}
+
+/**
+ * Migrate domain_conf settings from {domain_conf} database table to config.
+ */
+function domain_conf_update_7302() {
+  if (!db_table_exists('domain_conf')) {
+    // Fresh install — no data to migrate.
+    return;
+  }
+  $rows = db_query('SELECT domain_id, settings FROM {domain_conf}')->fetchAll();
+  foreach ($rows as $row) {
+    $settings = unserialize($row->settings);
+    if (is_array($settings) && !empty($settings)) {
+      config('domain_conf.domain.' . $row->domain_id)
+        ->setData($settings)
+        ->save();
+    }
+  }
+  db_drop_table('domain_conf');
 }
