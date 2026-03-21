@@ -318,6 +318,13 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
       easier to support. Use at your own risk.</em>'),
   ];
 
+  $form['domain_advanced']['domain_skip_domain_check'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Disable domain response check'),
+    '#default_value' => $config->get('domain_skip_domain_check'),
+    '#description' => t('When saving a domain, the module verifies the domain is reachable by making an HTTP request to it. Check this box to skip that check. Useful for local development environments where domains may not be reachable from the server.'),
+  ];
+
   $options = ['-1' => t('Do not change domain')];
   foreach (domain_domains() as $data) {
     // The domain must be valid.
@@ -439,6 +446,7 @@ function domain_configure_form_submit($form, &$form_state, $user_submitted = FAL
   $config->set('domain_search', $form_state['values']['domain_search']);
   $config->set('domain_seo', $form_state['values']['domain_seo']);
   $config->set('domain_edit_on_primary', $form_state['values']['domain_edit_on_primary']);
+  $config->set('domain_skip_domain_check', $form_state['values']['domain_skip_domain_check']);
   $config->set('domain_default_source', $form_state['values']['domain_default_source']);
   $config->set('domain_grant_all', $form_state['values']['domain_grant_all']);
   $config->set('domain_cron_rule', $form_state['values']['domain_cron_rule']);
