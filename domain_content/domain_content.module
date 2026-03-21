@@ -22,14 +22,14 @@
  */
 function domain_content_menu() {
   $items = array();
-  $items['admin/domain/content'] = array(
+  $items['admin/content/domain'] = array(
     'title' => 'Affiliated content',
     'description' => 'Administer content by domain.',
     'page callback' => 'domain_content_list',
     'access callback' => 'domain_content_menu_check',
     'file' => 'domain_content.admin.inc',
   );
-  $items['admin/domain/content/all'] = array(
+  $items['admin/content/domain/all'] = array(
     'title' => 'Content assigned to all affiliates',
     'page callback' => 'domain_content_view',
     'page arguments' => array(NULL, TRUE),
@@ -45,7 +45,7 @@ function domain_content_menu() {
     $domains = domain_domains();
     if (count($domains) <= config_get('domain.settings', 'domain_list_size')) {
       foreach ($domains as $domain) {
-        $items['admin/domain/content/' . $domain['domain_id']] = array(
+        $items['admin/content/domain/' . $domain['domain_id']] = array(
           'title' => check_plain($domain['sitename']) .' content',
           'page callback' => 'domain_content_view',
           'page arguments' => array($domain['domain_id'], FALSE),
@@ -58,7 +58,7 @@ function domain_content_menu() {
       }
     }
     else {
-      $items['admin/domain/content/list'] = array(
+      $items['admin/content/domain/list'] = array(
         'title' => 'Affiliate site list',
         'page callback' => 'domain_content_list',
         'access callback' => 'domain_content_menu_check',
@@ -66,7 +66,7 @@ function domain_content_menu() {
         'description' => 'View your list of affiliates',
         'weight' => -10
       );
-      $items['admin/domain/content/%'] = array(
+      $items['admin/content/domain/%'] = array(
         'title' => 'Affiliate site list',
         'page callback' => 'domain_content_view',
         'page arguments' => array(3, TRUE),

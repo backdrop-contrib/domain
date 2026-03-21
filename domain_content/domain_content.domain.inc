@@ -13,7 +13,7 @@
 function domain_content_domain_link($domain) {
   $links[] = array(
     'title' => t('content'),
-    'path' => 'admin/domain/content/'. $domain['domain_id']
+    'path' => 'admin/content/domain/'. $domain['domain_id']
   );
   return $links;
 }

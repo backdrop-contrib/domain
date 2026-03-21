@@ -19,7 +19,7 @@ module_load_include('inc', 'node', 'node.admin');
 function domain_content_page() {
   $build = [];
   $content = [];
-  $content = system_admin_menu_block(menu_get_item('admin/domain/content'));
+  $content = system_admin_menu_block(menu_get_item('admin/content/domain'));
   // Print the list of options.
   if (!empty($content)) {
     $output = theme('admin_block_content', ['content' => $content]);
@@ -93,7 +93,7 @@ function domain_content_list() {
     $path = trim(domain_get_path($domain), '/');
     $rows[] = [
       $domain['domain_id'] . (($domain['is_default']) ? ' * ' : ''),
-      l(t('@sitename content', ['@sitename' => $domain['sitename']]), 'admin/domain/content/' . $domain['domain_id']),
+      l(t('@sitename content', ['@sitename' => $domain['sitename']]), 'admin/content/domain/' . $domain['domain_id']),
       number_format((int) db_query("SELECT COUNT(nid) FROM {domain_access} WHERE gid = :gid AND realm = :realm", [
         ':gid' => $domain['domain_id'],
         ':realm' => 'domain_id',
@@ -108,7 +108,7 @@ function domain_content_list() {
 
   $all = [
     '-',
-    l(t('Content assigned to all affiliates'), 'admin/domain/content/all'),
+    l(t('Content assigned to all affiliates'), 'admin/content/domain/all'),
     number_format((int) db_query("SELECT COUNT(nid) FROM {domain_access} WHERE gid = :gid AND realm = :realm", [
       ':gid' => 0,
       ':realm' => 'domain_site',
