@@ -23,7 +23,7 @@
 function domain_content_menu() {
   $items = array();
   $items['admin/content/domain'] = array(
-    'title' => 'Affiliated content',
+    'title' => 'Domain content',
     'description' => 'Administer content by domain.',
     'page callback' => 'domain_content_list',
     'access callback' => 'domain_content_menu_check',
