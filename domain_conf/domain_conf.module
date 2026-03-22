@@ -115,12 +115,12 @@ function domain_conf_domain_bootstrap_full($domain) {
 
 
 /**
- * CRUD utility to retreve domain configuratin data.
+ * CRUD utility to retrieve domain configuration data.
  *
  * @param int $domain_id
  *   Domain to fetch configuration for.
  * @param bool $reset
- *   Flag to reset the data from cache layers and fetch directly from the DB.
+ *   Flag to reset the data from cache layers and fetch directly from config.
  *   Defaults to FALSE.
  *
  * @return array
@@ -134,23 +134,17 @@ function domain_conf_data_get($domain_id, $reset = FALSE) {
     return $static_cache[$domain_id];
   }
 
-  // Used to expose the DB call flag for testing
-  // TODO: Think of better implementation to track query executions.
+  // Used to expose the config read flag for testing.
   $hit = &backdrop_static('domain_conf_data_get_db_hit', FALSE);
   $hit = TRUE;
 
-  // Fetch data from source.
-  $settings = [];
-  $data = db_select('domain_conf', 'd')
-    ->fields('d', ['settings'])
-    ->condition('domain_id', $domain_id)
-    ->execute()
-    ->fetchField();
-  if (!empty($data)) {
-    $settings = domain_unserialize($data);
+  // Fetch data from config storage.
+  $settings = config('domain_conf.domain.' . $domain_id)->get();
+  if (!is_array($settings)) {
+    $settings = [];
   }
 
-  // Populate cache layers.
+  // Populate static cache.
   $static_cache[$domain_id] = $settings;
 
   return $settings;
@@ -172,13 +166,9 @@ function domain_conf_data_set($domain_id, array $new_settings, $merge = TRUE) {
     $settings = domain_conf_data_get($domain_id, TRUE);
     $new_settings = array_merge($settings, $new_settings);
   }
-  db_merge('domain_conf')
-    ->key(['domain_id' => $domain_id])
-    ->fields([
-      'domain_id' => $domain_id,
-      'settings' => serialize($new_settings),
-    ])
-    ->execute();
+  config('domain_conf.domain.' . $domain_id)
+    ->setData($new_settings)
+    ->save();
 
   // Update the static cache for any subsequent gets.
   $static_cache_get = &backdrop_static('domain_conf_data_get', []);
@@ -190,17 +180,21 @@ function domain_conf_data_set($domain_id, array $new_settings, $merge = TRUE) {
  *
  * @param int|string $domain_id
  *   Domain ID to delete configuration for. Use the string 'all' to delete the
- *   configrations for all domains.
+ *   configurations for all domains.
  */
 function domain_conf_data_delete($domain_id) {
   $wildcard = $domain_id === 'all';
 
-  // Remove from source.
-  $query = db_delete('domain_conf');
-  if (!$wildcard) {
-    $query->condition('domain_id', (int) $domain_id);
+  // Remove from config storage.
+  if ($wildcard) {
+    $names = config_get_names_with_prefix('domain_conf.domain.');
+    foreach ($names as $name) {
+      config($name)->delete();
+    }
   }
-  $query->execute();
+  else {
+    config('domain_conf.domain.' . $domain_id)->delete();
+  }
 
   // Remove from the static cache for any subsequent gets.
   $static_cache_get = &backdrop_static('domain_conf_data_get', []);
