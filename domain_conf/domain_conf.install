@@ -15,7 +15,7 @@ function domain_conf_update_last_removed() {
 /**
  * Migrate domain_conf settings from {domain_conf} database table to config.
  */
-function domain_conf_update_7302() {
+function domain_conf_update_1000() {
   if (!db_table_exists('domain_conf')) {
     // Fresh install — no data to migrate.
     return;
