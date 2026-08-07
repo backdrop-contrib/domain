@@ -1,16 +1,15 @@
 <?php
-
-/**
- * @defgroup domain_hooks Domain hook functions
- *
- * Core hooks for the Domain module suite.
- */
-
 /**
  * @file
  * API documentation file.
  *
  * @ingroup domain_hooks
+ */
+
+/**
+ * @defgroup domain_hooks Domain hook functions
+ *
+ * Core hooks for the Domain module suite.
  */
 
 /**
@@ -24,27 +23,27 @@
  *
  * Invoked by domain_lookup() and domain_default().
  *
- * @param &$domain
+ * @param array &$domain
  *   The current $domain array.
  *
- * @return
- *   No return value.  The $domain array is modified by reference..
+ * @return boolean
+ *   No return value. The $domain array is modified by reference.
  *
  * @ingroup domain_hooks
  */
 function hook_domain_load(&$domain) {
   // Add a variable to the $domain array.
   $domain['myvar'] = 'mydomainvar';
-  // Remove the site_grant flag, removing access to 'all affiliates.'
+  // Remove the site_grant flag, removing access to 'all affiliates'.
   $domain['site_grant'] = FALSE;
 }
 
 /**
  * Notify other modules that we have created a new domain.
  *
- * @param $domain
- *  The domain record taken from {domain}, as an array.
- * @param $form_values
+ * @param string $domain
+ *   The domain record taken from {domain}, as an array.
+ * @param array $form_values
  *   The form values processed by the form.  Note that these are not editable
  *   since module_invoke_all() cannot pass by reference. They are passed in
  *   case some module needs to check the original form input.
@@ -63,9 +62,9 @@ function hook_domain_insert($domain, $form_values = array()) {
 /**
  * Notify other modules that we have updated a domain.
  *
- * @param $domain
- *  The domain record taken from {domain}, as an array.
- * @param $form_values
+ * @param array $domain
+ *   The domain record taken from {domain}, as an array.
+ * @param array $form_values
  *   The form values processed by the form.  Note that these are not editable
  *   since module_invoke_all() cannot pass by reference. They are passed in
  *   case some module needs to check the original form input.
@@ -84,9 +83,9 @@ function hook_domain_update($domain, $form_values = array()) {
 /**
  * Notify other modules that we have deleted a domain.
  *
- * @param $domain
- *  The domain record taken from {domain}, as an array.
- * @param $form_values
+ * @param array $domain
+ *   The domain record taken from {domain}, as an array.
+ * @param array $form_values
  *   The form values processed by the form.  Note that these are not editable
  *   since module_invoke_all() cannot pass by reference. They are passed in
  *   case some module needs to check the original form input.
@@ -106,16 +105,16 @@ function hook_domain_delete($domain, $form_values = array()) {
  * Used in cases where custom themes may require extra parameters.
  * This hook is called by domain_nav_render().
  *
- * @param $domain
+ * @param array $domain
  *   The information for the current domain record, taken from {domain}.
  *
- * Default parameters should not be changed; these are:
+ *   Default parameters should not be changed; these are:
  *
  *   - domain_id -- the unique identifier of this domain
  *   - subdomain -- the host path of the url for this domain
  *   - sitename -- the human-readable name of this domain
  *   - path -- the link path (a Backdrop-formatted path)
- *   - active -- a boolean flag indicating the currently active domain
+ *   - active -- a boolean flag indicating the currently active domain.
  *
  * @ingroup domain_hooks
  */
@@ -140,7 +139,7 @@ function hook_domain_nav($domain) {
  * That means each domain will have its tables and variables loaded before
  * your function fires.
  *
- * @param $domain
+ * @param array $domain
  *   The information for the current domain record, taken from {domain}.
  *
  * @ingroup domain_hooks
@@ -185,13 +184,13 @@ function hook_domain_install() {
 /**
  * Allows other modules to add elements to the default Domain settings page.
  *
- * @param &$form
+ * @param array &$form
  *   The $form array generated for the Domain settings page.  This must
  *   be passed by reference. Normally, you should include your form elements
  *   inside a new fieldset.
  *
- * @return
- *   No return value.  The $form is modified by reference, as needed.
+ * @return null
+ *   No return value. The $form is modified by reference, as needed.
  */
 function hook_domain_form(&$form) {
   // Add the form element to the main screen.
@@ -201,7 +200,9 @@ function hook_domain_form(&$form) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE
   );
-  $options = backdrop_map_assoc(array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100));
+  $options = backdrop_map_assoc(
+    array(-100, -25, -10, -5, -1, 0, 1, 5, 10, 25, 100)
+  );
   $form['domain_mymodule']['domain_mymodule'] = array(
     '#type' => 'select',
     '#title' => t('Mymodule settings variable'),
@@ -215,7 +216,7 @@ function hook_domain_form(&$form) {
  *  Allows a warning message to be printed when entering specific forms that
  *  may have values that vary on each domain.
  *
- * @return
+ * @return array
  *   An associative array where the keys form_id values representing forms
  *   that require warnings. The value should return a link for where the
  *   form may be set for the current domain. If no link exists, you should
@@ -243,12 +244,12 @@ function hook_domain_warning() {
 /**
  * Allows modules to specify the target link for a node.
  *
- * @param &$source
+ * @param array &$source
  *   The domain array from domain_get_node_match(), passed by reference.
- * @param $nid
+ * @param string $nid
  *   The node id.
  *
- * @return
+ * @return null
  *   No return value; modify $source by reference.
  */
 function hook_domain_source_alter(&$source, $nid) {
@@ -277,13 +278,13 @@ function hook_domain_source_alter(&$source, $nid) {
  *
  * Currently, no modules in the package implement this hook.
  *
- * @param &$source
+ * @param array &$source
  *   The domain array from domain_get_node_match(), passed by reference.
- * @param $nid
+ * @param string $nid
  *   The identifier of the object being rewritten. For nodes, this is the node
  *   id. In other instances, we may pass a $path string or other variable.
  *
- * @return
+ * @return null
  *   No return value; modify $source by reference.
  */
 function hook_domain_source_path_alter(&$source, $path) {
@@ -329,7 +330,7 @@ function hook_domain_source_path_alter(&$source, $path) {
  * this form setting. Failure to check access on the form elements may introduce
  * a security risk.
  *
- * @return
+ * @return array
  *   A $form array element as defined by the FormsAPI.
  *
  *  @ingroup domain_hooks
@@ -488,7 +489,7 @@ function hook_domain_batch() {
 /**
  * Return an array of forms for which we cannot run hook_form_alter().
  *
- * @return
+ * @return array
  *   An array of form ids that should not run through domain_form_alter.
  */
 function hook_domain_ignore() {
@@ -547,10 +548,10 @@ function hook_domain_bootstrap() {
  * Warning: do _not_ call domain_lookup() or domain_load() from within this
  * function. Doing so may cause critical errors.
  *
- * @param $domain
+ * @param array $domain
  *   An array containing current domain (host) name (used during bootstrap) and
  *   the results of lookup against {domain} table.
- * @return
+ * @return array
  *   An array containing at least a valid domain_id.
  */
 function hook_domain_bootstrap_lookup($domain) {
@@ -573,11 +574,11 @@ function hook_domain_bootstrap_lookup($domain) {
  * Warning: do _not_ call domain_lookup() or domain_load() from within this
  * function. Doing so may cause critical errors.
  *
- * @param $domain
+ * @param array $domain
  *   An array containing current domain and domain_id and any other values
  *   added during domain bootstrap phase DOMAIN_BOOTSTRAP_DOMAINNAME_RESOLVE.
  *
- * @return
+ * @return null
  *   No return value. However, if you wish to set an error message on failure,
  *   you should load and modify the $_domain global and add an 'error' element
  *   to the array. This element should only include the name of your module.
@@ -596,7 +597,7 @@ function hook_domain_bootstrap_full($domain) {
     return;
   }
   // Our test module sets the default language to Spanish.
-  config_set('system.core', 'language_default','en');
+  config_set('system.core', 'language_default', 'es');
 }
 
 /**
@@ -608,19 +609,19 @@ function hook_domain_bootstrap_full($domain) {
  *
  * @see hook_url_outbound_alter()
  *
- * @param $domain_id
+ * @param integer $domain_id
  *   The domain_id taken from {domain}.
- * @param $path
+ * @param string $path
  *   The internal Backdrop path to the node.
- * @param $options
+ * @param array $options
  *   The path options.
- * @param $original_path
+ * @param string $original_path
  *   The raw path request from the URL.
  *
  * @ingroup domain_hooks
  */
 function hook_domain_path($domain_id, &$path, &$options, $original_path) {
-  // Give a normal path alias
+  // Give a normal path alias.
   $path = backdrop_get_path_alias($path);
   // In D7, path alias lookups are done after url_alter, so if the
   // alias is set, the option must be flagged.
@@ -639,11 +640,11 @@ function hook_domain_path($domain_id, &$path, &$options, $original_path) {
  *
  * @link http://drupal.org/node/367963
  *
- * @param $domain_id
+ * @param string $domain_id
  *   The unique domain ID that is being edited.
- * @param $variable
+ * @param string $variable
  *   The name of the variable you wish to set.
- * @param $value
+ * @param string $value
  *   The value of the variable to set. You may leave this
  *   value blank in order to unset the custom variable.
  */
@@ -672,7 +673,7 @@ function mymodule_form_submit($form_state) {
  * @see backdrop_alter()
  * @see theme_domain_nav_default()
  *
- * @param &$options
+ * @param array &$options
  *   The link options, passed by reference, to the theme.
  * @return
  *   No return value. Modify $options by reference.

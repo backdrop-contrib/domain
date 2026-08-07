@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Block view functions for Domain Access.
@@ -141,11 +140,11 @@ function domain_block_view_server() {
 /**
  * Prints array data for the server block.
  *
- * @param $array
- *  An array of data. Note that we support two levels of nesting.
+ * @param string $array
+ *   An array of data. Note that we support two levels of nesting.
  *
- * @return
- *  A suitable output string.
+ * @return string
+ *   A suitable output string.
  */
 function _domain_block_print_array($array) {
   $items = [];
