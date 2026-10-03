@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__FILE__) . "/../includes/domain.config.inc";
+
 /**
  * @file
  * @defgroup domain_conf Domain Conf: configuration extension
@@ -18,43 +20,32 @@
  */
 function domain_conf_domain_bootstrap_full($domain) {
   require_once BACKDROP_ROOT . '/core/includes/common.inc';
-  $check = &backdrop_static(__FUNCTION__);
-  // If running domain_set_domain(), we have issues with the variables
-  // from the primary domain, which need to be loaded from cache.
-  // @link http://drupal.org/node/412156
-  if ($check) {
-    $_domain = domain_get_domain();
-    if ($domain['domain_id'] == 0 && $check != $_domain['domain_id']) {
-      _domain_conf_load_primary(TRUE);
-    }
-  }
-  // Flag that we have already loaded.
+  // Each domain bootstrap starts from the original request configuration.
+  domain_runtime_config_reset();
   $check = $domain['domain_id'];
+  $original_language = &backdrop_static('domain_conf_original_language', array());
+  if (array_key_exists('value', $original_language)) {
+    $GLOBALS['language'] = $original_language['value'];
+  }
+  domain_conf_default_language(FALSE);
   $settings = domain_conf_data_get($domain['domain_id']);
   if (!empty($settings)) {
-    // Overwrite the $conf variables.
-    foreach ($settings as $key => $value) {
-      if ($value === 'domain-conf-ignore') {
-        continue;
-      }
-
-      // Language handling is a special case.
-      if ($key == 'language_default') {
-        $language = (bool) db_query("SELECT status FROM {system} WHERE name = 'locale' AND type = 'module'")->fetchField();
-        if ($language) {
-          $temp = language_default();
-          if (!empty($temp)) {
-            $value = $temp;
-            $GLOBALS['language'] = $temp;
-            $GLOBALS['config']['system.core']['language_default'] = $value->langcode;
-          }
-          domain_conf_default_language($value->langcode);
+    // Domain settings apply to this request only, never to the shared JSON.
+    if (isset($settings['language_default']) && $settings['language_default'] !== 'domain-conf-ignore' && module_exists('locale')) {
+      $languages = language_list();
+      $langcode = is_object($settings['language_default']) ? $settings['language_default']->langcode : $settings['language_default'];
+      if (isset($languages[$langcode])) {
+        if (!array_key_exists('value', $original_language)) {
+          $original_language['value'] = isset($GLOBALS['language']) ? $GLOBALS['language'] : language_default();
         }
+        $GLOBALS['language'] = $languages[$langcode];
+        domain_runtime_config_set('system.core', 'language_default', $langcode);
+        domain_conf_default_language($languages[$langcode]);
       }
     }
 
-    if (!config_get('domain.settings', 'domain_sitename_override')) {
-      $GLOBALS['config']['system.core']['site_name'] = $settings['site_name'];
+    if (!config_get('domain.settings', 'domain_sitename_override') && isset($settings['site_name']) && $settings['site_name'] !== 'domain-conf-ignore') {
+      domain_runtime_config_set('system.core', 'site_name', $settings['site_name']);
     }
 
     $indexes = [
@@ -66,18 +57,19 @@ function domain_conf_domain_bootstrap_full($domain) {
       'node_admin_theme',
     ];
     foreach ($indexes as $i => $index) {
-      if (!empty($settings[$index])) {
-        $GLOBALS['config']['system.core'][$index] = $settings[$index];
+      if (isset($settings[$index]) && $settings[$index] !== 'domain-conf-ignore') {
+        domain_runtime_config_set('system.core', $index, $settings[$index]);
       }
     }
-    if (isset($settings['cache'])) {
-      $GLOBALS['config']['system.core']['cache'] = $settings['cache'];
+    if (isset($settings['cache']) && $settings['cache'] !== 'domain-conf-ignore') {
+      domain_runtime_config_set('system.core', 'cache', $settings['cache']);
     }
-    if (!empty($settings['cache_lifetime'])) {
-      $GLOBALS['config']['system.core']['page_cache_maximum_age'] = $settings['cache_lifetime'];
+
+    if (isset($settings['cache_lifetime']) && $settings['cache_lifetime'] !== 'domain-conf-ignore') {
+      domain_runtime_config_set('system.core', 'page_cache_maximum_age', $settings['cache_lifetime']);
     }
-    if (!empty($settings['date_default_timezone'])) {
-      $GLOBALS['config']['system.date']['default_timezone'] = $settings['date_default_timezone'];
+    if (isset($settings['date_default_timezone']) && $settings['date_default_timezone'] !== 'domain-conf-ignore') {
+      domain_runtime_config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
     }
   }
   $data = config_get('domain_settings.settings', 'forms_settings');
@@ -90,8 +82,8 @@ function domain_conf_domain_bootstrap_full($domain) {
           if (is_array($json)) {
             foreach ($data[$form_data]['file_json'] as $file => $config) {
               $var = config_get($config);
-              if (array_key_exists($key, $var)) {
-                $GLOBALS['config'][$config][$key] = $value;
+              if (is_array($var) && array_key_exists($key, $var) && $value !== 'domain-conf-ignore') {
+                domain_runtime_config_set($config, $key, $value);
               }
             }
           }
@@ -99,17 +91,8 @@ function domain_conf_domain_bootstrap_full($domain) {
       }
     }
   }
-
-  // Push all overrides into any already-cached (static) Config objects.
-  // Config objects capture $GLOBALS['config'] only at construction time, so
-  // objects loaded before this hook ran won't pick up overrides set here
-  // unless we update them explicitly via setOverrides().
-  if (!empty($GLOBALS['config'])) {
-    foreach ($GLOBALS['config'] as $config_name => $overrides) {
-      if (is_array($overrides)) {
-        config($config_name)->setOverrides($overrides);
-      }
-    }
+  if (config_get('domain.settings', 'domain_sitename_override') && isset($domain['sitename'])) {
+    domain_runtime_config_set('system.core', 'site_name', $domain['sitename']);
   }
 }
 
@@ -566,13 +549,9 @@ function domain_conf_features_api() {
  * @see domain_conf_multilingual_settings_changed()
  */
 function domain_conf_js_maintain() {
-  // Only a factor if using the Locale module.
-  if (!module_exists('locale')) {
-    return;
-  }
-  if ($default_language = domain_conf_default_language()) {
-    backdrop_register_shutdown_function('domain_conf_set_default_language', $default_language);
-  }
+  // Kept for compatibility. Language overrides are request-local and no
+  // shutdown write to the shared configuration is necessary.
+
 }
 
 /**
@@ -614,6 +593,6 @@ function domain_conf_default_language($value = NULL) {
  */
 function domain_conf_set_default_language($default_language) {
   if (!empty($default_language) && is_object($default_language)) {
-    $GLOBALS['config']['system.core']['language_default'] = $default_language;
+    domain_runtime_config_set('system.core', 'language_default', $default_language->langcode);
   }
 }
