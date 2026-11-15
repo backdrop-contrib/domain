@@ -117,6 +117,17 @@ function _domain_bootstrap($phase) {
       }
       backdrop_bootstrap(BACKDROP_BOOTSTRAP_DATABASE, $new_phase);
 
+      // Command-line tools such as Bee bootstrap only to the configuration
+      // phase first (that's when settings.php, and so this file, is loaded),
+      // so the call above can't go past it and the database isn't loaded.
+      // Ask for the database phase as a new target in that case. Web requests
+      // aim for the full bootstrap and never get here, so their target stays
+      // unchanged. Page caching is skipped on the command line, so this can't
+      // serve a cached page.
+      if (!function_exists('db_query') && empty($install_state)) {
+        backdrop_bootstrap(BACKDROP_BOOTSTRAP_DATABASE, TRUE);
+      }
+
       // If the Domain Access module has been disabled, or if we're unable to interact with the database, stop loading.
       if (function_exists('db_query')) {
         $check = (bool) db_query("SELECT status FROM {system} WHERE name = 'domain' AND type = 'module'")->fetchField();
