@@ -6,36 +6,44 @@
  */
 
 /**
- * Migrate domain_settings variables to config.
+ * Migrate Domain Settings variables from Drupal 7 to config.
+ *
+ * Only copies variables that still exist in the {variable} table, and deletes
+ * each one after copying, so running this update again (or on a site that
+ * never had Drupal 7 data) leaves the current config untouched.
+ *
+ * Drupal 7 sites arrive here with schema 6000 (from the Drupal 7 module's
+ * domain_settings_update_6000()); core treats 6000-6999 as a Drupal 6 schema
+ * and resets it to 0, so this update runs once for them. Never add an update
+ * numbered 6000-6999 (it would always show as pending) or 7000-9999 (reserved
+ * for Drupal 7). Later updates continue at 1001.
  */
 function domain_settings_update_1000() {
   $config = config('domain_settings.settings');
-  $config->set('domain_settings_ignore', update_variable_get('domain_settings_ignore', ''));
-  $config->set('domain_settings_behavior', update_variable_get('domain_settings_behavior', 0));
-  $config->set('domain_settings_form_visibility', update_variable_get('domain_settings_form_visibility', defined('DOMAIN_SETTINGS_SHOW_EXCEPT_LISTED') ? DOMAIN_SETTINGS_SHOW_EXCEPT_LISTED : 0));
-  $config->set('domain_settings_forms', update_variable_get('domain_settings_forms', ''));
-  $config->set('domain_sitename', update_variable_get('domain_sitename', ''));
-  $config->save();
 
+  // 'domain_settings_ignore' is the Drupal 6 name of the form list. Drupal 7
+  // renamed it to 'domain_settings_forms' in its update 6000; carry it over
+  // in case that update never ran. Never replace a form list already in config.
+  $ignore = update_variable_get('domain_settings_ignore');
+  if (!empty($ignore) && update_variable_get('domain_settings_forms') === NULL && $config->get('domain_settings_forms') == '') {
+    $config->set('domain_settings_forms', $ignore);
+  }
   update_variable_del('domain_settings_ignore');
-  update_variable_del('domain_settings_behavior');
-  update_variable_del('domain_settings_form_visibility');
-  update_variable_del('domain_settings_forms');
-}
 
-/**
- * Stub for a legacy D6-era update hook present in older packaged releases.
- *
- * This hook was carried over from the Drupal 6 → 7 upgrade path and is not
- * applicable to Backdrop. It is included here as a no-op so that sites which
- * encountered the repeating update loop (the original function failed silently
- * and never advanced the schema) can advance cleanly to schema 6000.
- *
- * NOTE: Because this stub advances the schema to 6000, all future update hooks
- * for this module must be numbered 7000 or higher. Updates in the 1001-5999
- * and 6001-6999 ranges will never run on any site that has passed through 6000.
- */
-function domain_settings_update_6000() {
-  // No operation needed. This stub exists to resolve a repeating update loop
-  // caused by a broken legacy hook in earlier packaged releases.
+  // Map of Drupal 7 variable name => config key.
+  $map = [
+    'domain_settings_behavior' => 'domain_settings_behavior',
+    'domain_settings_form_visibility' => 'domain_settings_form_visibility',
+    'domain_settings_forms' => 'domain_settings_forms',
+    'domain_sitename' => 'domain_sitename',
+  ];
+  foreach ($map as $variable => $key) {
+    $value = update_variable_get($variable);
+    if ($value !== NULL) {
+      $config->set($key, $value);
+    }
+    update_variable_del($variable);
+  }
+
+  $config->save();
 }
