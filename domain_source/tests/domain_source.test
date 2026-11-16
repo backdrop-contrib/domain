@@ -5,6 +5,9 @@
  * Simpletest for Domain Source.
  */
 
+// Load the base class DomainTestCase.
+require_once __DIR__ . '/../../tests/domain.test';
+
 class DomainSourceTest extends DomainTestCase {
 
   public function setUp($list = array()) {
@@ -14,13 +17,6 @@ class DomainSourceTest extends DomainTestCase {
     $this->domainCreateDomains();
   }
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Domain Source tests',
-      'description' => 'Test the functionality provided by Domain Source to assign canonical domains to content.',
-      'group' => 'Domain Source',
-    );
-  }
 
   // Test that content is not initially assigned.
   public function testDomainSourceInstall() {
@@ -35,7 +31,7 @@ class DomainSourceTest extends DomainTestCase {
   // Test simple saving and loading of node data.
   public function testDomainSourceSave() {
     // These nodes should all be assigned to the primary domain.
-    $node = node_load(1);
+    $node = node_load($this->domainNodeIds[0]);
     // $node->domain_source should be NULL.
     $this->assertTrue(is_null($node->domain_source), t('Source domain for initial content returns NULL.'));
 
@@ -48,7 +44,7 @@ class DomainSourceTest extends DomainTestCase {
     $this->assertTrue($records == 1, t('Saved node has domain source data.'));
 
     // Check that the data is loaded cleanly.
-    $node = node_load(1);
+    $node = node_load($this->domainNodeIds[0]);
     $this->assertTrue($node->domain_source == domain_default_id(), t('Source domain for initial content loaded correctly.'));
 
     // Save the node with no assigned source. Then load and check.
@@ -56,16 +52,16 @@ class DomainSourceTest extends DomainTestCase {
     node_save($node);
 
     // Check that the data is loaded cleanly.
-    $node = node_load(1);
+    $node = node_load($this->domainNodeIds[0]);
     $this->assertTrue($node->domain_source == DOMAIN_SOURCE_USE_ACTIVE, t('Source domain for initial content loaded correctly as "use active domain".'));
   }
 
   // Test the node form.
   public function testDomainSourceForm() {
     // Test the node edit form.
-    $type = 'article';
-    $admin_account = $this->drupalCreateUser(array('administer nodes', 'bypass node access', 'set domain access'));
-    $this->drupalLogin($admin_account);
+    $type = 'post';
+    $admin_account = $this->backdropCreateUser(array('administer nodes', 'bypass node access', 'set domain access'));
+    $this->backdropLogin($admin_account);
     $form = $this->domainNodeForm($admin_account->uid, $type);
     // Check the form element.
     $this->assertTrue(isset($form['domain']['domain_source']), t('Domain Source node form element appears.'));
@@ -77,7 +73,9 @@ class DomainSourceTest extends DomainTestCase {
 
     // Set the default value for this node type and check again. Note that the
     // variable is stored as a machine_name and transforms to an id by the form.
-    variable_set('domain_source_article', domain_default_machine_name());
+    $source_types = config_get('domain_source.settings', 'domain_source_type');
+    $source_types['domain_source_post'] = domain_default_machine_name();
+    config_set('domain_source.settings', 'domain_source_type', $source_types);
     $form = $this->domainNodeForm($admin_account->uid, $type);
     // The default domain option should be default.
     $this->assertTrue($form['domain']['domain_source']['#default_value'] == domain_default_id(), t('The default form value is the node type default.'));
@@ -89,7 +87,7 @@ class DomainSourceTest extends DomainTestCase {
   // Test source URL settings.
   public function testDomainSourceDefaults() {
     $_domain = domain_get_domain();
-    $node = node_load(1);
+    $node = node_load($this->domainNodeIds[0]);
     // By default, this node is not assigned, so it should be set to use
     // the active domain.
     $source = domain_source_lookup($node->nid);
@@ -104,26 +102,31 @@ class DomainSourceTest extends DomainTestCase {
     $source = domain_source_lookup($node->nid);
     $this->assertTrue($source == $domain['domain_id'], t('Assigned node set to proper domain.'));
 
-    // Get the site homepage. The node should link to the domain.
-    $this->drupalGet('');
-    $this->assertRaw('<a href="' . $domain['path'], t('URL rewrite returned correct domain.'));
+    // Get the site homepage, which lists promoted content. The node should
+    // link to its source domain. Check this node's own link: other links on
+    // the page may legitimately be absolute.
+    $alias = backdrop_get_path_alias('node/' . $node->nid);
+    $this->backdropGet('');
+    $this->assertRaw('href="' . $domain['path'] . $alias . '"', t('URL rewrite returned correct domain.'));
 
     // Save the node with DOMAIN_SOURCE_USE_ACTIVE.
     $node->domain_source = DOMAIN_SOURCE_USE_ACTIVE;
     node_save($node);
     $source = domain_source_lookup($node->nid);
     $this->assertTrue($source == DOMAIN_SOURCE_USE_ACTIVE, t('Use current domain set correctly.'));
+    // The standard profile turns on page caching, and saving a node in code
+    // (unlike the node form) doesn't clear it.
+    cache('page')->flush();
 
     // Get the site homepage. The node should link to a relative path.
-    // @TODO: This could be a better test.
-    $this->drupalGet('');
-    $this->assertNoRaw('<a href="' . $domain['path'], t('URL rewrite returned correct domain.'));
+    $this->backdropGet('');
+    $this->assertNoRaw('href="' . $domain['path'] . $alias . '"', t('Node link is not rewritten to another domain.'));
+    $this->assertRaw('href="/' . $alias . '"', t('Node link is relative on the primary domain.'));
 
     // Get the site homepage on another domain. The node should link to a
-    // relative path.
-    // @TODO: This could be a better test.
-    $this->drupalGet($domain['path']);
-    $this->assertNoRaw('<a href="' . $domain['path'], t('URL rewrite returned correct domain.'));
+    // relative path there too.
+    $this->backdropGet($domain['path']);
+    $this->assertRaw('href="/' . $alias . '"', t('Node link is relative on %domain.', array('%domain' => $domain['subdomain'])));
   }
 
 }

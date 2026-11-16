@@ -117,6 +117,14 @@ function domain_test_domain_batch() {
 }
 
 /**
+ * Implements hook_domain_batch_alter().
+ */
+function domain_test_domain_batch_alter(&$batch) {
+  // Rename the 'Domains' batch action provided by Domain Access.
+  $batch['subdomain']['#form']['#title'] = t('Test reset value');
+}
+
+/**
  * Implements hook_domain_invalid_request().
  */
 function domain_test_domain_invalid_request($path, $_domain, $account) {

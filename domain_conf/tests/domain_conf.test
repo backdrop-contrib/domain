@@ -5,16 +5,11 @@
  * Simpletest for Domain Conf. Written by @ndobromirov.
  */
 
+// Load the base class DomainTestCase.
+require_once __DIR__ . '/../../tests/domain.test';
 
 class DomainConfTestCase extends DomainTestCase {
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Domain Conf tests',
-      'description' => 'Test the functionality provided by Domain Conf to set domain-specific settings.',
-      'group' => 'Domain Conf',
-    );
-  }
 
   public function setUp($list = array()) {
     $modules = array_merge(array('domain_conf', 'domain_test'), $list);
@@ -89,7 +84,7 @@ class DomainConfTestCase extends DomainTestCase {
     $original = $settings;
 
     // Init the query flag.
-    $db_hit = &drupal_static('domain_conf_data_get_db_hit', FALSE);
+    $db_hit = &backdrop_static('domain_conf_data_get_db_hit', FALSE);
     $db_hit = FALSE;
 
     // Test static cache.
@@ -98,7 +93,7 @@ class DomainConfTestCase extends DomainTestCase {
     $db_hit = FALSE;
 
     // Clear the static cache, so now there are no caches.
-    $static_cache_get = &drupal_static('domain_conf_data_get', array());
+    $static_cache_get = &backdrop_static('domain_conf_data_get', array());
     unset($static_cache_get[$domain_id]);
     $this->assertEqual($original, domain_conf_data_get($domain_id), t('Data taken successfully from DB.'));
     $this->assertTrue($db_hit, t('DB select WAS executed for getting the settings.'));
@@ -127,7 +122,7 @@ class DomainConfTestCase extends DomainTestCase {
    */
   public function assertCacheState($domain_id, $settings) {
     // Validate the static cache.
-    $static_cache_get = &drupal_static('domain_conf_data_get', array());
+    $static_cache_get = &backdrop_static('domain_conf_data_get', array());
     $this->assertTrue(isset($static_cache_get[$domain_id]), t('There is static cache for the domain :domain.', array(
       ':domain' => $domain_id,
     )));
@@ -144,7 +139,7 @@ class DomainConfTestCase extends DomainTestCase {
    */
   public function assertNoCache($domain_id) {
     // Validate the static cache.
-    $static_cache_get = &drupal_static('domain_conf_data_get', array());
+    $static_cache_get = &backdrop_static('domain_conf_data_get', array());
     $this->assertFalse(isset($static_cache_get[$domain_id]), t('The static cache for the domain :domain is missing.', array(
       ':domain' => $domain_id,
     )));

@@ -34,7 +34,7 @@ function domain_test_domain_bootstrap_lookup($domain) {
     return;
   }
   $default = domain_default();
-  //$domain = domain_lookup(NULL, 'newtest.' . $default['subdomain'], TRUE);
+  $domain = domain_lookup(NULL, 'newtest.' . $default['subdomain'], TRUE);
   return $domain;
 }
 
