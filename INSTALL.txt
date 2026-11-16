@@ -17,7 +17,7 @@ CONTENTS
 2.4   Setting DOMAIN_SITE_GRANT
 2.5   Setting DOMAIN_ASSIGN_USERS
 3.   Installing the Module
-3.1   Using Drush
+3.1   Using Bee
 3.2   After Installation
 4.  Configuring settings.php
 4.1   $base_url
@@ -239,29 +239,34 @@ other Backdrop module.
 ----
 3.1   Using Bee
 
-When using bee to install, you must pass the URI value for your site. Include
-the full path to the installation, as below:
+The simplest way is to enable the module in the browser, while visiting your
+primary domain: the primary domain is created from the domain you are on.
 
-  bee pm-enable domain --site=example.com/optional_subdirectory
+When using Bee instead, you must pass the URL of your primary domain with
+--base-url, for example:
 
-If your site is not installed in a subdirectory, the command would be:
+  bee en domain --base-url=https://example.com
 
-  bee pm-enable domain --site=example.com
+If your site is installed in a subdirectory, include it:
 
-Passing the --site variable tells Domain Access what the default domain for
-your site will be. Without this information, the default domain cannot be
-created from the command line.
+  bee en domain --base-url=https://example.com/subdirectory
 
-After installing via bee, you must rebuild the node access table. Run the
-command:
+Passing --base-url tells Domain Access what the primary domain for your site
+will be. Without it, the primary domain cannot be created correctly from the
+command line. (Note: Bee's --site option selects a multisite folder; it does
+not set the domain.)
 
-  bee ev "node_access_rebuild();"
+After enabling the module with Bee, rebuild the node access table and clear
+all caches:
 
-Also clear all caches:
+  bee php-eval "node_access_rebuild();"
+  bee cache-clear all
 
-  bee cache-clear
+Other Bee commands work without --base-url and use the primary domain. Pass
+--base-url to run a command for another domain, for example to get a login
+link for it:
 
-When prompted, select option [0].
+  bee user-login --base-url=https://one.example.com
 
 ----
 3.2   After Installation
@@ -300,8 +305,17 @@ The $base_url setting is normally not set.  With Domain Access, you
 cannot set this value manually.
 
 Since multiple domains are involved, Backdrop needs to be allowed to
-set this value.  (For the technical, this happens in the conf_init()
-function).
+set this value for each request.
+
+Check that $base_url is not set in settings.php (it is commented out by
+default) or in any file that settings.php includes. Some hosting and local
+development setups set it for you. In that case, add this line just before
+the Domain Access include (see 4.4):
+
+  unset($base_url);
+
+The status report (Admin > Reports > Status report) suggests this line when
+the Domain Access setup routine has not run.
 
 If you need to install Backdrop in a subdirectory and wish to hide that
 subdirectory from site visitors, you may set $base_url dynamically.
@@ -330,6 +344,13 @@ $cookie_domain value to the string indicating your root domain.
 
 Typically, this value is '.example.com'.
 
+Whether you want this depends on how the domains are used:
+
+  - One organization, with the same people editing all domains: set
+    $cookie_domain, so that one login works on every domain.
+  - Separate groups, each responsible for their own domain: leave it unset,
+    so that people log in on each domain separately.
+
 If your domains do not share the top-level, then you may need to login to
 each site separately or use a module such as Single SignOn.
 
@@ -346,9 +367,14 @@ how your site is being requested.
 If you do not add settings.inc to your settings.php file, Domain Access will
 fail to load and report an error message to site administrators.
 
-IMPORTANT: You must add these lines to settings.php after $databases
-has been set; otherwise, Backdrop will fail to load. Normally, you should add
-these lines to the end of the settings.php file.
+IMPORTANT: You must add these lines to settings.php after the database
+settings ($database or $databases) have been set; otherwise, Backdrop will
+fail to load. If settings.php includes another file that sets the database,
+such as settings.local.php or a file added by your host or local development
+tool, add these lines after that include (or at the end of that file).
+Adding them at the very end of settings.php is normally the safe choice.
+
+If you remove the module, remove these lines from settings.php too.
 
 NOTE: If you perform a Backdrop core major version upgrade, you must remove
 these lines from settings.php.  See UPGRADE.txt for details.
@@ -382,7 +408,8 @@ include BACKDROP_ROOT . '/path/to/modules/domain/settings.inc';
 ====
 
 In this case, change 'path/to/modules' with the directory where your modules are
-stored. Typically this will be '/modules', which makes the lines:
+stored. Typically this will be '/modules' or '/modules/contrib', which makes
+the lines:
 
 ====
 /**
@@ -390,6 +417,9 @@ stored. Typically this will be '/modules', which makes the lines:
  */
 include BACKDROP_ROOT . '/modules/domain/settings.inc';
 ====
+
+A wrong path is the most common cause of the "Domain access failed to load"
+message (see 4.4.4).
 
 ----
 4.4.3 Option 2
@@ -403,6 +433,9 @@ files into your settings folder.
 
 The files should be in the same directory as your active settings.php file.
 Then add the following lines:
+
+WARNING: these copies are not updated when you update the module. Copy them
+again after every update of Domain Access, or use Option 1.
 
 ====
 /**

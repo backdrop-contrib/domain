@@ -15,30 +15,54 @@ INSTALLATION INSTRUCTIONS
 
     Note that you only need one settings directory and file.
 
+    Every domain you plan to use must already reach this Backdrop site:
+    DNS, the web server (virtual host aliases) and the SSL certificate
+    must cover all of them. Visiting each domain should show the same
+    site. See INSTALL.txt, section 2.2.
+
 2. Unpack the download and place it in your modules directory.
 
     Note the path to this directory, it is normally:
 
-      'sites/all/modules'
+      'modules' or 'modules/contrib'
 
-3. Add the following four lines of code to your settings.php file:
+3. Add the following lines of code to the end of your settings.php file:
 
 /**
  * Add the domain module setup routine.
  */
 include BACKDROP_ROOT . '/modules/domain/settings.inc';
 
-    NOTE: You may need to alter the file path above based on your
-    site configuration.  See INSTALL.txt for further help.
+    This is the step most often missed. Without it, the module installs
+    without complaint, but every domain behaves like the primary domain
+    and administrators see "Domain access failed to load".
 
-    IMPORTANT: You must add these lines to settings.php after the
-    $databases. Normally, you should add these lines to the end of the
-    settings.php file.
+    NOTE: Change '/modules/domain/' to the path from step 2, for
+    example '/modules/contrib/domain/'. A wrong path is the most common
+    problem. See INSTALL.txt, section 4.4, for further help.
 
-    NOTE: If you perform a Backdrop core major version upgrade, you must
-    remove these lines from settings.php.  See UPGRADE.txt for details.
+    IMPORTANT: These lines must come after the database settings
+    ($database or $databases). If settings.php includes another file
+    that sets the database (such as settings.local.php, or a file added
+    by your host or local development tool), add these lines after
+    that include. The very end of settings.php is normally the safe
+    choice.
 
-4. Go to Admin > Modules.  There you will see the Domain module group.
+    NOTE: Domain Access must set $base_url itself. If something sets
+    $base_url before these lines, add "unset($base_url);" just before
+    the include. See INSTALL.txt, section 4.1.
+
+    NOTE: By default, people log in on each domain separately. To share
+    logins across subdomains of one domain, set $cookie_domain. See
+    INSTALL.txt, section 4.3.
+
+    NOTE: If you remove the module, or perform a Backdrop core major
+    version upgrade, remove these lines from settings.php. See
+    UPGRADE.txt for details.
+
+4. Visit your primary domain, go to Admin > Functionality (Modules).
+    There you will see the Domain module group. The primary domain is
+    created from the domain you are visiting.
 
     Only enable the Domain Access module.
 
@@ -79,17 +103,14 @@ include BACKDROP_ROOT . '/modules/domain/settings.inc';
 ----
 USING BEE
 
-NOTE: When using bee to install, it is proper to pass the URI value for your
-site. Include the full path to the installation, as below:
+When using Bee to enable the module, pass the URL of your primary domain
+with --base-url (include the subdirectory, if any):
 
-  bee pm-enable domain --site=example.com/optional_subdirectory
+  bee en domain --base-url=https://example.com
 
-Then rebuild node access tables:
+Then rebuild node access tables and clear all caches:
 
-  bee ev "node_access_rebuild();"
+  bee php-eval "node_access_rebuild();"
+  bee cache-clear all
 
-Also clear all caches:
-
-  bee cache-clear
-
-When prompted, select option [0].
+See INSTALL.txt, section 3.1.
