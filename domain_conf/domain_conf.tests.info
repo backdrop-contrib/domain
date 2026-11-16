@@ -3,3 +3,15 @@ name = Domain Conf tests
 description = Test the functionality provided by Domain Conf to set domain-specific settings.
 group = Domain Conf
 file = tests/domain_conf.test
+
+[DomainConfOverridesTestCase]
+name = Domain Conf runtime overrides
+description = Test that per-domain settings apply to the request only, and are restored when switching domains.
+group = Domain Conf
+file = tests/domain_conf.test
+
+[DomainConfLanguageTestCase]
+name = Domain Conf default language
+description = Test the per-domain default language with the Locale module.
+group = Domain Conf
+file = tests/domain_conf.test

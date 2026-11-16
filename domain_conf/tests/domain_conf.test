@@ -145,3 +145,119 @@ class DomainConfTestCase extends DomainTestCase {
     )));
   }
 }
+
+/**
+ * Tests how Domain Conf applies per-domain settings during a request.
+ */
+class DomainConfOverridesTestCase extends DomainTestCase {
+
+  /**
+   * The test domains, keyed by name.
+   *
+   * @var array
+   */
+  protected $domains = array();
+
+  public function setUp($list = array()) {
+    parent::setUp(array_merge(array('domain_conf'), $list));
+    $this->domains = $this->domainCreateDomains();
+  }
+
+  /**
+   * Tests applying, switching and restoring per-domain settings.
+   */
+  public function testRuntimeOverrides() {
+    config_set('system.core', 'site_slogan', 'Site slogan');
+    config_set('system.core', 'page_cache_maximum_age', 300);
+    $site_mail = config_get('system.core', 'site_mail');
+    $frontpage = config_get('system.core', 'site_frontpage');
+    $timezone = config_get('system.date', 'default_timezone');
+    $one = $this->domains['one'];
+    $two = $this->domains['two'];
+
+    domain_conf_data_set($one['domain_id'], array(
+      'site_slogan' => '',
+      'cache_lifetime' => 0,
+      'site_frontpage' => '',
+      'site_mail' => 'domain-conf-ignore',
+      'date_default_timezone' => 'Asia/Tokyo',
+    ));
+
+    domain_set_domain($one['domain_id'], TRUE);
+    $this->assertIdentical(config_get('system.core', 'site_slogan'), '', t('A blank per-domain slogan is applied.'));
+    $this->assertIdentical(config_get('system.core', 'page_cache_maximum_age'), 0, t('A per-domain page cache lifetime of 0 is applied.'));
+    $this->assertEqual(config_get('system.core', 'site_frontpage'), $frontpage, t('A blank per-domain front page is ignored.'));
+    $this->assertEqual(config_get('system.core', 'site_mail'), $site_mail, t('A setting marked "domain-conf-ignore" is ignored.'));
+    $this->assertEqual(config_get('system.date', 'default_timezone'), 'Asia/Tokyo', t('The per-domain time zone is applied.'));
+    $this->assertEqual(config_get('system.core', 'site_name'), $one['sitename'], t('The domain name is used as site name.'));
+
+    // Per-domain settings must never be written to the config files.
+    $stored = config_get_config_storage('active')->read('system.core');
+    $this->assertEqual($stored['site_slogan'], 'Site slogan', t('The per-domain slogan was not saved to system.core.'));
+    $this->assertEqual($stored['page_cache_maximum_age'], 300, t('The per-domain cache lifetime was not saved to system.core.'));
+
+    // Switching to a domain without settings restores the site-wide values.
+    domain_set_domain($two['domain_id'], TRUE);
+    $this->assertIdentical(config_get('system.core', 'site_slogan'), 'Site slogan', t('Switching domains restores the site slogan.'));
+    $this->assertEqual(config_get('system.core', 'page_cache_maximum_age'), 300, t('Switching domains restores the page cache lifetime.'));
+    $this->assertEqual(config_get('system.date', 'default_timezone'), $timezone, t('Switching domains restores the time zone.'));
+    $this->assertEqual(config_get('system.core', 'site_name'), $two['sitename'], t('Switching domains updates the site name.'));
+
+    // An override from settings.php is restored too.
+    $GLOBALS['config']['system.core']['site_slogan'] = 'From settings.php';
+    config('system.core')->setOverrides($GLOBALS['config']['system.core']);
+    domain_set_domain($one['domain_id'], TRUE);
+    $this->assertIdentical(config_get('system.core', 'site_slogan'), '', t('The per-domain slogan replaces the settings.php value.'));
+    domain_set_domain($two['domain_id'], TRUE);
+    $this->assertIdentical(config_get('system.core', 'site_slogan'), 'From settings.php', t('Switching domains restores the settings.php value.'));
+
+    unset($GLOBALS['config']['system.core']['site_slogan']);
+    config('system.core')->setOverrides($GLOBALS['config']['system.core']);
+    domain_reset_domain(TRUE);
+  }
+
+}
+
+/**
+ * Tests the per-domain default language of Domain Conf.
+ */
+class DomainConfLanguageTestCase extends DomainTestCase {
+
+  /**
+   * The test domains, keyed by name.
+   *
+   * @var array
+   */
+  protected $domains = array();
+
+  public function setUp($list = array()) {
+    parent::setUp(array_merge(array('domain_conf', 'locale'), $list));
+    language_save((object) array('langcode' => 'fr'));
+    $this->domains = $this->domainCreateDomains();
+  }
+
+  /**
+   * Tests that the default language follows the active domain.
+   */
+  public function testLanguageOverride() {
+    $one = $this->domains['one'];
+    $two = $this->domains['two'];
+    domain_conf_data_set($one['domain_id'], array('language_default' => 'fr'));
+
+    domain_set_domain($one['domain_id'], TRUE);
+    $this->assertEqual(config_get('system.core', 'language_default'), 'fr', t('The per-domain default language is applied.'));
+    $this->assertEqual(language_default()->langcode, 'fr', t('language_default() returns the per-domain language.'));
+
+    domain_set_domain($two['domain_id'], TRUE);
+    $this->assertEqual(config_get('system.core', 'language_default'), 'en', t('Switching domains restores the default language.'));
+    $this->assertEqual(language_default()->langcode, 'en', t('language_default() returns the site default language again.'));
+    domain_reset_domain(TRUE);
+
+    // A page request on that domain applies the setting from settings.php,
+    // before the module system is loaded. It must not fail.
+    $this->backdropGet($one['path']);
+    $this->assertResponse(200, t('A page on a domain with its own default language loads.'));
+    $this->assertNoText('undefined function', t('No fatal error on a domain with its own default language.'));
+  }
+
+}

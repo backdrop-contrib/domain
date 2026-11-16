@@ -15,84 +15,96 @@
 
 /**
  * Implements hook_domain_bootstrap_full().
+ *
+ * Applies the settings saved for this domain as runtime config overrides for
+ * the current request. Nothing is written to the shared config files.
+ *
+ * This also runs when domain_set_domain() activates another domain within a
+ * request (cron, batch processing), so the previous domain's overrides are
+ * removed first.
  */
 function domain_conf_domain_bootstrap_full($domain) {
   require_once BACKDROP_ROOT . '/core/includes/common.inc';
-  $check = &backdrop_static(__FUNCTION__);
-  // If running domain_set_domain(), we have issues with the variables
-  // from the primary domain, which need to be loaded from cache.
-  // @link http://drupal.org/node/412156
-  if ($check) {
-    $_domain = domain_get_domain();
-    if ($domain['domain_id'] == 0 && $check != $_domain['domain_id']) {
-      _domain_conf_load_primary(TRUE);
-    }
-  }
-  // Flag that we have already loaded.
-  $check = $domain['domain_id'];
-  $settings = domain_conf_data_get($domain['domain_id']);
+  // Start from the request's own configuration, without the overrides of a
+  // domain that was active before.
+  domain_runtime_config_reset();
+  // Core caches the default language, which may have been overridden.
+  backdrop_static_reset('language_default');
+  backdrop_static_reset('language_list');
+  domain_conf_default_language(FALSE);
+
+  $domain_id = $domain['domain_id'];
+  $settings = domain_conf_data_get($domain_id);
   if (!empty($settings)) {
-    // Overwrite the $conf variables.
+    // Settings that may not be blank: a blank value means "not set" and the
+    // site-wide value is used. Other settings may be blank, 0 or FALSE (an
+    // empty slogan, page caching off).
+    $no_blank = array(
+      'site_name',
+      'site_mail',
+      'site_frontpage',
+      'anonymous',
+      'language_default',
+      'date_default_timezone',
+    );
     foreach ($settings as $key => $value) {
-      if ($value === 'domain-conf-ignore') {
-        continue;
-      }
-
-      // Language handling is a special case.
-      if ($key == 'language_default') {
-        $language = (bool) db_query("SELECT status FROM {system} WHERE name = 'locale' AND type = 'module'")->fetchField();
-        if ($language) {
-          $temp = language_default();
-          if (!empty($temp)) {
-            $value = $temp;
-            $GLOBALS['language'] = $temp;
-            $GLOBALS['config']['system.core']['language_default'] = $value->langcode;
-          }
-          domain_conf_default_language($value->langcode);
-        }
+      if ($value === 'domain-conf-ignore' || (in_array($key, $no_blank) && ($value === '' || $value === NULL))) {
+        unset($settings[$key]);
       }
     }
 
-    if (!config_get('domain.settings', 'domain_sitename_override')) {
-      $GLOBALS['config']['system.core']['site_name'] = $settings['site_name'];
+    // Language handling is a special case.
+    if (isset($settings['language_default']) && _domain_conf_locale_enabled()) {
+      $value = $settings['language_default'];
+      $langcode = is_object($value) ? $value->langcode : $value;
+      $languages = language_list();
+      if (isset($languages[$langcode])) {
+        domain_runtime_config_set('system.core', 'language_default', $langcode);
+        backdrop_static_reset('language_default');
+        backdrop_static_reset('language_list');
+        domain_conf_default_language($langcode);
+      }
     }
 
-    $indexes = [
+    if (isset($settings['site_name']) && !config_get('domain.settings', 'domain_sitename_override')) {
+      domain_runtime_config_set('system.core', 'site_name', $settings['site_name']);
+    }
+
+    $indexes = array(
       'site_mail',
       'site_slogan',
       'site_frontpage',
       'anonymous',
       'admin_theme',
       'node_admin_theme',
-    ];
-    foreach ($indexes as $i => $index) {
-      if (!empty($settings[$index])) {
-        $GLOBALS['config']['system.core'][$index] = $settings[$index];
+      'cache',
+    );
+    foreach ($indexes as $index) {
+      if (array_key_exists($index, $settings)) {
+        domain_runtime_config_set('system.core', $index, $settings[$index]);
       }
     }
-    if (isset($settings['cache'])) {
-      $GLOBALS['config']['system.core']['cache'] = $settings['cache'];
+    if (array_key_exists('cache_lifetime', $settings)) {
+      domain_runtime_config_set('system.core', 'page_cache_maximum_age', $settings['cache_lifetime']);
     }
-    if (!empty($settings['cache_lifetime'])) {
-      $GLOBALS['config']['system.core']['page_cache_maximum_age'] = $settings['cache_lifetime'];
-    }
-    if (!empty($settings['date_default_timezone'])) {
-      $GLOBALS['config']['system.date']['default_timezone'] = $settings['date_default_timezone'];
+    if (isset($settings['date_default_timezone'])) {
+      domain_runtime_config_set('system.date', 'default_timezone', $settings['date_default_timezone']);
     }
   }
+
+  // Settings forms made domain-specific with Domain Settings.
   $data = config_get('domain_settings.settings', 'forms_settings');
   if (!empty($data)) {
     foreach ($data as $form_data => $form_val) {
-      if (!empty($data[$form_data][$check])) {
-        foreach ($data[$form_data][$check] as $key => $value) {
-          $json = [];
-          $json = $data[$form_data]['file_json'];
-          if (is_array($json)) {
-            foreach ($data[$form_data]['file_json'] as $file => $config) {
-              $var = config_get($config);
-              if (array_key_exists($key, $var)) {
-                $GLOBALS['config'][$config][$key] = $value;
-              }
+      if (!empty($data[$form_data][$domain_id]) && is_array($data[$form_data]['file_json'])) {
+        foreach ($data[$form_data][$domain_id] as $key => $value) {
+          if ($value === 'domain-conf-ignore') {
+            continue;
+          }
+          foreach ($data[$form_data]['file_json'] as $config_name) {
+            $current = config_get($config_name);
+            if (is_array($current) && array_key_exists($key, $current)) {
+              domain_runtime_config_set($config_name, $key, $value);
             }
           }
         }
@@ -100,17 +112,31 @@ function domain_conf_domain_bootstrap_full($domain) {
     }
   }
 
-  // Push all overrides into any already-cached (static) Config objects.
-  // Config objects capture $GLOBALS['config'] only at construction time, so
-  // objects loaded before this hook ran won't pick up overrides set here
-  // unless we update them explicitly via setOverrides().
-  if (!empty($GLOBALS['config'])) {
-    foreach ($GLOBALS['config'] as $config_name => $overrides) {
-      if (is_array($overrides)) {
-        config($config_name)->setOverrides($overrides);
-      }
-    }
+  // The reset above also removed the site name set by domain_init(), so set
+  // it again for this domain.
+  if (config_get('domain.settings', 'domain_sitename_override') && isset($domain['sitename'])) {
+    domain_runtime_config_set('system.core', 'site_name', $domain['sitename']);
   }
+}
+
+/**
+ * Checks whether the Locale module is enabled.
+ *
+ * module_exists() can't be used here: domain_conf_domain_bootstrap_full()
+ * runs from settings.php, before the module system is loaded.
+ *
+ * @return bool
+ *   TRUE if Locale is enabled.
+ */
+function _domain_conf_locale_enabled() {
+  if (function_exists('module_exists')) {
+    return module_exists('locale');
+  }
+  $enabled = &backdrop_static(__FUNCTION__);
+  if (!isset($enabled)) {
+    $enabled = (bool) db_query("SELECT status FROM {system} WHERE name = 'locale' AND type = 'module'")->fetchField();
+  }
+  return $enabled;
 }
 
 
