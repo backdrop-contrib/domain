@@ -69,3 +69,9 @@ name = Module settings
 description = Tests configuration options for the module.
 group = Domain Access
 file = tests/domain.test
+
+[DomainEditorAccessTest]
+name = Editor access on assigned domains
+description = Ensure that domains not assigned to an editor grant no create, edit or delete access.
+group = Domain Access
+file = tests/domain.test

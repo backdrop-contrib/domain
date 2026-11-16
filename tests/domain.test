@@ -1291,3 +1291,69 @@ class DomainSettingsTest extends DomainTestCase {
 
   }
 }
+
+class DomainEditorAccessTest extends DomainTestCase {
+
+  /**
+   * Tests that unassigned domains (value 0 on the account) grant nothing.
+   *
+   * The account form sends every domain, with 0 for unassigned ones. An
+   * account object in that state must not be treated as assigned to them.
+   */
+  function testUnassignedDomainsGrantNoAccess() {
+    $domains = $this->domainCreateDomains(array('one'));
+    $default_id = domain_default_id();
+    $one_id = $domains['one']['domain_id'];
+
+    $role = $this->backdropCreateRole(array(
+      'access content',
+      'create page content on assigned domains',
+      'update page content on assigned domains',
+      'delete page content on assigned domains',
+    ));
+    $account = entity_create('user', array(
+      'name' => $this->randomName(),
+      'mail' => $this->randomName() . '@example.com',
+      'status' => 1,
+      'roles' => array($role),
+      // As sent by the account form: domain "one" is not ticked.
+      'domain_user' => array($default_id => $default_id, $one_id => 0),
+    ));
+    $account->save();
+
+    $saved = db_query('SELECT domain_id FROM {domain_editor} WHERE uid = :uid', array(':uid' => $account->uid))->fetchCol();
+    $this->assertEqual($saved, array($default_id), t('Only the ticked domain is saved for the editor.'));
+    $this->assertFalse(array_key_exists($one_id, $account->domain_user), t('After saving, the account object does not list the unticked domain.'));
+
+    $own_node = $this->backdropCreateNode(array(
+      'type' => 'page',
+      'domains' => array($default_id => $default_id),
+      'domain_site' => 0,
+    ));
+    $other_node = $this->backdropCreateNode(array(
+      'type' => 'page',
+      'domains' => array($one_id => $one_id),
+      'domain_site' => 0,
+    ));
+    $own_node = node_load($own_node->nid, NULL, TRUE);
+    $other_node = node_load($other_node->nid, NULL, TRUE);
+
+    // Check with an account object in the form state too, whatever save did.
+    $account->domain_user = array($default_id => $default_id, $one_id => 0);
+    foreach (array('update', 'delete') as $op) {
+      backdrop_static_reset('node_access');
+      $this->assertTrue(node_access($op, $own_node, $account), t('Editor may @op content on an assigned domain.', array('@op' => $op)));
+      backdrop_static_reset('node_access');
+      $this->assertFalse(node_access($op, $other_node, $account), t('Editor may not @op content on an unassigned domain.', array('@op' => $op)));
+    }
+
+    domain_set_domain($default_id);
+    backdrop_static_reset('node_access');
+    $this->assertTrue(node_access('create', 'page', $account), t('Editor may create content on an assigned domain.'));
+    domain_set_domain($one_id);
+    backdrop_static_reset('node_access');
+    $this->assertFalse(node_access('create', 'page', $account), t('Editor may not create content on an unassigned domain.'));
+    domain_reset_domain();
+  }
+
+}

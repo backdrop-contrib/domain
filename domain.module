@@ -669,8 +669,10 @@ function domain_user_save($account) {
     }
     $query->execute();
   }
-  // Clear the $edit field.
-  // $edit['domain_user'] = NULL;
+  // Replace the form values (unassigned domains have the value 0) with the
+  // assigned domains, in the format used by domain_get_user_domains(), so
+  // that later access checks on this account object see the saved state.
+  $account->domain_user = domain_get_user_domains($account);
 }
 
 /**
@@ -2445,7 +2447,9 @@ function domain_node_access_view($type, $node, $op, $account) {
 function domain_node_access_create($type, $node, $op, $account) {
   domain_user_set($account);
   $_domain = domain_get_domain();
-  if (!isset($account->domain_user[$_domain['domain_id']])) {
+  // Use empty(), not isset(): an account object built from the account form
+  // lists unassigned domains with the value 0.
+  if (empty($account->domain_user[$_domain['domain_id']])) {
     return NODE_ACCESS_IGNORE;
   }
   // Build the permission string.
@@ -2473,7 +2477,8 @@ function domain_node_access_update($type, $node, $op, $account) {
   else {
     $ignore = TRUE;
     foreach ($node->domains as $domain_id) {
-      if (isset($account->domain_user[$domain_id])) {
+      // Use empty(), not isset(): unassigned domains may be listed with 0.
+      if (!empty($account->domain_user[$domain_id])) {
         $ignore = FALSE;
         break;
       }
