@@ -291,7 +291,7 @@ function domain_update_1000() {
   $config->set('domain_grant_all', update_variable_get('domain_grant_all', 'user/*/track'));
   $config->set('domain_cron_rule', update_variable_get('domain_cron_rule', 1));
   $config->set('domain_xmlrpc_rule', update_variable_get('domain_xmlrpc_rule', 0));
-  $config->set('domain_paths', update_variable_get('domain_paths', "node/%n node/%n/edit comment/reply/%n node/add/book/parent/%n book/export/html/%n node/%n/outline"));
+  $config->set('domain_paths', update_variable_get('domain_paths', "node/%n\nnode/%n/edit\ncomment/reply/%n\nnode/add/book/parent/%n\nbook/export/html/%n\nnode/%n/outline"));
   $config->set('domain_classes', update_variable_get('domain_classes', 'domain-[current-domain:machine_name]'));
   $config->set('domain_allow_non_ascii', update_variable_get('domain_allow_non_ascii', FALSE));
   $config->set('domain_add_roles', update_variable_get('domain_add_roles', 0));
@@ -343,4 +343,22 @@ function domain_update_1000() {
   update_variable_del('anonymous');
   update_variable_del('domain_default');
   update_variable_del('settings');
+}
+
+/**
+ * Put each "Node link pattern" on its own line.
+ *
+ * Earlier Backdrop releases saved the default patterns on one line,
+ * separated by spaces, which made node link rewriting fail.
+ */
+function domain_update_1001() {
+  $config = config('domain.settings');
+  $value = (string) $config->get('domain_paths');
+  // Leave values that already use line breaks alone.
+  if ($value === '' || preg_match('/[\r\n]/', $value)) {
+    return;
+  }
+  $patterns = preg_split('/\s+/', trim($value), -1, PREG_SPLIT_NO_EMPTY);
+  $config->set('domain_paths', implode("\n", $patterns));
+  $config->save();
 }

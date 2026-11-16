@@ -109,6 +109,13 @@ class DomainSourceTest extends DomainTestCase {
     $this->backdropGet('');
     $this->assertRaw('href="' . $domain['path'] . $alias . '"', t('URL rewrite returned correct domain.'));
 
+    // Earlier releases saved the "Node link patterns" on one line, separated
+    // by spaces. Links must still be rewritten with that value.
+    config_set('domain.settings', 'domain_paths', 'node/%n node/%n/edit comment/reply/%n');
+    cache('page')->flush();
+    $this->backdropGet('');
+    $this->assertRaw('href="' . $domain['path'] . $alias . '"', t('URL rewrite works with space-separated node link patterns.'));
+
     // Save the node with DOMAIN_SOURCE_USE_ACTIVE.
     $node->domain_source = DOMAIN_SOURCE_USE_ACTIVE;
     node_save($node);

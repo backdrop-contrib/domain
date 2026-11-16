@@ -1917,6 +1917,23 @@ function domain_node_type_delete($info) {
 }
 
 /**
+ * Splits the "Node link patterns" setting into a list of patterns.
+ *
+ * The setting holds one pattern per line, such as 'node/%n'. Backdrop paths
+ * never contain spaces, so patterns may also be separated by spaces; earlier
+ * Backdrop releases shipped a space-separated default.
+ *
+ * @param string|null $value
+ *   The 'domain_paths' setting from domain.settings.
+ *
+ * @return array
+ *   The patterns, without empty entries.
+ */
+function domain_node_link_patterns($value) {
+  return preg_split('/\s+/', trim((string) $value), -1, PREG_SPLIT_NO_EMPTY);
+}
+
+/**
  * Get the best matching domain for a node link.
  *
  * @param $nid
