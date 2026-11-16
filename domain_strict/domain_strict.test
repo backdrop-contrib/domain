@@ -5,6 +5,9 @@
  * Simpletest for Domain Strict.
  */
 
+// Load the base class DomainTestCase.
+require_once __DIR__ . '/../tests/domain.test';
+
 class DomainStrictTestCase extends DomainTestCase {
 
   public function setUp($list = array()) {
@@ -12,13 +15,6 @@ class DomainStrictTestCase extends DomainTestCase {
     parent::setUp($list);
   }
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Check grants alteration',
-      'description' => 'Esure that grants are only assigned to domains the user belongs to.',
-      'group' => 'Domain Strict',
-    );
-  }
 
   public function testDomainStrict() {
     $account = user_load(1);
