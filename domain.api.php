@@ -24,10 +24,7 @@
  * Invoked by domain_lookup() and domain_default().
  *
  * @param array &$domain
- *   The current $domain array.
- *
- * @return boolean
- *   No return value. The $domain array is modified by reference.
+ *   The current $domain array, modified by reference.
  *
  * @ingroup domain_hooks
  */
@@ -41,7 +38,7 @@ function hook_domain_load(&$domain) {
 /**
  * Notify other modules that we have created a new domain.
  *
- * @param string $domain
+ * @param array $domain
  *   The domain record taken from {domain}, as an array.
  * @param array $form_values
  *   The form values processed by the form.  Note that these are not editable
@@ -188,9 +185,6 @@ function hook_domain_install() {
  *   The $form array generated for the Domain settings page.  This must
  *   be passed by reference. Normally, you should include your form elements
  *   inside a new fieldset.
- *
- * @return null
- *   No return value. The $form is modified by reference, as needed.
  */
 function hook_domain_form(&$form) {
   // Add the form element to the main screen.
@@ -246,11 +240,8 @@ function hook_domain_warning() {
  *
  * @param array &$source
  *   The domain array from domain_get_node_match(), passed by reference.
- * @param string $nid
+ * @param int $nid
  *   The node id.
- *
- * @return null
- *   No return value; modify $source by reference.
  */
 function hook_domain_source_alter(&$source, $nid) {
   // Taken from the Domain Source module
@@ -283,9 +274,6 @@ function hook_domain_source_alter(&$source, $nid) {
  * @param string $nid
  *   The identifier of the object being rewritten. For nodes, this is the node
  *   id. In other instances, we may pass a $path string or other variable.
- *
- * @return null
- *   No return value; modify $source by reference.
  */
 function hook_domain_source_path_alter(&$source, $path) {
   // Always make admin links go to the primary domain.
@@ -578,14 +566,17 @@ function hook_domain_bootstrap_lookup($domain) {
  *   An array containing current domain and domain_id and any other values
  *   added during domain bootstrap phase DOMAIN_BOOTSTRAP_DOMAINNAME_RESOLVE.
  *
- * @return null
- *   No return value. However, if you wish to set an error message on failure,
- *   you should load and modify the $_domain global and add an 'error' element
- *   to the array. This element should only include the name of your module.
- *   We do this because backdrop_set_message() and t() are not yet loaded.
+ * If you wish to set an error message on failure, load and modify the $_domain
+ * global and add an 'error' element to the array. This element should only
+ * include the name of your module. We do this because backdrop_set_message()
+ * and t() are not yet loaded.
  *
- *   Normally, you do not need to validate errors, since this function will not
- *   be called unless $domain is set properly.
+ * Normally, you do not need to validate errors, since this function will not
+ * be called unless $domain is set properly.
+ *
+ * Settings must be changed for the current request only, with
+ * domain_runtime_config_set(): config_set() would write them to the shared
+ * config files on every request.
  */
 function hook_domain_bootstrap_full($domain) {
   // The language variable should not be set yet.
@@ -597,7 +588,7 @@ function hook_domain_bootstrap_full($domain) {
     return;
   }
   // Our test module sets the default language to Spanish.
-  config_set('system.core', 'language_default', 'es');
+  domain_runtime_config_set('system.core', 'language_default', 'es');
 }
 
 /**
@@ -609,7 +600,7 @@ function hook_domain_bootstrap_full($domain) {
  *
  * @see hook_url_outbound_alter()
  *
- * @param integer $domain_id
+ * @param int $domain_id
  *   The domain_id taken from {domain}.
  * @param string $path
  *   The internal Backdrop path to the node.
@@ -640,11 +631,11 @@ function hook_domain_path($domain_id, &$path, &$options, $original_path) {
  *
  * @link http://drupal.org/node/367963
  *
- * @param string $domain_id
+ * @param int $domain_id
  *   The unique domain ID that is being edited.
  * @param string $variable
  *   The name of the variable you wish to set.
- * @param string $value
+ * @param mixed $value
  *   The value of the variable to set. You may leave this
  *   value blank in order to unset the custom variable.
  */

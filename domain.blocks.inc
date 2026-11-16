@@ -140,7 +140,7 @@ function domain_block_view_server() {
 /**
  * Prints array data for the server block.
  *
- * @param string $array
+ * @param array $array
  *   An array of data. Note that we support two levels of nesting.
  *
  * @return string
