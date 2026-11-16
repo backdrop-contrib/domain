@@ -3,9 +3,11 @@ Domain
 <!--
 |<- - - - - - - This line is exactly 80 characters for reference - - - - - - ->|
 -->
-This is currently a beta release. We are finding that the module generally seems 
-to work, but it needs more testing before we can assume it's stabile. Please, 
-test it out and report bugs. But, be cautious before installing in a 
+This is currently a beta release. It's been in use on a handful of production 
+sites for well over a year now. We recently ported the Drupal 7 automated tests 
+with the help of AI. I think we are nearing a stabile release. 
+
+Please, test it out and report bugs. Be cautious before installing in a 
 production environment. 
 
 There were many Drupal 7 modules to extend and improve this module. Please, see
@@ -32,6 +34,10 @@ Issues
 ------
 Bugs and Feature Requests should be reported in the Issue Queue:
 https://github.com/backdrop-contrib/domain/issues.
+
+AI Statement
+------------
+AI tools are being used in the ongoing development of this module. 
 
 Current Maintainers
 -------------------
