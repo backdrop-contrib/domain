@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Administration functions for the domain module.
@@ -30,7 +29,7 @@ function domain_overview_form($form, &$form_state) {
     $primary_url = domain_get_uri($default) . 'admin/structure/domain';
     backdrop_set_message(t('Domain settings can only be changed from the primary domain. <a href="!url">Switch to the primary domain</a> to make changes.', ['!url' => $primary_url]), 'warning', FALSE);
   }
-  $form = [];;
+  $form = [];
   $form['top'] = [
     '#markup' => t('<p>The following domains have been created for your site.  The currently active domain <strong>is shown in boldface</strong>.  You
                     may click on a domain to change the currently active domain.  Your default domain is %name, which will be used for all requests that fail to resolve to a registered domain.</p>', ['%name' => $default['subdomain']]),
@@ -439,7 +438,7 @@ function domain_configure_form($form, &$form_state, $user_submitted = FALSE) {
 }
 
 /**
- *
+ * Form submission handler for domain_configure_form().
  */
 function domain_configure_form_submit($form, &$form_state, $user_submitted = FALSE) {
   $config = config('domain.settings');
@@ -477,8 +476,8 @@ function domain_configure_form_submit($form, &$form_state, $user_submitted = FAL
  * The last element on this array is ignored by the create sql because it has
  * one fewer placeholder argument as it doesn't require a WHERE clause.
  *
- * @param $form_state
- *   From state from the submit_hook
+ * @param array $form_state
+ *   The form state of the submitted form.
  *
  * @return array
  *   Array of domain values for insert and update sql operations
@@ -499,13 +498,13 @@ function domain_values_from_form_state($form_state) {
 /**
  * FormsAPI for editing a domain record
  *
- * @param $form
+ * @param array $form
  *   The current form, passed by FormsAPI.
- * @param $form_state
+ * @param array $form_state
  *   The current form state, passed by FormsAPI.
- * @param $domain
+ * @param array $domain
  *   An array containing the record from the {domain} table.
- * @param $arguments
+ * @param array $arguments
  *   An array of additional hidden key/value pairs to pass to the form.
  *   Used by child modules to control behaviors.
  *   Currently supported arguments are:
@@ -634,7 +633,7 @@ function domain_form($form, &$form_state, $domain = [], $arguments = []) {
 }
 
 /**
- * Implement domain_form validate hook.
+ * Form validation handler for domain_form().
  */
 function domain_form_validate($form, &$form_state) {
   $subdomain = $form_state['values']['subdomain'];
@@ -660,7 +659,7 @@ function domain_form_validate($form, &$form_state) {
 }
 
 /**
- * Implement domain_form submit hook.
+ * Form submission handler for domain_form().
  */
 function domain_form_submit($form, &$form_state) {
   $values = domain_values_from_form_state($form_state);
@@ -699,11 +698,11 @@ function domain_form_submit($form, &$form_state) {
 /**
  * A delete confirmation form.
  *
- * @param $form_state
+ * @param array $form_state
  *   The current form state, passed by FormsAPI.
- * @param $domain
+ * @param array $domain
  *   An array containing the record from the {domain} table.
- * @param $arguments
+ * @param array $arguments
  *   An array of additional hidden key/value pairs to pass to the form.
  *   Used by child modules to control behaviors.
  *   Currently supported arguments are:
@@ -778,12 +777,12 @@ function domain_delete_form_submit($form, &$form_state) {
 /**
  * Allows for the batch update of certain elements.
  *
- * @param $action
+ * @param string $action
  *   The name of the action to perform; corresponds to the keys of the $batch
  *   array returned by hook_domain_batch().
  *
- * @return
- *   The appropriate form, or a list of actions, or an error.
+ * @return array|string
+ *   The appropriate form, or a list of actions, or an error message.
  */
 function domain_batch($action = NULL) {
   // We must have the module configured correctly.
@@ -826,11 +825,11 @@ function domain_batch($action = NULL) {
 /**
  * Lists available batch updates for the domain module.
  *
- * @param $batch
+ * @param array $batch
  *   An array of batch actions, as defined by hook_domain_batch().
  *
- * @return
- *   A themed table of links and descriptions for batch actions.
+ * @return array
+ *   A render array: a table of links and descriptions for batch actions.
  */
 function domain_batch_list($batch) {
   $build = [];
@@ -896,18 +895,18 @@ function domain_batch_sort($a, $b) {
 /**
  * Generate the form data for a batch update.
  *
- * @param $form_state
+ * @param array $form_state
  *   The current form state, passed by FormsAPI.
- * @param $action
+ * @param string $action
  *   The name of the action to perform; corresponds to the keys of the $batch
  *   array returned by hook_domain_batch().
- * @param $batch
+ * @param array $batch
  *   The batch data for this $action, as defined by hook_domain_batch().
- * @param $domains
+ * @param array $domains
  *   The current settings for each domain.
  *
- * @return
- *   A themed table of links and descriptions for batch actions.
+ * @return array
+ *   The form array.
  */
 function domain_batch_form($form, &$form_state, $action, $batch, $domains) {
   $default = [];
@@ -1051,8 +1050,10 @@ function theme_domain_batch_form($variables) {
 /**
  * Theme function for displaying batch editing.
  *
- * @param $batch
- *   The batch function to be performed.
+ * @param array $variables
+ *   An associative array containing:
+ *   - batch: The batch action to be performed, as defined by
+ *     hook_domain_batch().
  */
 function theme_domain_batch_title($variables) {
   $output = '';
@@ -1175,7 +1176,7 @@ function domain_nodes_form($form, &$form_state) {
 }
 
 /**
- *
+ * Form submission handler for domain_nodes_form().
  */
 function domain_nodes_form_submit($form, &$form_state) {
   $var = [];
@@ -1298,7 +1299,7 @@ function domain_roles_form($form, &$form_state) {
 }
 
 /**
- *
+ * Form submission handler for domain_roles_form().
  */
 function domain_roles_form_submit($form, &$form_state) {
   $config = config('domain.settings');
