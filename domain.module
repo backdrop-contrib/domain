@@ -66,6 +66,58 @@ function domain_api_version() {
 }
 
 /**
+ * Overrides a configuration value for the rest of this request only.
+ *
+ * Per-domain settings must never be written to the shared config files, so
+ * they are applied as runtime overrides. The value an override replaces (for
+ * example one set in settings.php) is remembered, so that
+ * domain_runtime_config_reset() can put it back when another domain is
+ * activated in the same request.
+ *
+ * @param string $name
+ *   The config file name, such as 'system.core'.
+ * @param string $key
+ *   The top-level key in that config file, such as 'site_name'.
+ * @param mixed $value
+ *   The value to use for this request.
+ */
+function domain_runtime_config_set($name, $key, $value) {
+  $original = &backdrop_static('domain_runtime_config_original', array());
+  if (!isset($original[$name]) || !array_key_exists($key, $original[$name])) {
+    $exists = isset($GLOBALS['config'][$name]) && is_array($GLOBALS['config'][$name]) && array_key_exists($key, $GLOBALS['config'][$name]);
+    $original[$name][$key] = array(
+      'exists' => $exists,
+      'value' => $exists ? $GLOBALS['config'][$name][$key] : NULL,
+    );
+  }
+  $GLOBALS['config'][$name][$key] = $value;
+  // Config objects that were already loaded only pick up overrides that are
+  // pushed to them.
+  config($name)->setOverrides($GLOBALS['config'][$name]);
+}
+
+/**
+ * Removes all overrides set with domain_runtime_config_set().
+ *
+ * Values that existed before (for example from settings.php) are restored.
+ */
+function domain_runtime_config_reset() {
+  $original = &backdrop_static('domain_runtime_config_original', array());
+  foreach ($original as $name => $keys) {
+    foreach ($keys as $key => $previous) {
+      if ($previous['exists']) {
+        $GLOBALS['config'][$name][$key] = $previous['value'];
+      }
+      else {
+        unset($GLOBALS['config'][$name][$key]);
+      }
+    }
+    config($name)->setOverrides(isset($GLOBALS['config'][$name]) ? $GLOBALS['config'][$name] : array());
+  }
+  $original = array();
+}
+
+/**
  * Implements hook_init().
  *
  * Initializes a global $_domain variable if necessary (usually that's done in
@@ -143,12 +195,7 @@ function domain_init() {
 
   // Set the site name to the domain-specific name.
   if ($config->get('domain_sitename_override')) {
-    $GLOBALS['config']['system.core']['site_name'] = $_domain['sitename'];
-    // Push the override into any already-cached (static) Config object.
-    // Config objects capture $GLOBALS['config'] only at construction time, so
-    // objects loaded before this hook ran won't pick up overrides set here
-    // unless we update them explicitly via setOverrides().
-    config('system.core')->setOverrides($GLOBALS['config']['system.core']);
+    domain_runtime_config_set('system.core', 'site_name', $_domain['sitename']);
   }
 }
 
