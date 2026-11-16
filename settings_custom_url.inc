@@ -38,10 +38,11 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
   if (!isset($use_source)) {
     $use_source = (bool) count(module_implements('domain_source_alter'));
   }
-  // Querying for nodepaths is expensive, so only do it if needed.
-  if (!isset($check_nodes)) {
-    $check_nodes = ($check || $seo || $use_source) && !empty($original_path);
-  }
+  // Querying for nodepaths is expensive, so only do it if needed. This
+  // depends on the path of each link, so it must not be cached for the
+  // request: the first link built (often the front page, with an empty
+  // path) would otherwise turn node link rewriting off for every later link.
+  $check_nodes = ($check || $seo || $use_source) && !empty($original_path);
   // Check for path rewrites.
   if (!isset($path_alter)) {
     $path_alter = (bool) count(module_implements('domain_source_path_alter'));
@@ -63,9 +64,7 @@ function domain_url_outbound_alter(&$path, &$options, $original_path) {
 
       // Advanced pattern matching, we find the node id based on token %n in the path string.
       if (!isset($nodepaths)) {
-        $pathdata = config_get('domain.settings', 'domain_paths');
-        $path_match = preg_replace('/(\r\n?|\n)/', '|', $pathdata);
-        $nodepaths = explode("|", $path_match);
+        $nodepaths = domain_node_link_patterns(config_get('domain.settings', 'domain_paths'));
       }
       foreach ($nodepaths as $match) {
         $match_array = explode('/', $match);
