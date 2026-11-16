@@ -493,6 +493,14 @@ class DomainUnitTest extends DomainTestCase {
     $this->assertTrue(!empty($domain['path']), t('domain_default() successfully purged static after being allowed to run domain_api().'));
   }
 
+  // Test domain_default() when no primary domain exists (#26).
+  function testDomainDefaultWithoutPrimaryDomain() {
+    db_query("TRUNCATE {domain}");
+    $domain = domain_default(TRUE, FALSE);
+    $this->assertEqual($domain['domain_id'], 0, t('Without a primary domain, domain_default() returns a placeholder.'));
+    $this->assertEqual($domain['machine_name'], domain_machine_name($_SERVER['HTTP_HOST']), t('The placeholder has a machine name, without PHP warnings.'));
+  }
+
   // Test that domain_node_load() and domain_get_node_domains() functions properly.
   function testDomainGetNodeDomains() {
     $count = db_query("SELECT COUNT(domain_id) FROM {domain}")->fetchField();

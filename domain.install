@@ -10,6 +10,25 @@
  */
 function domain_install() {
   domain_set_primary_domain();
+
+  // The primary domain is created from the domain of the current request.
+  // From the command line without --base-url there is none (Bee then uses
+  // the name of the site folder, such as "html"), and nothing is created.
+  // Without a primary domain every page is treated as an invalid domain.
+  $created = (bool) db_query("SELECT 1 FROM {domain} WHERE is_default = 1")->fetchField();
+  if (!$created) {
+    $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+    $message = 'Domain Access could not create the primary domain: "@host" is not a valid domain name. This happens when the module is enabled from the command line without a web address. Create it with Bee, using the URL of your primary domain: bee php-eval "domain_set_primary_domain();" --base-url=https://example.com (when enabling with Bee, pass --base-url).';
+    $variables = array('@host' => $host);
+    watchdog('domain', $message, $variables, WATCHDOG_ERROR);
+    // Bee doesn't show messages set during install; use its own output.
+    if (function_exists('bee_message')) {
+      bee_message(format_string($message, $variables), 'error');
+    }
+    else {
+      backdrop_set_message(t($message, $variables), 'error');
+    }
+  }
 }
 
 /**
@@ -181,7 +200,7 @@ function domain_requirements($phase) {
       if ($error = domain_valid_domain($root)) {
         $requirements['domain'] = [
           'title' => t('Domain Access'),
-          'value' => $error . t('If you are using drush, please provide the --uri option (e.g. drush en domain --uri="http://example.com/optional_subdirectory").'),
+          'value' => $error . t('If you are using Bee, provide the --base-url option (e.g. bee en domain --base-url=https://example.com).'),
           'severity' => REQUIREMENT_ERROR,
         ];
       }
