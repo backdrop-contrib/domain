@@ -1243,14 +1243,15 @@ function domain_default($reset = FALSE, $alter = TRUE) {
     }
     // Let submodules overwrite the defaults, if they wish.
     if (empty($default)) {
+      $subdomain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
       $default = [
         'domain_id' => 0, // Indicates we have not set a real domain.
-        'subdomain' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '',
+        'subdomain' => $subdomain,
         'sitename' => config_get('system.core', 'site_name'),
         'scheme' => empty($_SERVER['HTTPS']) ? 'http' : 'https',
         'valid' => 1,
         'is_default' => 1,
-        'machine_name' => domain_machine_name($default['subdomain']),
+        'machine_name' => domain_machine_name($subdomain),
       ];
     }
   }
@@ -3162,6 +3163,19 @@ function domain_request_name() {
 function domain_invalid_domain_requested() {
   global $_domain, $user;
 
+  // A redirect makes no sense on the command line, and it would end the
+  // command (for example a Bee command run to create the primary domain).
+  if (backdrop_is_cli()) {
+    return;
+  }
+
+  // Without a primary domain there is no valid domain to redirect to. Let the
+  // request through, so that an administrator can add the primary domain.
+  $default = domain_default();
+  if (empty($default['domain_id'])) {
+    return;
+  }
+
   // Some users are allowed to view inactive domains.
   if (user_access('access inactive domains')) {
     return;
@@ -3960,7 +3974,7 @@ function domain_machine_name_load($machine_name, $full = FALSE) {
  *   A string with dot and colon transformed to underscore.
  */
 function domain_machine_name($subdomain) {
-  return preg_replace('/[^a-z0-9_]+/', '_', $subdomain);
+  return preg_replace('/[^a-z0-9_]+/', '_', (string) $subdomain);
 }
 
 /**
