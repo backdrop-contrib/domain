@@ -1194,6 +1194,7 @@ function domain_nodes_form_submit($form, &$form_state) {
 function theme_domain_nodes_form($variables) {
   $form = $variables['form'];
   $output = '<p>' . t('You may set default domain publishing options to the content types when new content will be created. When you publish to <em>All domains</em>, you can additionally define domain memberships.') . '</p>';
+  $output .= '<p>' . t('These defaults decide where content goes when the author can\'t choose domains (people without the %permission permission). <em>All domains</em> makes their content appear on every domain, even if they can only create content on their assigned domains.', ['%permission' => t('Set domain access status for all content')]) . '</p>';
   $num_columns = 15;
   $node_types = node_type_get_names();
   $num_node_types = count($node_types);

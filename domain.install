@@ -278,6 +278,31 @@ function domain_requirements($phase) {
         'value' => theme('item_list', ['items' => $messages]),
         'severity' => $severity,
       ];
+
+      // Warn when people limited to their domains still publish to all
+      // domains through the content defaults.
+      $shared = domain_limited_roles_publishing_to_all();
+      if (!empty($shared)) {
+        $node_types = node_type_get_names();
+        $roles = user_roles();
+        $items = [];
+        foreach ($shared as $type => $role_names) {
+          $labels = [];
+          foreach ($role_names as $role_name) {
+            $labels[] = $roles[$role_name];
+          }
+          $items[] = t('%type: @roles', [
+            '%type' => $node_types[$type],
+            '@roles' => implode(', ', $labels),
+          ]);
+        }
+        $requirements['domain_content_defaults'] = [
+          'title' => $t('Domain Access content defaults'),
+          'value' => $t('Content from people limited to their domains is published to all domains'),
+          'description' => $t('These roles can only create content on their assigned domains, but the content defaults for these content types include <em>All domains</em>, so their content appears on every domain:') . theme('item_list', ['items' => $items]) . $t('If that is not intended, remove <em>All domains</em> for these content types on the <a href="@url">Content defaults</a> page.', ['@url' => url('admin/structure/domain/nodes')]),
+          'severity' => REQUIREMENT_WARNING,
+        ];
+      }
       break;
   }
   return $requirements;
