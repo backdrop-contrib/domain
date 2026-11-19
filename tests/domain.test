@@ -1365,3 +1365,101 @@ class DomainEditorAccessTest extends DomainTestCase {
   }
 
 }
+
+class DomainContentDefaultsTest extends DomainTestCase {
+
+  /**
+   * Creates an account assigned only to the primary domain.
+   *
+   * @param array $permissions
+   *   Permissions for the account's role.
+   *
+   * @return User
+   *   The saved account.
+   */
+  protected function domainCreateEditor(array $permissions) {
+    $default_id = domain_default_id();
+    $role = $this->backdropCreateRole($permissions);
+    $account = entity_create('user', array(
+      'name' => $this->randomName(),
+      'mail' => $this->randomName() . '@example.com',
+      'status' => 1,
+      'roles' => array($role),
+      'domain_user' => array($default_id => $default_id),
+    ));
+    $account->save();
+    $account->domain_test_role = $role;
+    return $account;
+  }
+
+  /**
+   * Tests the check for limited roles that publish to all domains.
+   */
+  function testLimitedRolesPublishingToAll() {
+    $this->domainCreateDomains(array('one'));
+    $limited = $this->domainCreateEditor(array('access content', 'create page content on assigned domains'));
+    $publisher = $this->domainCreateEditor(array('access content', 'create page content', 'publish from assigned domain'));
+    $chooser = $this->domainCreateEditor(array('access content', 'create page content on assigned domains', 'set domain access'));
+    $plain = $this->domainCreateEditor(array('access content', 'create page content'));
+
+    // The built-in default includes all domains.
+    $shared = domain_limited_roles_publishing_to_all();
+    $this->assertTrue(isset($shared['page']), t('Pages are reported while the default includes all domains.'));
+    $roles = isset($shared['page']) ? $shared['page'] : array();
+    $this->assertTrue(in_array($limited->domain_test_role, $roles), t('A role with a domain-limited create permission is reported.'));
+    $this->assertTrue(in_array($publisher->domain_test_role, $roles), t('A role with a domain publishing permission is reported.'));
+    $this->assertFalse(in_array($chooser->domain_test_role, $roles), t('A role that chooses domains itself is not reported.'));
+    $this->assertFalse(in_array($plain->domain_test_role, $roles), t('A role without domain permissions is not reported.'));
+
+    module_load_install('domain');
+    $requirements = domain_requirements('runtime');
+    $this->assertTrue(isset($requirements['domain_content_defaults']), t('The status report warns about the content defaults.'));
+    if (isset($requirements['domain_content_defaults'])) {
+      $this->assertEqual($requirements['domain_content_defaults']['severity'], REQUIREMENT_WARNING, t('The status report message is a warning.'));
+    }
+
+    // Content defaults without all domains.
+    $config = config_get('domain.settings', 'domain_node_');
+    $config['domain_node_page'] = array('DOMAIN_ACTIVE' => 'DOMAIN_ACTIVE', 'DOMAIN_ALL' => 0);
+    config_set('domain.settings', 'domain_node_', $config);
+    $shared = domain_limited_roles_publishing_to_all();
+    $this->assertFalse(isset($shared['page']), t('Pages are not reported once the default leaves out all domains.'));
+    $requirements = domain_requirements('runtime');
+    $this->assertFalse(isset($requirements['domain_content_defaults']), t('The status report has no content defaults warning.'));
+  }
+
+  /**
+   * Tests that people who can't choose domains see where content goes.
+   */
+  function testPublishingStatusOnNodeForm() {
+    $this->domainCreateDomains(array('one'));
+    $default = domain_default();
+
+    // No domain choice at all: the form shows a read-only list.
+    $limited = $this->domainCreateEditor(array('access content', 'create page content on assigned domains'));
+    $form = $this->domainNodeForm($limited->uid, 'page');
+    $this->assertTrue(isset($form['domain']['domains_notes']), t('The publishing status is shown to people who cannot choose domains.'));
+    $markup = isset($form['domain']['domains_notes']['#markup']) ? $form['domain']['domains_notes']['#markup'] : '';
+    $this->assertTrue(strpos($markup, check_plain($default['sitename'])) !== FALSE, t('The current domain is listed.'));
+    $this->assertTrue(strpos($markup, t('All affiliates')) !== FALSE, t('All affiliates is listed while the default includes all domains.'));
+    $this->assertFalse(isset($form['domain']['domains']), t('No domain options are offered.'));
+
+    // Choosing among assigned domains: all affiliates is listed for new
+    // content too.
+    $chooser = $this->domainCreateEditor(array('access content', 'create page content', 'publish to any assigned domain'));
+    $form = $this->domainNodeForm($chooser->uid, 'page');
+    $this->assertTrue(isset($form['domain']['domains']), t('Assigned domains are offered.'));
+    $markup = isset($form['domain']['domains_notes']['#markup']) ? $form['domain']['domains_notes']['#markup'] : '';
+    $this->assertTrue(strpos($markup, t('All affiliates')) !== FALSE, t('All affiliates is listed for new content.'));
+
+    // Without all domains in the defaults, it is not listed.
+    $config = config_get('domain.settings', 'domain_node_');
+    $config['domain_node_page'] = array('DOMAIN_ACTIVE' => 'DOMAIN_ACTIVE', 'DOMAIN_ALL' => 0);
+    config_set('domain.settings', 'domain_node_', $config);
+    $form = $this->domainNodeForm($limited->uid, 'page');
+    $markup = isset($form['domain']['domains_notes']['#markup']) ? $form['domain']['domains_notes']['#markup'] : '';
+    $this->assertTrue(strpos($markup, check_plain($default['sitename'])) !== FALSE, t('The current domain is still listed.'));
+    $this->assertFalse(strpos($markup, t('All affiliates')) !== FALSE, t('All affiliates is not listed.'));
+  }
+
+}

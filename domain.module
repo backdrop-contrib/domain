@@ -2700,6 +2700,8 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
   }
   // If the user has limited permissions, show that form or obey the settings.
   else {
+    // Whether the content goes to all affiliates; these people can't change it.
+    $domain_site = isset($form['#node']->domain_site) ? $form['#node']->domain_site : $default_domain_site;
     $action = domain_form_permission_check();
     if (!empty($action)) {
       // hook_user() has not run, so get the domain data for this user.
@@ -2814,7 +2816,7 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
           }
           // Show the options that cannot be changed.
           $list = [];
-          if (!empty($form['#node']->domain_site)) {
+          if (!empty($domain_site)) {
             $list[]['data'] = t('All affiliates');
           }
           if (!empty($raw)) {
@@ -2828,16 +2830,47 @@ function domain_form_alter(&$form, &$form_state, $form_id) {
               '#type' => 'item',
               '#title' => t('Publishing status'),
               '#markup' => theme('item_list', ['items' => $list]),
-              '#description' => t('This content has also been published to these affiliates.'),
+              '#description' => empty($form['#node']->nid) ? t('This content will also be published to these affiliates.') : t('This content has also been published to these affiliates.'),
             ];
           }
           break;
       }
     }
+    // People who can't choose domains still see where their content goes.
+    if ($action != 3) {
+      $list = [];
+      foreach ($raw as $domain_id) {
+        $assigned_domain = domain_lookup($domain_id);
+        if ($assigned_domain != -1) {
+          $list[]['data'] = check_plain($assigned_domain['sitename']);
+        }
+      }
+      if (!empty($domain_site)) {
+        $list[]['data'] = t('All affiliates');
+      }
+      if (!empty($list)) {
+        $form['domain'] = [
+          '#type' => 'fieldset',
+          '#title' => t('Affiliate publishing options'),
+          '#collapsible' => TRUE,
+          '#collapsed' => $config->get('domain_collapse_options'),
+          '#weight' => -10,
+        ];
+        if ($config->get('domain_vertical_tab')) {
+          $form['domain']['#group'] = 'additional_settings';
+        }
+        $form['domain']['domains_notes'] = [
+          '#type' => 'item',
+          '#title' => t('Publishing status'),
+          '#markup' => theme('item_list', ['items' => $list]),
+          '#description' => empty($form['#node']->nid) ? t('This content will be published to these affiliates.') : t('This content is published to these affiliates.'),
+        ];
+      }
+    }
     // These form elements are hidden from non-privileged users, by design.
     $form['domain_site'] = [
       '#type' => 'value',
-      '#value' => (isset($form['#node']->domain_site)) ? $form['#node']->domain_site : $default_domain_site,
+      '#value' => $domain_site,
     ];
     // Domains that have been assigned and cannot be changed.
     $form['domains_raw'] = [
@@ -4566,6 +4599,54 @@ function domain_default_node_access_settings($type) {
     }
   }
   return $settings;
+}
+
+/**
+ * Finds roles limited to their domains whose content goes to all domains.
+ *
+ * People without the 'set domain access' permission don't choose "Send to all
+ * affiliates" themselves: it comes from the content defaults for the content
+ * type. For roles given domain-limited permissions, a default that includes
+ * all domains is usually a surprise.
+ *
+ * @return array
+ *   An array keyed by node type. Each value is a list of role machine names
+ *   that can create that type only on their assigned domains while its
+ *   content defaults include all domains. Empty if there are none.
+ */
+function domain_limited_roles_publishing_to_all() {
+  $publish_permissions = [
+    'publish from default domain',
+    'publish from assigned domain',
+    'publish to any assigned domain',
+  ];
+  $admin_role = config_get('system.core', 'user_admin_role');
+  $role_permissions = [];
+  foreach (array_keys(user_roles()) as $role_name) {
+    if ($role_name != $admin_role) {
+      $role_permissions[$role_name] = user_role_permissions([$role_name]);
+    }
+  }
+
+  $result = [];
+  foreach (array_keys(node_type_get_names()) as $type) {
+    if (!in_array('DOMAIN_ALL', domain_default_node_access_settings($type), TRUE)) {
+      continue;
+    }
+    foreach ($role_permissions as $role_name => $permissions) {
+      // These people choose the domains themselves.
+      if (in_array('set domain access', $permissions)) {
+        continue;
+      }
+      $domain_create = in_array("create $type content on assigned domains", $permissions);
+      $can_create = $domain_create || in_array("create $type content", $permissions);
+      $limited = $domain_create || array_intersect($publish_permissions, $permissions);
+      if ($can_create && $limited) {
+        $result[$type][] = $role_name;
+      }
+    }
+  }
+  return $result;
 }
 
 /**

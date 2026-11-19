@@ -75,3 +75,9 @@ name = Editor access on assigned domains
 description = Ensure that domains not assigned to an editor grant no create, edit or delete access.
 group = Domain Access
 file = tests/domain.test
+
+[DomainContentDefaultsTest]
+name = Content defaults for people limited to their domains
+description = Ensure the status report and the content form show when limited people publish to all domains.
+group = Domain Access
+file = tests/domain.test
